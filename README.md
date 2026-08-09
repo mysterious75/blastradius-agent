@@ -1,3 +1,7 @@
+# 🔴 BlastRadius Agent
+
+> Autonomous security engineer: scan → prove → patch → verify
+
 > [!WARNING]
 > **Legal Disclaimer — Authorized Use Only**
 >
@@ -19,149 +23,139 @@
 See [DISCLAIMER.md](DISCLAIMER.md) for the full legal terms and
 [SECURITY.md](SECURITY.md) for reporting and disclosure policies.
 
-# BlastRadius Agent
+## What it does
 
-Autonomous security engineer: **scan → prove exploitability → patch → verify →
-report**, powered by the existing **Prometheus** scanners (imported and wrapped
-as CAI `function_tool`s — the scanners themselves are never modified).
+BlastRadius clones repositories, statically scans them for vulnerabilities
+across 8 types and 11 languages, proves exploitability in a sandboxed PoC,
+auto-generates and verifies patches, and tracks the whole lifecycle — from
+target discovery to CVE disclosure — in a local SQLite database with a web
+dashboard, multi-channel notifications, and a self-improving scanner.
 
-## Quick start (5 commands)
+## Demo
 
-```bash
-cd blastradius-agent
+```
+╔══════════════════════════════════╗
+║  🔴 BlastRadius Agent v1.0.0    ║
+║  Autonomous Security Engineer   ║
+╚══════════════════════════════════╝
 
-# 1. Install (no CAI needed for scanning/tests; add cai-framework for the agent)
-python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -e .[dev]                             # or: make setup
+[*] Cloning https://github.com/org/repo
+[*] 12 candidate finding(s) with confidence >= 0.7
 
-# 2. Run the tests (no network / Docker / API keys required)
-python -m pytest tests -q
+File                          Line  Type  Confidence  Severity  Status
+src/app.py                      42  sqli    0.95     CRITICAL   CANDIDATE
+src/views/user.rb               17  xss     0.85     HIGH       CANDIDATE
 
-# 3. Scan a repo (local path or GitHub URL) and write disclosure reports
-python -m blastradius.hunter --target ./path/to/repo
+[+] report saved: reports/2026-08-09_sqli_repo_src_app-42.md
+[*] Done: 1 report(s) saved to reports
 
-# 4. Map dependency blast radius
-python -m blastradius.blast_radius --repo ./path/to/repo
-
-# 5. Run everything end-to-end through the pipeline
-python -m blastradius.pipeline_cli --target ./path/to/repo
+┌ Stats ────────────────────────────────┐
+│ 5 Total Scans  2 Confirmed CVEs       │
+│ 3 Patches      80% Success Rate       │
+└───────────────────────────────────────┘
 ```
 
-## CLI commands
+## Quick Start
 
-| Command | What it does |
-|---|---|
-| `python -m blastradius.hunter --target <url\|path>` | Clone (URL) + scan repo, sandbox-validate, save disclosure reports for confirmed-exploitable findings |
-| `python -m blastradius.hunter` | Same, default target = `targets.py[0]` (WebGoat) |
-| `python -m blastradius.blast_radius --repo <path>` | Parse dependencies and print blast radius ("Package X v1.2 affects N repos") |
-| `python -m blastradius.pipeline_cli --target <url\|path>` | Run the full pipeline end-to-end (scan → exploit → patch → report) |
-| `uvicorn blastradius.github_app.webhook:app --reload` | GitHub App webhook server (`/webhook`, `/health`) |
-| `python test_agent.py "Scan ... for SQL injection"` | Run the CAI master agent (needs cai-framework + `OPENCODE_API_KEY`) |
-| `make setup` | venv + `cai-framework` + deps |
-| `make test` | `pytest tests/ -v` |
-| `make scan TARGET=https://github.com/org/repo` | CVE hunter |
-| `make blast REPO=./path` | Blast radius |
-| `make server` | uvicorn webhook (hot reload) |
-| `make docker` | Build `blastradius-sandbox` image |
+```bash
+git clone https://github.com/mysterious75/blastradius-agent
+cd blastradius-agent && pip install -e ".[all]"
+python -m blastradius.cli.wizard    # interactive setup
+python -m blastradius.hunter --target https://github.com/target/repo
+```
+
+## Supported Providers
+
+BlastRadius auto-selects the best available provider (priority:
+opencode_zen > deepseek > openai > anthropic > others) and falls back through
+the chain when one fails. Any model ID a provider accepts works — unknown
+models are passed through as-is.
+
+| Provider | Base URL | Key env | Models (examples) |
+|---|---|---|---|
+| opencode_zen | https://opencode.ai/zen/go/v1 | `OPENCODE_API_KEY` | deepseek-v4-flash, gpt-5.6-sol, claude-sonnet-4-5, kimi-k3 |
+| opencode_go | https://opencode.ai/go/v1 | `OPENCODE_API_KEY` | deepseek-v4-flash, mimo-v2.5, grok-4.5, qwen3.8-max |
+| deepseek | https://api.deepseek.com/v1 | `DEEPSEEK_API_KEY` | deepseek-chat, deepseek-reasoner, deepseek-v4-pro |
+| openai | https://api.openai.com/v1 | `OPENAI_API_KEY` | gpt-4o, o3-mini, gpt-5.6-terra |
+| anthropic | https://api.anthropic.com/v1 | `ANTHROPIC_API_KEY` | claude-sonnet-4-6, claude-opus-5, claude-haiku-4-5 |
+| openrouter | https://openrouter.ai/api/v1 | `OPENROUTER_API_KEY` | openai/gpt-4o, deepseek/deepseek-chat, qwen/qwen3.8-max |
+| qwen | https://dashscope.aliyuncs.com/compatible-mode/v1 | `QWEN_API_KEY` | qwen-max, qwen3.7-max, qwen2.5-coder-32b-instruct |
+| kimi | https://api.moonshot.cn/v1 | `KIMI_API_KEY` | moonshot-v1-128k, kimi-k3 |
+| groq | https://api.groq.com/openai/v1 | `GROQ_API_KEY` | llama-3.3-70b-versatile, groq/compound, gemma2-9b-it |
+| together | https://api.together.xyz/v1 | `TOGETHER_API_KEY` | Qwen/Qwen3.7-Max, deepseek-ai/DeepSeek-V4-Pro |
+| mistral | https://api.mistral.ai/v1 | `MISTRAL_API_KEY` | mistral-large-latest, codestral-2508 |
+| google | https://generativelanguage.googleapis.com/v1beta/openai | `GOOGLE_API_KEY` | gemini-2.0-flash, gemini-2.5-pro |
+| xai | https://api.x.ai/v1 | `XAI_API_KEY` | grok-4.5, grok-2 |
+| ollama | http://localhost:11434/v1 | — (local) | llama3.1, qwen2.5, gemma2 |
+| lmstudio | http://localhost:1234/v1 | — (local) | local-model |
 
 ## Architecture
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
 │                     ENTRY POINTS                                           │
-│   CLI (hunter / blast_radius / pipeline)      FastAPI webhook (GitHub App) │
+│   CLI (hunter / blast_radius / pipeline / recon / providers)               │
+│   Web dashboard (:8080)     GitHub App webhook (:8000)     Scheduler       │
 └──────────────┬───────────────────────────────┬─────────────────────────────┘
-               │                                │  X-Hub-Signature-256 verified
                ▼                                ▼
-┌──────────────────────────────  FullPipeline (blastradius/pipeline.py) ─────┐
-│  validate target ─► CVEHunter (clone + static scan, conf ≥ 0.7)            │
-│  ─► sandbox exploit check ─► PatchLoop (generate → verify → retry ×3)      │
-│  ─► DisclosureReport + SummaryReporter ─► reports/                         │
-│  ─► BlastRadiusGraph (package → repo)                                       │
+┌──────────────────────────────  FullPipeline (scan → prove → patch → verify) ─┐
+│  CVEHunter (static scan, 8 vuln types, 11 languages, learned rules)          │
+│  ─► sandbox exploit check ─► PatchLoop (generate → verify → retry ×3)       │
+│  ─► DisclosureReport + SummaryReporter ─► reports/                           │
+│  ─► BlastRadiusGraph (package → repo)  ─► SQLiteDB (findings, CVE tracking) │
 └──────┬───────────────────────┬──────────────────────────┬──────────────────┘
        ▼                       ▼                          ▼
 ┌─────────────┐        ┌─────────────────┐        ┌──────────────────┐
-│  Prometheus │        │ SandboxRunner    │        │ BlastRadiusGraph │
-│  scanners   │        │ docker --network │        │ Neo4j / in-memory│
-│  (56 total) │        │ none --read-only │        │ requirements.txt │
-│  sqli/xss/  │        │ --memory --runsc │        │ package.json     │
-│  ssrf/advers│        │ (local fallback) │        │ go.mod / Pipfile │
+│  Prometheus │        │ SandboxRunner    │        │ Notifier          │
+│  scanners   │        │ docker --network │        │ slack/discord/    │
+│  (56 total) │        │ none --read-only │        │ telegram/email/   │
+│             │        │ --memory --runsc │        │ github issues     │
 └─────────────┘        └─────────────────┘        └──────────────────┘
         ▲                       ▲
-        └── CAI function_tools (prometheus_wrappers, sandbox_tool, patch_tool)
+        └── LLM provider system (15 providers, auto-select, rate-limit, cost)
 ```
 
-## Environment variables
+## All CLI Commands
 
-| Variable | Purpose | Default |
-|---|---|---|
-| `OPENCODE_API_KEY` | LLM key for patch generation + agent (OpenCode DeepSeek V4 Flash) | — |
-| `OPENCODE_BASE_URL` | LLM chat-completions endpoint | `https://opencode.ai/zen/go/v1/chat/completions` |
-| `OPENCODE_MODEL` | LLM model | `deepseek-v4-flash` |
-| `CAI_MODEL` | Model for the CAI agent | `deepseek-v4-flash` |
-| `CAI_LICENSE_OFF` | Run CAI without an Alias license | `1` |
-| `PROMETHEUS_ROOT` | Prometheus repo root (parent of its `src/` package) | `../prometheus` |
-| `AUTH_TOKEN` | Pass-through for Prometheus's scanner auth gate | — |
-| `GITHUB_WEBHOOK_SECRET` | HMAC secret for webhook signatures | — |
-| `GITHUB_TOKEN` | Token for posting PR comments | — (dry-run without) |
-| `NEO4J_URI` / `NEO4J_USER` / `NEO4J_PASSWORD` | Blast-radius graph DB | `bolt://localhost:7687` / `neo4j` / — |
-| `BLASTRADIUS_ALLOWED_ROOTS` | Allowed dirs for local repo paths (`os.pathsep`-separated) | system temp dir + cwd |
-| `SANDBOX_TIMEOUT` / `SANDBOX_MEMORY_LIMIT_MB` | Sandbox limits | `10` / `128` |
-
-## Components
-
-| Module | Purpose |
+| Command | What it does |
 |---|---|
-| `blastradius/tools/` | CAI tools: `prometheus_sqli/xss/ssrf_scan`, `prometheus_adversarial_validate`, `run_exploit_sandbox`, `generate_and_verify_patch` |
-| `blastradius/sandbox/` | `SandboxRunner` (Docker + gVisor, local fallback), exploit templates, `sandbox/Dockerfile` |
-| `blastradius/hunter/` | `CVEHunter` (clone + static scan), `DisclosureReport`, `targets.py`, CLI |
-| `blastradius/patcher/` | `PatchGenerator` (LLM + rule fallback), `PatchVerifier` (syntax/exploit/regression), `PatchLoop` |
-| `blastradius/github_app/` | FastAPI webhook + `PRCommenter` |
-| `blastradius/blast_radius/` | `BlastRadiusGraph` (Neo4j/in-memory) + dependency parser + CLI |
-| `blastradius/pipeline.py` | `FullPipeline` end-to-end orchestrator (progress callbacks) |
-| `blastradius/reporting/` | `SummaryReporter` (per-run markdown summary) |
-| `blastradius/security/` | Input validation: GitHub URLs, target code (50KB, prompt-injection), repo paths |
-| `blastradius/agent.py` | CAI master agent (Phase 1) |
+| `python -m blastradius.cli.wizard` | Interactive setup (providers, keys, notifications, schedule) |
+| `python -m blastradius.hunter --target <url\|path>` | Scan a repo, sandbox-validate, save disclosure reports |
+| `python -m blastradius.pipeline_cli --target <url\|path>` | Full end-to-end pipeline |
+| `python -m blastradius.auto_hunt --strategy github --max 20` | Autonomous hunt over discovered targets |
+| `python -m blastradius.recon --strategy all` | Discover targets (GitHub code search / PyPI / Shodan) |
+| `python -m blastradius.blast_radius --repo ./path` | Map dependency blast radius |
+| `python -m blastradius.providers list\|test\|set\|cost` | Provider status, connectivity, .env, cost report |
+| `python -m blastradius.db stats\|clear` | SQLite stats / reset |
+| `python -m blastradius.cve_tracker list\|update\|stats` | CVE disclosure tracking |
+| `python -m blastradius.scheduler start\|status\|run-now` | Scheduled auto-hunts |
+| `python -m blastradius.dashboard` | Web dashboard at :8080 |
+| `uvicorn blastradius.github_app.webhook:app` | GitHub App webhook at :8000 |
+| `python -m scripts.cve_hunt [--target …]` | Multi-target CVE hunt + disclosure templates |
+| `python -m blastradius.db stats` | Persisted stats |
 
-### Notes on the scanners
+## Docker
 
-- Prometheus is a `src`-layout repo that is not pip-installed; `PROMETHEUS_ROOT`
-  is added to `sys.path` and scanners are imported as `src.scanner.*`.
-- Prometheus's SQLi/XSS/SSRF tools are **URL scanners** (they need a running
-  target), so local repo files are scanned with static sink/source rules that
-  mirror those detections; candidates are validated with Prometheus's
-  `AdversarialValidator` and sandbox PoCs.
-- CAI registration is lazy: tools are `function_tool`-decorated when
-  `cai-framework` is installed and stay plain callables otherwise — the whole
-  test suite runs without CAI.
+```bash
+docker-compose up
+# dashboard http://localhost:8080 · webhook :8000 · Neo4j :7474/:7687
+```
 
-## Blueprint phase mapping
+## CVE Hall of Fame
 
-| Phase | Blueprint weeks | Delivered |
-|---|---|---|
-| 1 — Foundation | 1–3 | CAI tools wrapping the 4 key Prometheus scanners + master agent |
-| 2 — Exploit sandbox | 4–5 | `SandboxRunner`, exploit templates, `run_exploit_sandbox` |
-| 3 — CVE hunt | 6–8 | `CVEHunter`, disclosure reports, hunter CLI |
-| 4 — Patch + verify | 9–11 | `PatchGenerator`/`PatchVerifier`/`PatchLoop`, `generate_and_verify_patch` |
-| 5 — GitHub App + blast radius | 12–16 | FastAPI webhook, `PRCommenter`, `BlastRadiusGraph` + CLI |
-| 6 — Integration + hardening | — | `FullPipeline`, `SummaryReporter`, input validation, Makefile |
+| CVE ID | Project | Type | Severity | Bounty |
+|--------|---------|------|----------|--------|
+| — | — | — | — | — |
 
-Blueprint code samples were corrected against the real APIs: the import path
-is `src.scanner.sqli` (not `prometheus.scanners.sql_injection`); the entry
-point is `SQLiScanner(rps=..., timeout=...).scan_url(url, params)` (not
-`SQLiScanner(url, method=...).run()`); exploits are rendered from auditable
-templates; and the LLM endpoint is the OpenCode DeepSeek V4 Flash
-`/chat/completions` URL (provider `@ai-sdk/openai-compatible`).
+Found one with BlastRadius? Submit via the CVE Program / GitHub Security
+Advisory (see [SECURITY.md](SECURITY.md)) and add it here.
 
-## Security & safety
+## Contributing
 
-- Authorized testing only. The agent never auto-merges patches — everything is
-  flagged for human review.
-- Sandbox: no network egress, read-only FS, memory cap, gVisor runtime (when
-  available); local fallback is for trusted CI code only.
-- Input hardening: GitHub URLs are host/private-IP/path-traversal checked;
-  target code is capped at 50KB and scanned for prompt-injection patterns
-  before ever reaching an LLM; local repo paths must resolve inside
-  `BLASTRADIUS_ALLOWED_ROOTS`.
-- Disclosure reports are research artifacts: a live exploit must be confirmed
-  manually and coordinated with maintainers before any public disclosure.
+PRs welcome — tests run with `pytest tests/`. Keep new features dependency-
+light, mock all network calls in tests, and make every integration graceful
+when credentials are missing.
+
+## License
+
+MIT
