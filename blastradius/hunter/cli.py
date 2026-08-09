@@ -13,6 +13,7 @@ import argparse
 
 from pathlib import Path
 
+from blastradius.cli.display import RichDisplay
 from blastradius.hunter.disclosure import DisclosureReport
 from blastradius.hunter.scanner import CVEHunter, Finding, reconstruct_target_code
 from blastradius.hunter.targets import DEFAULT_TARGETS
@@ -23,14 +24,6 @@ def _repo_name(target: str) -> str:
     if target.startswith(("http://", "https://")):
         return target.rstrip("/").split("/")[-1]
     return Path(target).name or "unknown"
-
-
-def _print_table(findings) -> None:
-    header = f"{'File':<46} {'Line':>4}  {'Type':<5}  {'Conf':>4}  Payload"
-    print(header)
-    print("-" * len(header))
-    for f in findings:
-        print(f"{f.file:<46} {f.line:>4}  {f.vuln_type:<5}  {f.confidence:>4.2f}  {f.payload[:60]}")
 
 
 def main(argv=None) -> int:
@@ -45,6 +38,9 @@ def main(argv=None) -> int:
     parser.add_argument("--min-confidence", type=float, default=0.7)
     parser.add_argument("--reports-dir", default="reports")
     args = parser.parse_args(argv)
+
+    display = RichDisplay()
+    display.print_banner()
 
     hunter = CVEHunter(min_confidence=args.min_confidence)
     target = args.target or DEFAULT_TARGETS[0]
@@ -61,7 +57,7 @@ def main(argv=None) -> int:
     findings = hunter.scan_repo(repo_path)
     print(f"[*] {len(findings)} candidate finding(s) with confidence >= {args.min_confidence}")
     if findings:
-        _print_table(findings)
+        display.print_findings_table(findings)
 
     reports = DisclosureReport()
     saved = 0

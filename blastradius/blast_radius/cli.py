@@ -10,6 +10,7 @@ import argparse
 from pathlib import Path
 
 from blastradius.blast_radius.graph import BlastRadiusGraph, parse_dependencies
+from blastradius.cli.display import RichDisplay
 
 
 def main(argv=None) -> int:
@@ -24,6 +25,9 @@ def main(argv=None) -> int:
     )
     args = parser.parse_args(argv)
 
+    display = RichDisplay()
+    display.print_banner()
+
     graph = BlastRadiusGraph(backend=None if args.backend == "auto" else args.backend)
     repo_name = Path(args.repo).name or "unknown"
     graph.add_repo(repo_name, str(Path(args.repo).resolve()))
@@ -36,9 +40,12 @@ def main(argv=None) -> int:
     if not deps:
         print(f"[*] No dependencies found in {args.repo}")
 
+    rows = []
     for name, version in deps:
         affected = graph.query_blast_radius(name)
-        print(f"Package {name} v{version} affects {len(affected)} repos: {affected}")
+        rows.append([name, version, len(affected), ", ".join(affected)])
+    if rows:
+        display.print_table(["Package", "Version", "Affected Repos", "Repos"], rows, title="Blast Radius")
     return 0
 
 

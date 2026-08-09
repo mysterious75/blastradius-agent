@@ -11,6 +11,7 @@ import os
 import time
 from pathlib import Path
 
+from blastradius.cli.display import RichDisplay
 from blastradius.providers.client import LLMClient, provider_key_set
 from blastradius.providers.registry import PROVIDER_REGISTRY
 
@@ -32,40 +33,44 @@ def _load_env(path: Path) -> dict:
 
 
 def cmd_list(_args) -> int:
-    header = f"{'Provider':<16} {'Models':<44} {'Key':<6} Status"
-    print(header)
-    print("-" * len(header))
+    display = RichDisplay()
+    rows = []
     for name, cfg in PROVIDER_REGISTRY.items():
         models = ", ".join(cfg["models"][:6])
         if len(cfg["models"]) > 6:
             models += "…"
         if cfg.get("api_key"):
-            key = "local"
-            status = "local"
+            key, status = "local", "local"
         elif provider_key_set(name):
-            key = "yes"
-            status = "ready"
+            key, status = "yes", "ready"
         else:
-            key = "no"
-            status = "no key"
-        print(f"{name:<16} {models:<44} {key:<6} {status}")
+            key, status = "no", "no key"
+        rows.append([name, models, key, status])
+    display.print_table(["Provider", "Models", "Key", "Status"], rows, title="LLM Providers")
     return 0
 
 
 def cmd_test(_args) -> int:
+    display = RichDisplay()
     ok = 0
+    rows = []
     for name in PROVIDER_REGISTRY:
-        if not provider_key_set(name):
-            print(f"❌ {name} (no key)")
-            continue
         model = PROVIDER_REGISTRY[name]["models"][0]
+        if not provider_key_set(name):
+            rows.append({"provider": name, "model": "—", "ok": False,
+                         "status": "No API key", "latency": "—"})
+            continue
         start = time.monotonic()
         try:
             LLMClient(provider=name, model=model, verbose=False).chat(["say hi"], "Reply with OK.")
-            print(f"✅ {name} ({(time.monotonic() - start) * 1000:.0f}ms)")
+            rows.append({"provider": name, "model": model, "ok": True,
+                         "status": "Connected",
+                         "latency": f"{(time.monotonic() - start) * 1000:.0f}ms"})
             ok += 1
         except Exception as exc:
-            print(f"❌ {name} ({type(exc).__name__})")
+            rows.append({"provider": name, "model": model, "ok": False,
+                         "status": f"Failed ({type(exc).__name__})", "latency": "—"})
+    display.print_provider_table(rows)
     print(f"{ok} provider(s) reachable")
     return 0
 
@@ -100,6 +105,8 @@ def main(argv=None) -> int:
     set_p.add_argument("--model", default=None)
 
     args = parser.parse_args(argv)
+    if args.command != "set":
+        RichDisplay().print_banner()
     return {"list": cmd_list, "test": cmd_test, "set": cmd_set}[args.command](args)
 
 
