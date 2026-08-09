@@ -15,7 +15,7 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
-VERSION = "1.0.0"
+from blastradius.version import __version__ as VERSION
 
 STATUS_STYLES = {
     "CONFIRMED": "bold red",

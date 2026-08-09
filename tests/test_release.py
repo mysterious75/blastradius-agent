@@ -73,6 +73,7 @@ def test_console_scripts_declared_and_importable():
     pyproject = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     scripts = pyproject["project"]["scripts"]
     assert set(scripts) == {
+        "blastradius",
         "blastradius-scan",
         "blastradius-blast",
         "blastradius-server",
