@@ -96,6 +96,33 @@ def test_sqli_parameterized_is_not_vulnerable():
     assert tool_out.startswith("NOT_EXPLOITABLE")
 
 
+def test_sqli_execute_style_target_confirmed():
+    """Execute-style targets (SQL run, no query string returned) must be detected."""
+    vuln = """
+def target(user_input):
+    import sqlite3
+    conn = sqlite3.connect(':memory:')
+    conn.execute("CREATE TABLE users (id INTEGER)")
+    conn.execute("SELECT * FROM users WHERE id=" + user_input)
+    return "ok"
+"""
+    tool_out = run_exploit_sandbox("sqli", vuln)
+    assert tool_out.startswith("CONFIRMED_EXPLOITABLE")
+    assert "[VULNERABLE]" in tool_out
+
+
+def test_sqli_execute_parameterized_not_confirmed():
+    safe = """
+def target(user_input):
+    import sqlite3
+    conn = sqlite3.connect(':memory:')
+    conn.execute("CREATE TABLE users (id INTEGER)")
+    conn.execute("SELECT * FROM users WHERE id=?", (user_input,))
+    return "ok"
+"""
+    assert run_exploit_sandbox("sqli", safe).startswith("NOT_EXPLOITABLE")
+
+
 # --- Other templates ---------------------------------------------------------
 
 
