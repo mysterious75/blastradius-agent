@@ -132,6 +132,10 @@ def test_adversarial_validate_fallback_without_prometheus(monkeypatch):
     }))
     results = json.loads(result)
     assert results[0]["verdict"] == "needs_manual_review"
+    # _local_verdict must propagate dict fields (was getattr-on-dict bug)
+    assert results[0]["vuln_type"] == "SQL Injection"
+    assert results[0]["url"] == "file://x.py"
+    assert results[0]["evidence_strength"] == "moderate"
 
 
 def test_adversarial_validate_batch_and_bad_input():
