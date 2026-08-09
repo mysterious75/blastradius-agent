@@ -21,10 +21,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # Prometheus (src-layout) is a test-time dependency at ../prometheus.
-      - name: Clone prometheus (test dependency)
-        run: git clone --depth 1 https://github.com/mysterious75/prometheus ../prometheus
-
+      # BlastRadius is self-contained — no prometheus clone needed.
       - name: Install
         run: pip install -e ".[dev]"
 
