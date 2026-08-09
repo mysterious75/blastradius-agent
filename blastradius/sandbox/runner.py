@@ -76,16 +76,35 @@ class SandboxRunner:
         """Run ``exploit_code`` (PoC) against ``target_code`` in the sandbox.
 
         ``target_code`` is validated first (50KB cap, prompt-injection
-        blocking). Returns:
+        blocking). Hardening: docker flags verified, file sizes capped,
+        escape attempts detected. Returns:
             {"vulnerable": bool, "output": str, "error": str, "exit_code": int}
         """
+        from blastradius.security.sandbox_escape_prevention import (
+            detect_sandbox_escape,
+            enforce_file_size,
+            running_as_root,
+            verify_command,
+            verify_docker_flags,
+        )
+
         validate_target_code(target_code)
+        enforce_file_size(exploit_code)
+        enforce_file_size(target_code)
+        self.warnings = []
+        self.escape_flags = []
+        if running_as_root():
+            self.warnings.append("running as root — sandbox isolation is weaker")
         with tempfile.TemporaryDirectory() as tmpdir:
             (Path(tmpdir) / "exploit_poc.py").write_text(exploit_code, encoding="utf-8")
             (Path(tmpdir) / "target_code.py").write_text(target_code, encoding="utf-8")
 
             result = None
             for cmd in self._candidate_commands(tmpdir):
+                if not verify_command(cmd):
+                    self.warnings.append(f"command not on allowlist: {cmd[0] if cmd else '?'}")
+                if not self._use_docker() and self.runtime and not verify_docker_flags(cmd):
+                    self.warnings.append("docker isolation flags missing")
                 try:
                     result = subprocess.run(
                         cmd, capture_output=True, text=True, timeout=self.timeout
@@ -100,6 +119,7 @@ class SandboxRunner:
                 if not self._is_missing_runtime(result):
                     break
 
+        self.escape_flags = detect_sandbox_escape(result.stdout)
         return {
             "vulnerable": VULNERABLE_MARKER in result.stdout,
             "output": result.stdout,
