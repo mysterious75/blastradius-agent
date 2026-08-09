@@ -18,6 +18,17 @@ services:
     depends_on:
       - neo4j
 
+  api:
+    build: .
+    ports:
+      - "8001:8001"   # REST API
+    volumes:
+      - ~/.blastradius:/root/.blastradius
+    env_file: .env
+    command: ["python", "-m", "blastradius.api", "--port", "8001"]
+    depends_on:
+      - neo4j
+
   neo4j:
     image: neo4j:5-community
     ports:
