@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Pipeline",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "blastradius.pipeline_cli",
+      "args": ["--target", "${input:target}"],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug Dashboard",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "blastradius.dashboard",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug MCP Server",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "blastradius.mcp",
+      "console": "integratedTerminal"
+    }
+  ],
+  "inputs": [
+    {
+      "id": "target",
+      "type": "promptString",
+      "description": "GitHub repo URL or local path to scan",
+      "default": "https://github.com/WebGoat/WebGoat"
+    }
+  ]
+}
