@@ -1,0 +1,4 @@
+/* BlastRadius dashboard — minimal extra styles (main theme is inline in index.html) */
+a { color: #58a6ff; }
+table a:hover { text-decoration: underline; }
+#detail h3, #detail h4 { color: #ff4444; margin: .8rem 0 .3rem; }

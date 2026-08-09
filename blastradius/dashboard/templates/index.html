@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BlastRadius Agent</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  :root { --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#c9d1d9;
+          --muted:#8b949e; --accent:#ff4444; --green:#3fb950; --yellow:#d29922; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text); font-family:-apple-system,Segoe UI,Roboto,sans-serif; }
+  header { display:flex; align-items:center; justify-content:space-between;
+           padding:1rem 2rem; border-bottom:1px solid var(--border); background:var(--panel); }
+  header h1 { font-size:1.3rem; }
+  header h1 span { color:var(--accent); }
+  #provider-badge { font-size:.85rem; color:var(--muted); }
+  #provider-badge .dot { display:inline-block; width:10px; height:10px; border-radius:50%;
+                         margin-right:6px; background:#555; }
+  #provider-badge .dot.ok { background:var(--green); }
+  #provider-badge .dot.bad { background:var(--accent); }
+  main { padding:1.5rem 2rem; }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1rem; margin-bottom:1.5rem; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:8px;
+          padding:1rem; text-align:center; }
+  .card .num { font-size:1.8rem; font-weight:700; color:var(--accent); }
+  .card .lbl { color:var(--muted); font-size:.8rem; margin-top:.3rem; }
+  .toolbar { display:flex; gap:.75rem; margin-bottom:1rem; align-items:center; }
+  .tabs button { background:var(--panel); color:var(--text); border:1px solid var(--border);
+                 padding:.5rem 1.2rem; border-radius:6px; cursor:pointer; }
+  .tabs button.active { border-color:var(--accent); color:var(--accent); }
+  button.primary { background:var(--accent); color:#fff; border:none; padding:.55rem 1.2rem;
+                   border-radius:6px; cursor:pointer; font-weight:600; }
+  table { width:100%; border-collapse:collapse; background:var(--panel); border-radius:8px; overflow:hidden; }
+  th, td { padding:.6rem .8rem; text-align:left; border-bottom:1px solid var(--border); font-size:.9rem; }
+  th { color:var(--muted); font-weight:600; }
+  .sev { font-weight:700; }
+  .sev.CRITICAL { color:var(--accent); } .sev.HIGH { color:#f0883e; }
+  .sev.MEDIUM { color:var(--yellow); } .sev.LOW { color:#58a6ff; }
+  a.link { color:#58a6ff; cursor:pointer; text-decoration:none; }
+  .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); align-items:center; justify-content:center; }
+  .modal.open { display:flex; }
+  .modal-box { background:var(--panel); border:1px solid var(--border); border-radius:10px;
+               width:560px; max-width:90vw; padding:1.5rem; }
+  .modal-box input { width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border);
+                     border-radius:6px; padding:.6rem; margin:.6rem 0 1rem; }
+  #progress { background:var(--bg); border:1px solid var(--border); border-radius:6px;
+              padding:.6rem; height:140px; overflow-y:auto; font-family:monospace; font-size:.8rem; margin-top:1rem; }
+  #detail { display:none; background:var(--panel); border:1px solid var(--border); border-radius:8px;
+            padding:1.2rem; margin-top:1rem; }
+  #detail pre { background:var(--bg); padding:.8rem; border-radius:6px; overflow-x:auto;
+                font-size:.8rem; margin:.5rem 0; white-space:pre-wrap; }
+  #graph svg { background:var(--panel); border:1px solid var(--border); border-radius:8px; }
+  .hidden { display:none; }
+  .muted { color:var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1><span>🔴</span> BlastRadius Agent</h1>
+  <div id="provider-badge"><span class="dot"></span><span id="provider-name">…</span></div>
+</header>
+<main>
+  <div class="stats">
+    <div class="card"><div class="num" id="st-scans">0</div><div class="lbl">Total Scans</div></div>
+    <div class="card"><div class="num" id="st-cves">0</div><div class="lbl">Confirmed CVEs</div></div>
+    <div class="card"><div class="num" id="st-patches">0</div><div class="lbl">Patches Generated</div></div>
+    <div class="card"><div class="num" id="st-repos">0</div><div class="lbl">Repos Monitored</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="tabs">
+      <button id="tab-findings" class="active">Findings</button>
+      <button id="tab-graph">Blast Radius</button>
+    </div>
+    <button class="primary" id="btn-new">+ New Scan</button>
+  </div>
+
+  <div id="view-findings">
+    <table>
+      <thead><tr><th>Repo</th><th>Type</th><th>Severity</th><th>Confidence</th><th>Actions</th></tr></thead>
+      <tbody id="findings-body"><tr><td colspan="5" class="muted">No findings yet — start a scan.</td></tr></tbody>
+    </table>
+    <div id="detail">
+      <h3 id="detail-title"></h3>
+      <div id="detail-body"></div>
+    </div>
+  </div>
+
+  <div id="view-graph" class="hidden"><div id="graph"></div></div>
+</main>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <h3>New Scan</h3>
+    <input id="scan-target" placeholder="https://github.com/org/repo  or  ./local/path">
+    <button class="primary" id="btn-start">Start Scan</button>
+    <button id="btn-close">Close</button>
+    <div id="progress" class="hidden"></div>
+  </div>
+</div>
+
+<script>
+const $ = (sel) => document.querySelector(sel);
+let ws = null;
+
+async function refresh() {
+  const [stats, findings, providers] = await Promise.all([
+    fetch('/stats').then(r => r.json()),
+    fetch('/findings').then(r => r.json()),
+    fetch('/providers').then(r => r.json()),
+  ]);
+  $('#st-scans').textContent = stats.total_scans;
+  $('#st-cves').textContent = stats.confirmed_cves;
+  $('#st-patches').textContent = stats.patches_generated;
+  $('#st-repos').textContent = stats.repos_monitored;
+  renderFindings(findings);
+  renderProvider(providers);
+}
+
+function renderProvider(providers) {
+  const dot = $('#provider-badge .dot');
+  const name = $('#provider-name');
+  if (providers.active) {
+    dot.className = 'dot ok';
+    name.textContent = providers.active.provider + ' / ' + providers.active.model;
+  } else {
+    dot.className = 'dot bad';
+    name.textContent = 'no provider configured (rule-based)';
+  }
+}
+
+const SEV = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1, INFO: 0 };
+function renderFindings(findings) {
+  const body = $('#findings-body');
+  if (!findings.length) {
+    body.innerHTML = '<tr><td colspan="5" class="muted">No findings yet — start a scan.</td></tr>';
+    return;
+  }
+  findings.sort((a, b) => SEV[b.severity] - SEV[a.severity]);
+  body.innerHTML = findings.map(f => `
+    <tr>
+      <td>${esc(f.repo)}</td>
+      <td>${esc(f.vuln_type.toUpperCase())}</td>
+      <td class="sev ${esc(f.severity)}">${esc(f.severity)}</td>
+      <td>${Math.round(f.confidence * 100)}%</td>
+      <td><a class="link" data-id="${f.id}">details</a></td>
+    </tr>`).join('');
+  body.querySelectorAll('a[data-id]').forEach(a =>
+    a.addEventListener('click', () => showDetail(parseInt(a.dataset.id))));
+}
+
+async function showDetail(id) {
+  const f = await fetch('/findings/' + id).then(r => r.json());
+  $('#detail').style.display = 'block';
+  $('#detail-title').textContent = `${f.vuln_type.toUpperCase()} in ${f.repo} — ${f.file}:${f.line}`;
+  $('#detail-body').innerHTML = `
+    <p>${esc(f.description)}</p>
+    <p class="muted">Severity: ${esc(f.severity)} · CWE: ${esc(f.cwe)} · Confidence: ${Math.round(f.confidence * 100)}%</p>
+    <h4>Payload</h4><pre>${esc(f.payload)}</pre>
+    <h4>Exploit proof / evidence</h4><pre>${esc(f.evidence)}</pre>
+    <h4>Remediation</h4><p>${esc(f.remediation)}</p>
+    <h4>Disclosure template</h4><pre>${esc(f.disclosure_template || '')}</pre>`;
+  $('#detail').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function startScan() {
+  const target = $('#scan-target').value.trim();
+  if (!target) return;
+  $('#progress').classList.remove('hidden');
+  $('#progress').textContent = 'Starting…';
+  const res = await fetch('/scan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ target }),
+  });
+  const { job_id } = await res.json();
+  connectWs(job_id);
+}
+
+function connectWs(jobId) {
+  if (ws) ws.close();
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  ws = new WebSocket(`${proto}://${location.host}/ws/${jobId}`);
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'progress') {
+      $('#progress').textContent += msg.message + '\n';
+      $('#progress').scrollTop = $('#progress').scrollHeight;
+    } else if (msg.type === 'status') {
+      $('#progress').textContent += '\n— ' + msg.status + ' —\n';
+      if (msg.status === 'done') { refresh(); }
+    }
+  };
+}
+
+async function renderGraph() {
+  const data = await fetch('/blast-radius').then(r => r.json());
+  $('#graph').innerHTML = '';
+  if (!data.nodes.length) {
+    $('#graph').innerHTML = '<p class="muted">No dependency graph yet — run a scan.</p>';
+    return;
+  }
+  const w = 820, h = 420;
+  const svg = d3.select('#graph').append('svg').attr('width', w).attr('height', h);
+  const sim = d3.forceSimulation(data.nodes)
+    .force('link', d3.forceLink(data.links).id(d => d.id).distance(90))
+    .force('charge', d3.forceManyBody().strength(-260))
+    .force('center', d3.forceCenter(w / 2, h / 2));
+  const link = svg.append('g').selectAll('line').data(data.links).join('line')
+    .attr('stroke', '#30363d');
+  const node = svg.append('g').selectAll('circle').data(data.nodes).join('circle')
+    .attr('r', d => d.type === 'repo' ? 10 : 6)
+    .attr('fill', d => d.type === 'repo' ? '#ff4444' : '#3fb950');
+  const label = svg.append('g').selectAll('text').data(data.nodes).join('text')
+    .text(d => d.id).attr('font-size', 10).attr('fill', '#c9d1d9')
+    .attr('dx', 12).attr('dy', 4);
+  sim.on('tick', () => {
+    link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+    node.attr('cx', d => d.x).attr('cy', d => d.y);
+    label.attr('x', d => d.x).attr('y', d => d.y);
+  });
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g,
+    c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// events
+$('#btn-new').addEventListener('click', () => $('#modal').classList.add('open'));
+$('#btn-close').addEventListener('click', () => $('#modal').classList.remove('open'));
+$('#btn-start').addEventListener('click', startScan);
+$('#tab-findings').addEventListener('click', () => {
+  $('#tab-findings').classList.add('active'); $('#tab-graph').classList.remove('active');
+  $('#view-findings').classList.remove('hidden'); $('#view-graph').classList.add('hidden');
+});
+$('#tab-graph').addEventListener('click', () => {
+  $('#tab-graph').classList.add('active'); $('#tab-findings').classList.remove('active');
+  $('#view-graph').classList.remove('hidden'); $('#view-findings').classList.add('hidden');
+  renderGraph();
+});
+refresh();
+setInterval(refresh, 10000);
+</script>
+</body>
+</html>
