@@ -27,7 +27,7 @@ from src.scanner.adversarial import AdversarialValidator  # noqa: E402
 # Static analysis rules (file-level equivalents of the URL scanners)
 # ---------------------------------------------------------------------------
 
-FILE_EXTENSIONS = ("*.py", "*.js", "*.php")
+FILE_EXTENSIONS = ("*.py", "*.js", "*.php", "*.ts", "*.tsx")
 
 SKIP_DIRS = {
     ".git", "node_modules", "venv", ".venv", "__pycache__", ".tox",
