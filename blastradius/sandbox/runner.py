@@ -116,8 +116,12 @@ class SandboxRunner:
                         "error": f"sandbox timed out after {self.timeout}s",
                         "exit_code": -1,
                     }
-                if not self._is_missing_runtime(result):
-                    break
+                if result.returncode == 0:
+                    break  # execution succeeded — keep this result
+                # docker failed (e.g. runtime or image missing) — try the next
+                # fallback candidate, ending with the local subprocess
+                if cmd[0] == "docker":
+                    self.warnings.append("docker run failed; falling back to local subprocess")
 
         self.escape_flags = detect_sandbox_escape(result.stdout)
         return {
@@ -132,11 +136,14 @@ class SandboxRunner:
     # ------------------------------------------------------------------
 
     def _candidate_commands(self, tmpdir: str) -> Iterator[List[str]]:
-        """Yield commands to try, most preferred first (docker, then fallback)."""
+        """Yield commands to try, most preferred first: docker (+runsc), docker,
+        then the local subprocess as a last-resort fallback (so environments
+        with Docker but no built image still run PoCs)."""
         if self._use_docker():
             yield self._docker_command(tmpdir, with_runtime=True)
             if self.runtime:
                 yield self._docker_command(tmpdir, with_runtime=False)
+            yield [sys.executable, str(Path(tmpdir) / "exploit_poc.py")]
         else:
             yield [sys.executable, str(Path(tmpdir) / "exploit_poc.py")]
 
