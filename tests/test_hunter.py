@@ -205,7 +205,7 @@ def test_save_report_writes_markdown_file(repo, tmp_path):
     )
     import re as _re
 
-    assert _re.fullmatch(r"\d{4}-\d{2}-\d{2}_sqli_myrepo\.md", path.name)
+    assert _re.fullmatch(r"\d{4}-\d{2}-\d{2}_sqli_myrepo_vulnerable_app-5\.md", path.name)
     assert path.suffix == ".md"
     assert path.exists()
     content = path.read_text(encoding="utf-8")

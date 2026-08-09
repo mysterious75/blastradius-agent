@@ -136,11 +136,13 @@ class Finding:
 
 def _line_references_variable(line: str) -> bool:
     """Whether a sink on this line receives a non-literal value."""
+    stripped = re.sub(r"['\"][^'\"]*['\"]", " ", line)  # drop string literals
     return bool(
-        re.search(r"\(\s*[A-Za-z_$][\w$]*", line)          # sink(<var>
-        or re.search(r"=\s*[A-Za-z_$][\w$]*", line)        # sink = <var>
-        or re.search(r"\becho\b[^;]*[A-Za-z_$][\w$]*", line, re.I)
-        or re.search(r"\.[ \t]*\$?[A-Za-z_]\w*", line)     # . $var concat
+        re.search(r"\(\s*[A-Za-z_$][\w$]*", stripped)          # sink(<var>
+        or re.search(r"=\s*[A-Za-z_$][\w$]*", stripped)        # sink = <var>
+        or re.search(r"\becho\b[^;]*[A-Za-z_$][\w$]*", stripped, re.I)
+        # . $var concat (PHP) — but NOT a method call like .html("literal")
+        or re.search(r"\.[ \t]*\$?[A-Za-z_]\w*\s*(?!\()", stripped)
     )
 
 
