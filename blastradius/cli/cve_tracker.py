@@ -20,12 +20,22 @@ def _days_open(disclosed_at: str) -> int:
         return 0
 
 
-def cmd_list(_args) -> int:
-    rows = Deduplicator().get_tracking_rows()
+def _dedup(args) -> Deduplicator:
+    db_path = getattr(args, "db", None)
+    if db_path:
+        from blastradius.db.database import SQLiteDB
+
+        return Deduplicator(db=SQLiteDB(db_path=db_path))
+    return Deduplicator()
+
+
+def cmd_list(args) -> int:
+    dedup = _dedup(args)
+    rows = dedup.get_tracking_rows()
     display = RichDisplay()
     table = []
     for r in rows:
-        status = Deduplicator().get_disclosure_status(r["finding_id"])
+        status = dedup.get_disclosure_status(r["finding_id"])
         table.append([
             f"{r.get('vuln_type', '?').upper()} @ {r.get('file', '?')}:{r.get('line', '?')}",
             r.get("cve_id") or "—",
@@ -39,15 +49,15 @@ def cmd_list(_args) -> int:
 
 
 def cmd_update(args) -> int:
-    dedup = Deduplicator()
+    dedup = _dedup(args)
     dedup.mark_disclosed(args.id, cve_id=args.cve or "", bounty=args.bounty or 0)
     status = dedup.get_disclosure_status(args.id)
     print(f"[+] finding {args.id} → status: {status} (cve={args.cve or '—'}, bounty=${args.bounty or 0})")
     return 0
 
 
-def cmd_stats(_args) -> int:
-    stats = Deduplicator().get_stats()
+def cmd_stats(args) -> int:
+    stats = _dedup(args).get_stats()
     print(f"{'Total disclosed':<20} {stats['total_disclosed']}")
     print(f"{'Assigned CVEs':<20} {stats['assigned_cves']}")
     print(f"{'Total bounty':<20} ${stats['total_bounty_usd']}")
