@@ -96,7 +96,7 @@ def test_cli_from_db(tmp_path, monkeypatch, capsys):
     db.save_finding(scan_id, Finding(file="a.py", line=1, vuln_type="sqli", payload="p",
                                      confidence=0.9, severity="HIGH", cwe="CWE-89",
                                      description="d", remediation="r"))
-    monkeypatch.setattr("blastradius.export.cli.SQLiteDB", lambda: db)
+    monkeypatch.setattr("blastradius.db.database.SQLiteDB", lambda: db)
     out = tmp_path / "out.csv"
     rc = export_main(["--format", "csv", "--output", str(out)])
     assert rc == 0
