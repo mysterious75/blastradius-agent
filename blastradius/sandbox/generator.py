@@ -8,12 +8,14 @@ from pathlib import Path
 
 TEMPLATE_DIR = Path(__file__).resolve().parent / "exploit_templates"
 
-VALID_VULN_TYPES = {"sqli", "xss", "ssrf"}
+VALID_VULN_TYPES = {"sqli", "xss", "ssrf", "ssti", "jwt"}
 
 _TEMPLATE_FILES = {
     "sqli": "sqli_exploit.py.template",
     "xss": "xss_exploit.py.template",
     "ssrf": "ssrf_exploit.py.template",
+    "ssti": "ssti_exploit.py.template",
+    "jwt": "jwt_exploit.py.template",
 }
 
 

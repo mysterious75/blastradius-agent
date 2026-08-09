@@ -77,6 +77,9 @@ _SSRF_SINKS = [
     r"\bgot\(", r"\bcurl\(", r"httpx\.", r"aiohttp\.", r"\brequest\(",
 ]
 
+# Language-specific XSS sinks (populated by the language-expansion rules)
+_LANG_XSS_SINKS = {}
+
 VULN_META = {
     "sqli": {
         "severity": "CRITICAL",
@@ -117,6 +120,73 @@ VULN_META = {
         "remediation": (
             "Validate the destination against an allowlist, resolve DNS "
             "server-side, and block private/loopback/link-local address ranges."
+        ),
+    },
+    "idor": {
+        "severity": "HIGH",
+        "cvss": 5.3,
+        "cwe": "CWE-639",
+        "description": (
+            "Insecure Direct Object Reference: a handler reads an object id "
+            "from user input without checking that the caller is authorized "
+            "to access that object."
+        ),
+        "remediation": (
+            "Enforce an authorization check (ownership / role) before "
+            "returning any object looked up by an attacker-supplied id."
+        ),
+    },
+    "ssti": {
+        "severity": "CRITICAL",
+        "cvss": 9.8,
+        "cwe": "CWE-1336",
+        "description": (
+            "Server-side template injection: user input reaches a template "
+            "renderer (Jinja2/Mako) and is evaluated as template code."
+        ),
+        "remediation": (
+            "Never pass user input as the template source; render data via "
+            "template variables only, and keep template files static."
+        ),
+    },
+    "xxe": {
+        "severity": "HIGH",
+        "cvss": 8.1,
+        "cwe": "CWE-611",
+        "description": (
+            "XML External Entity: XML is parsed with a parser that resolves "
+            "external entities, allowing file disclosure / SSRF via crafted XML."
+        ),
+        "remediation": (
+            "Parse XML with defusedxml (or disable external entity resolution "
+            "on the parser) before processing untrusted XML input."
+        ),
+    },
+    "jwt": {
+        "severity": "HIGH",
+        "cvss": 8.1,
+        "cwe": "CWE-347",
+        "description": (
+            "Weak JWT verification: tokens are decoded with signature "
+            "verification disabled or the 'none' algorithm allowed, letting "
+            "attackers forge tokens."
+        ),
+        "remediation": (
+            "Always verify the signature with a strong algorithm allowlist "
+            "(e.g. HS256/RS256) and never accept algorithm 'none'."
+        ),
+    },
+    "graphql": {
+        "severity": "HIGH",
+        "cvss": 7.5,
+        "cwe": "CWE-943",
+        "description": (
+            "GraphQL injection: a resolver builds a query/statement by "
+            "concatenating resolver arguments into raw strings."
+        ),
+        "remediation": (
+            "Use parameterized queries / ORM bindings inside resolvers and "
+            "never concatenate resolver arguments into query strings."
         ),
     },
 }
@@ -216,7 +286,79 @@ def _score_ssrf(line: str, has_source: bool) -> float:
     return 0.9 if has_source else 0.7
 
 
-_SCORERS = (("sqli", _score_sqli), ("xss", _score_xss), ("ssrf", _score_ssrf))
+def _score_ssti(line: str, has_source: bool) -> float:
+    if re.search(r"render_template_string\s*\(", line):
+        if _line_references_variable(line):
+            return 0.9 if has_source else 0.8
+        return 0.0
+    if re.search(r"(?:jinja2\.Template|Environment\s*\(\).*from_string|\bTemplate\s*\()", line):
+        if _line_references_variable(line):
+            return 0.8 if has_source else 0.7
+    return 0.0
+
+
+def _score_xxe(line: str, has_source: bool, has_defusedxml: bool) -> float:
+    if has_defusedxml:
+        return 0.0
+    if re.search(
+        r"(?:xml\.etree\.ElementTree|lxml\.etree|\betree\b|\bET\b)\.(?:parse|fromstring|parseString|XML|iterparse)\s*\(",
+        line, re.I,
+    ):
+        if _line_references_variable(line) or has_source:
+            return 0.8 if has_source else 0.7
+    return 0.0
+
+
+def _score_jwt(line: str, has_source: bool) -> float:
+    if "jwt.decode(" not in line:
+        return 0.0
+    if re.search(r"verify_signature\s*=\s*False", line) or re.search(r"verify\s*=\s*False", line):
+        return 0.9
+    if re.search(r"algorithms?\s*=\s*[\[('\"][^)\]]*['\"]none['\"]", line, re.I):
+        return 0.9
+    return 0.0
+
+
+def _score_graphql(line: str, has_source: bool, has_graphql: bool) -> float:
+    if not has_graphql:
+        return 0.0
+    if any(re.search(p, line) for p in _SQL_CONCAT):
+        return 0.8 if has_source else 0.7
+    return 0.0
+
+
+# IDOR: object-id read from user input, no authorization check nearby
+_IDOR_ID_SOURCES = [
+    r"request\.(?:args|form|values|get_json)\s*\([^)]*['\"]id['\"]",
+    r"getParameter\(\s*['\"]id['\"]",
+    r"['\"][^'\"]*<int:[^'\"]*>['\"]",
+    r"request\.view_args",
+    r"\bid\s*=\s*request\.",
+]
+_IDOR_AUTH = [
+    r"@login_required", r"login_required", r"current_user", r"is_authenticated",
+    r"require_auth", r"permission", r"has_access", r"request\.auth",
+    r"jwt\.require", r"check_permission", r"\bsession\b", r"roles_required",
+]
+
+
+def _score_lang_xss(line: str, lang: str, has_source: bool) -> float:
+    """Language-specific XSS sinks (Ruby/Java/Go/Rust — Task 4)."""
+    sinks = _LANG_XSS_SINKS.get(lang)
+    if not sinks or not any(re.search(p, line, re.I) for p in sinks):
+        return 0.0
+    if not _line_references_variable(line):
+        return 0.0
+    return 0.85 if has_source else 0.75
+
+
+_SCORERS = (
+    ("sqli", _score_sqli),
+    ("xss", _score_xss),
+    ("ssrf", _score_ssrf),
+    ("ssti", _score_ssti),
+    ("jwt", _score_jwt),
+)
 
 
 def reconstruct_target_code(finding: Finding) -> str:
@@ -232,6 +374,15 @@ def reconstruct_target_code(finding: Finding) -> str:
         return 'def target(user_input):\n    return "<html><body>" + user_input + "</body></html>"\n'
     if finding.vuln_type == "ssrf":
         return 'def target(user_input):\n    return "http://internal-service/fetch?url=" + user_input\n'
+    if finding.vuln_type == "ssti":
+        return "def target(user_input):\n    from jinja2 import Template\n    return Template(user_input).render()\n"
+    if finding.vuln_type == "jwt":
+        return (
+            "def target(user_input):\n"
+            "    import base64, json\n"
+            "    parts = user_input.split('.')\n"
+            "    return json.loads(base64.urlsafe_b64decode(parts[1] + '=='))\n"
+        )
     raise ValueError(f"Unsupported vuln_type {finding.vuln_type!r}")
 
 
@@ -361,6 +512,11 @@ class CVEHunter:
             return []
         lines = text.splitlines()
         has_source = any(re.search(p, text, re.I) for p in SOURCES)
+        has_defusedxml = "defusedxml" in text
+        has_graphql = any(
+            re.search(r"resolve_|strawberry\.field|graphene\.ObjectType|\bField\s*\(|@strawberry", l)
+            for l in lines
+        )
         lang = _LANG_OF.get(path.suffix.lower(), "py")
         state = {"in_docstring": False, "in_block": False}
 
@@ -373,6 +529,54 @@ class CVEHunter:
                 if score < self.min_confidence:
                     continue
                 findings.append(self._make_finding(path, idx, lines, vuln_type, score))
+            if lang == "py":
+                xxe_score = _score_xxe(line, has_source, has_defusedxml)
+                if xxe_score >= self.min_confidence:
+                    findings.append(self._make_finding(path, idx, lines, "xxe", xxe_score))
+            graphql_score = _score_graphql(line, has_source, has_graphql)
+            if graphql_score >= self.min_confidence:
+                findings.append(self._make_finding(path, idx, lines, "graphql", graphql_score))
+            lang_score = _score_lang_xss(line, lang, has_source)
+            if lang_score >= self.min_confidence:
+                findings.append(self._make_finding(path, idx, lines, "xss", lang_score))
+        if lang == "py":
+            findings.extend(self._scan_idor_py(lines, path))
+        return findings
+
+    def _scan_idor_py(self, lines: list, path: Path) -> List[Finding]:
+        """Function-level IDOR check: id read from user input without auth markers."""
+        findings: List[Finding] = []
+        n = len(lines)
+        i = 0
+        while i < n:
+            stripped = lines[i].strip()
+            if not stripped.startswith("def "):
+                i += 1
+                continue
+
+            # collect decorators directly above the def
+            j = i
+            decorators = []
+            while j > 0 and lines[j - 1].strip().startswith("@"):
+                decorators.insert(0, lines[j - 1])
+                j -= 1
+
+            # collect body until the next def at the same/lower indentation
+            base = len(lines[i]) - len(lines[i].lstrip())
+            k = i + 1
+            while k < n:
+                l2 = lines[k]
+                if l2.strip() and (len(l2) - len(l2.lstrip())) <= base \
+                        and not l2.strip().startswith((")", "]", "}")):
+                    break
+                k += 1
+
+            func_text = "\n".join(decorators + [lines[i]] + lines[i + 1:k])
+            has_id = any(re.search(p, func_text, re.I) for p in _IDOR_ID_SOURCES)
+            has_auth = any(re.search(p, func_text, re.I) for p in _IDOR_AUTH)
+            if has_id and not has_auth:
+                findings.append(self._make_finding(path, i + 1, lines, "idor", 0.75))
+            i = k
         return findings
 
     @staticmethod
@@ -381,4 +585,9 @@ class CVEHunter:
             "sqli": "SQL Injection",
             "xss": "Cross-Site Scripting",
             "ssrf": "Server-Side Request Forgery",
+            "idor": "Insecure Direct Object Reference",
+            "ssti": "Server-Side Template Injection",
+            "xxe": "XML External Entity",
+            "jwt": "Weak JWT Verification",
+            "graphql": "GraphQL Injection",
         }.get(vuln_type, vuln_type)
