@@ -49,6 +49,13 @@ jobs:
         run: pip install -e ".[all]"
       - name: Run scheduled auto-hunt (pypi targets)
         run: python -m blastradius.auto_hunt --strategy pypi --max 5
+      - name: Export findings to SARIF
+        run: python -m blastradius.export --format sarif --output report.sarif || true
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: hashFiles('report.sarif') != ''
+        with:
+          sarif_file: report.sarif
       - name: Upload hunt reports
         uses: actions/upload-artifact@v4
         with:
