@@ -1,10 +1,11 @@
 """PatchGenerator — produces a security patch for a finding.
 
-Primary path: direct call to the OpenCode DeepSeek V4 Flash endpoint
-(OpenAI-compatible chat completions at https://opencode.ai/zen/go/v1, no CAI,
-no framework; api key from OPENCODE_API_KEY). Fallback: deterministic
-rule-based patches per vulnerability type, applied when the API is
-unavailable.
+Primary path: an OpenAI-compatible chat-completions call through the universal
+provider system (see blastradius/providers) — the best available provider is
+auto-selected and any model the provider accepts can be used (model names are
+never validated client-side). Fallback: deterministic rule-based patches per
+vulnerability type, applied whenever no provider key is configured or the API
+call fails.
 
 The patched code keeps the sandbox contract ``def target(user_input) -> str``
 so the verification loop (syntax / exploit / regression) can run against it.
@@ -19,6 +20,9 @@ from dataclasses import dataclass, field
 from typing import Dict, Optional
 
 from blastradius.hunter.scanner import Finding
+from blastradius.providers.client import provider_api_key
+from blastradius.providers.registry import PROVIDER_REGISTRY
+from blastradius.providers.selector import auto_select
 from blastradius.security.input_validator import validate_target_code
 
 PATCH_RULES = {
@@ -61,7 +65,6 @@ _RULE_EXPLANATIONS = {
     "traversal": "Resolved the path with os.path.abspath and rejected anything outside the safe root.",
 }
 
-API_URL = os.getenv("OPENCODE_BASE_URL", "https://opencode.ai/zen/go/v1/chat/completions")
 DEFAULT_MODEL = "deepseek-v4-flash"
 
 
@@ -90,16 +93,28 @@ class Patch:
 
 
 class PatchGenerator:
-    """Generate patches via the OpenCode DeepSeek V4 Flash endpoint, falling
-    back to rule-based patches.
+    """Generate patches through the universal LLM provider system, falling
+    back to rule-based patches when no provider key is available.
 
-    Endpoint: https://opencode.ai/zen/go/v1/chat/completions (OpenAI-compatible,
-    provider "@ai-sdk/openai-compatible"). API key comes from OPENCODE_API_KEY.
+    Provider + model are auto-selected (blastradius.providers.selector); any
+    model ID is forwarded as-is, so a user's API key works with any model the
+    provider accepts, including ones not listed in the registry.
     """
 
-    def __init__(self, api_key: Optional[str] = None, model: str = DEFAULT_MODEL, timeout: int = 30):
-        self.api_key = api_key or os.getenv("OPENCODE_API_KEY")
-        self.model = os.getenv("OPENCODE_MODEL", model)
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+        provider: Optional[str] = None,
+        timeout: int = 30,
+    ):
+        sel = auto_select(verbose=False)
+        self.provider = provider or os.getenv("BLASTRADIUS_PROVIDER", "").strip() \
+            or (sel["provider"] if sel else "")
+        self.model = model or os.getenv("BLASTRADIUS_MODEL", "").strip() \
+            or (sel["model"] if sel else DEFAULT_MODEL)
+        resolved_key = provider_api_key(self.provider) if self.provider in PROVIDER_REGISTRY else None
+        self.api_key = api_key or resolved_key
         self.timeout = timeout
 
     # ------------------------------------------------------------------
@@ -118,12 +133,12 @@ class PatchGenerator:
             return self._rule_based_patch(finding)
 
     # ------------------------------------------------------------------
-    # DeepSeek API path
+    # LLM API path
     # ------------------------------------------------------------------
 
     def _generate_via_api(self, finding: Finding, failure_context: str) -> Patch:
         if not self.api_key:
-            raise RuntimeError("OPENCODE_API_KEY not set; falling back to rule-based patch")
+            raise RuntimeError("no LLM provider key configured; falling back to rule-based patch")
         # Hardening: never forward code that could carry prompt injection or
         # exceed size limits; the caller falls back to rule-based patching.
         validate_target_code(finding.original_code or finding.payload)
@@ -158,14 +173,19 @@ class PatchGenerator:
         }
 
     def _http_post(self, payload: Dict) -> Dict:
-        """POST to the DeepSeek chat completions endpoint; returns parsed JSON."""
+        """POST to the selected provider's chat-completions endpoint."""
+        name = self.provider if self.provider in PROVIDER_REGISTRY else "opencode_zen"
+        cfg = PROVIDER_REGISTRY[name]
+        url = cfg["base_url"].rstrip("/") + "/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.api_key}",
+        }
+        headers.update(cfg.get("extra_headers") or {})
         req = urllib.request.Request(
-            API_URL,
+            url,
             data=json.dumps(payload).encode("utf-8"),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.api_key}",
-            },
+            headers=headers,
             method="POST",
         )
         with urllib.request.urlopen(req, timeout=self.timeout) as resp:

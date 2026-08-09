@@ -2,7 +2,9 @@
 
 Builds the autonomous security engineer agent from the blueprint: the agent
 drives the Prometheus scanner tools, validates findings adversarially, and
-reports with human-review flags. Requires cai-framework and a DeepSeek key.
+reports with human-review flags. The LLM is resolved through the universal
+provider system (blastradius.providers) — best available provider wins, and
+any model the provider accepts can be used.
 """
 
 import os
@@ -12,6 +14,9 @@ from openai import AsyncOpenAI
 
 from cai.sdk.agents import Agent, OpenAIChatCompletionsModel, Runner
 
+from blastradius.providers.client import provider_api_key
+from blastradius.providers.registry import PROVIDER_REGISTRY
+from blastradius.providers.selector import auto_select
 from blastradius.tools.patch_tool import generate_and_verify_patch
 from blastradius.tools.prometheus_wrappers import (
     prometheus_adversarial_validate,
@@ -22,6 +27,13 @@ from blastradius.tools.prometheus_wrappers import (
 from blastradius.tools.sandbox_tool import run_exploit_sandbox
 
 load_dotenv()
+
+# Resolve the best available provider + model from the environment.
+_selection = auto_select()
+_PROVIDER = _selection["provider"] if _selection else "opencode_zen"
+_MODEL = _selection["model"] if _selection else "deepseek-v4-flash"
+_PROVIDER_CFG = PROVIDER_REGISTRY[_PROVIDER]
+_API_KEY = provider_api_key(_PROVIDER)
 
 security_agent = Agent(
     name="BlastRadius",
@@ -48,14 +60,13 @@ security_agent = Agent(
         run_exploit_sandbox,
         generate_and_verify_patch,
     ],
-    # OpenCode DeepSeek V4 Flash endpoint (OpenAI-compatible,
-    # provider "@ai-sdk/openai-compatible"). The SDK base_url appends
-    # /chat/completions, resolving to the OpenCode endpoint.
+    # Model/endpoint resolved through the provider system (auto-select).
     model=OpenAIChatCompletionsModel(
-        model=os.getenv("CAI_MODEL", "deepseek-v4-flash"),
+        model=os.getenv("CAI_MODEL", _MODEL),
         openai_client=AsyncOpenAI(
-            api_key=os.getenv("OPENCODE_API_KEY"),
-            base_url=os.getenv("OPENCODE_BASE_URL", "https://opencode.ai/zen/go/v1"),
+            api_key=_API_KEY,
+            base_url=_PROVIDER_CFG["base_url"],
+            default_headers=_PROVIDER_CFG.get("extra_headers") or {},
         ),
     ),
 )
