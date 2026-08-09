@@ -29,9 +29,16 @@ from src.scanner.adversarial import AdversarialValidator  # noqa: E402
 
 FILE_EXTENSIONS = ("*.py", "*.js", "*.php", "*.ts", "*.tsx")
 
+# Paths/dirs that are never scanned (vendored code, build artifacts, migrations)
 SKIP_DIRS = {
     ".git", "node_modules", "venv", ".venv", "__pycache__", ".tox",
-    ".mypy_cache", ".pytest_cache", "dist", "build",
+    ".mypy_cache", ".pytest_cache", "dist", "build", "vendor", "migrations",
+}
+
+# Extension -> language key used by the comment/docstring skipping logic
+_LANG_OF = {
+    ".py": "py", ".js": "js", ".php": "php", ".ts": "ts", ".tsx": "tsx",
+    ".rb": "rb", ".erb": "erb", ".java": "java", ".go": "go", ".rs": "rs", ".jsx": "jsx",
 }
 
 # Untrusted input sources (request data, query params, form fields...)
@@ -48,10 +55,10 @@ SOURCES = [
 ]
 
 _SQL_KEYWORDS = r"\b(?:SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|UNION)\b"
-# String literal concatenated with a variable, or an f-string with a placeholder
+# String literal concatenated with a variable. f-strings and plain literals
+# are intentionally NOT flagged (too many false positives).
 _SQL_CONCAT = [
     r"['\"][^'\"]{0,200}['\"]\s*\+\s*[^\s'\"+=]",
-    r"\bf['\"][^'\"]*\{[^}]*\}",
 ]
 
 _XSS_SINKS = [
@@ -142,8 +149,45 @@ def _line_references_variable(line: str) -> bool:
         or re.search(r"=\s*[A-Za-z_$][\w$]*", stripped)        # sink = <var>
         or re.search(r"\becho\b[^;]*[A-Za-z_$][\w$]*", stripped, re.I)
         # . $var concat (PHP) — but NOT a method call like .html("literal")
-        or re.search(r"\.[ \t]*\$?[A-Za-z_]\w*\s*(?!\()", stripped)
+        or re.search(r"\.[ \t]*\$?[A-Za-z_]\w*(?![\w(])", stripped)
     )
+
+
+def _is_skippable_line(line: str, lang: str, state: dict) -> bool:
+    """Whether a line is inside a comment/docstring and must not be scored.
+
+    ``state`` carries per-file flags: in_docstring (py/rb) and in_block (C-style).
+    """
+    stripped = line.strip()
+    if not stripped:
+        return False
+
+    # single-line comments
+    if lang in ("py", "rb", "go", "rs", "php") and stripped.startswith("#"):
+        return True
+    if lang in ("js", "ts", "tsx", "jsx", "java", "go", "rs", "php", "rb") and stripped.startswith("//"):
+        return True
+
+    # Python/Ruby docstrings (triple-quoted)
+    if lang in ("py", "rb"):
+        if state.get("in_docstring"):
+            if '"""' in stripped or "'''" in stripped:
+                state["in_docstring"] = False
+            return True
+        if stripped.startswith(('"""', "'''")):
+            if stripped.count('"""') + stripped.count("'''") == 1:
+                state["in_docstring"] = True
+            return True  # opening line (or one-line docstring) is never code
+
+    # C-style block comments (js/ts/jsx/java/go/rs/php)
+    if lang in ("js", "ts", "tsx", "jsx", "java", "go", "rs", "php"):
+        if "/*" in stripped:
+            state["in_block"] = True
+        if state.get("in_block"):
+            if "*/" in stripped:
+                state["in_block"] = False
+            return True
+    return False
 
 
 def _score_sqli(line: str, has_source: bool) -> float:
@@ -290,7 +334,25 @@ class CVEHunter:
             for path in root.rglob(ext):
                 if any(part in SKIP_DIRS for part in path.parts):
                     continue
+                if "min." in path.name:  # minified bundles — noise, never real code
+                    continue
                 yield path
+
+    def _make_finding(self, path: Path, idx: int, lines: list, vuln_type: str, score: float) -> Finding:
+        meta = VULN_META[vuln_type]
+        return Finding(
+            file=str(path),
+            line=idx,
+            vuln_type=vuln_type,
+            payload=lines[idx - 1].strip(),
+            confidence=round(score, 2),
+            evidence=lines[idx - 1].strip(),
+            context="\n".join(lines[max(0, idx - 2):idx + 1]),
+            severity=meta["severity"],
+            cwe=meta["cwe"],
+            remediation=meta["remediation"],
+            description=meta["description"],
+        )
 
     def _scan_file(self, path: Path) -> List[Finding]:
         try:
@@ -299,27 +361,18 @@ class CVEHunter:
             return []
         lines = text.splitlines()
         has_source = any(re.search(p, text, re.I) for p in SOURCES)
+        lang = _LANG_OF.get(path.suffix.lower(), "py")
+        state = {"in_docstring": False, "in_block": False}
 
         findings: List[Finding] = []
         for idx, line in enumerate(lines, start=1):
+            if _is_skippable_line(line, lang, state):
+                continue
             for vuln_type, scorer in _SCORERS:
                 score = scorer(line, has_source)
                 if score < self.min_confidence:
                     continue
-                meta = VULN_META[vuln_type]
-                findings.append(Finding(
-                    file=str(path),
-                    line=idx,
-                    vuln_type=vuln_type,
-                    payload=line.strip(),
-                    confidence=round(score, 2),
-                    evidence=line.strip(),
-                    context="\n".join(lines[max(0, idx - 2):idx + 1]),
-                    severity=meta["severity"],
-                    cwe=meta["cwe"],
-                    remediation=meta["remediation"],
-                    description=meta["description"],
-                ))
+                findings.append(self._make_finding(path, idx, lines, vuln_type, score))
         return findings
 
     @staticmethod
