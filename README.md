@@ -64,6 +64,13 @@ python3 -m venv venv
 source venv/bin/activate
 
 # 5. Install BlastRadius
+# Core install (fast, no CAI)
+pip install -e "."
+
+# With AI agent support (slow, installs CAI+litellm)
+pip install -e ".[agent]"
+
+# Everything
 pip install -e ".[all]"
 
 # 6. Run setup wizard (configure API keys, notifications)
@@ -80,6 +87,9 @@ python -m blastradius.hunter --target https://github.com/WebGoat/WebGoat
 > **Kali Linux note:** If you see `externally-managed-environment` error,
 > always use a virtual environment (step 4). Never use `--break-system-packages`
 > on Kali — it can break system tools.
+
+> **Note:** `.[all]` installs cai-framework which is large (~500MB).
+> For scanning only, use `pip install -e "."` (fast, <50MB).
 
 </details>
 
@@ -115,6 +125,13 @@ cd blastradius-agent
 python3.11 -m venv venv && source venv/bin/activate
 
 # 3. Install
+# Core install (fast, no CAI)
+pip install -e "."
+
+# With AI agent support (slow, installs CAI+litellm)
+pip install -e ".[agent]"
+
+# Everything
 pip install -e ".[all]"
 
 # 4. Setup
@@ -135,6 +152,13 @@ wsl --install
 git clone https://github.com/mysterious75/blastradius-agent
 cd blastradius-agent
 python -m venv venv && venv\Scripts\activate
+# Core install (fast, no CAI)
+pip install -e "."
+
+# With AI agent support (slow, installs CAI+litellm)
+pip install -e ".[agent]"
+
+# Everything
 pip install -e ".[all]"
 python -m blastradius.cli.wizard
 ```
@@ -208,6 +232,7 @@ blastradius dashboard
 | `docker: Cannot connect to daemon` | `sudo systemctl start docker` |
 | `runsc: unknown runtime` | Install gVisor (see above) — sandbox falls back to Docker automatically |
 | `OPENCODE_API_KEY not set` | Rule-based patches still work; set key for AI patches |
+| `litellm downloading forever` | Use `pip install -e "."` for core install without CAI |
 
 ## Demo
 

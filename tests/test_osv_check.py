@@ -7,9 +7,21 @@ from scripts.osv_check import check, project_deps
 
 def test_project_deps_parsed():
     deps = project_deps()
-    assert "cai-framework" in deps
+    # cai-framework is optional (agent extra) — NOT a core dependency
+    assert "cai-framework" not in deps
     assert "rich" in deps
+    assert "fastapi" in deps
     assert all(">=" not in d for d in deps)
+
+
+def test_cai_framework_is_optional():
+    import tomllib
+    from pathlib import Path
+
+    data = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+    extras = data["project"]["optional-dependencies"]
+    assert "cai-framework>=0.5.0" in extras["agent"]
+    assert "cai-framework>=0.5.0" in extras["all"]
 
 
 def test_check_clean(monkeypatch):
