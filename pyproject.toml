@@ -20,7 +20,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "cai-framework>=0.5.0",
     "python-dotenv>=1.0.0",
     "openai>=1.50.0",
     "fastapi>=0.110.0",
@@ -29,8 +28,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-all = [
+# CAI agent support (agent.py) — optional; pulls cai-framework + litellm (~500MB).
+agent = [
     "cai-framework>=0.5.0",
+]
+all = [
     "python-dotenv>=1.0.0",
     "openai>=1.50.0",
     "fastapi>=0.110.0",
@@ -39,6 +41,7 @@ all = [
     "APScheduler>=3.10",
     "questionary>=2.0.0",
     "mcp>=1.0",
+    "cai-framework>=0.5.0",
 ]
 scheduler = [
     "APScheduler>=3.10",

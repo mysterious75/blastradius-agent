@@ -12,7 +12,16 @@ import os
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 
-from cai.sdk.agents import Agent, OpenAIChatCompletionsModel, Runner
+try:
+    from cai.sdk.agents import Agent, OpenAIChatCompletionsModel, Runner
+
+    CAI_AVAILABLE = True
+except ImportError:  # cai-framework is optional — pip install -e ".[agent]"
+    CAI_AVAILABLE = False
+    Agent = None
+    OpenAIChatCompletionsModel = None
+    Runner = None
+    print("CAI not installed. Run: pip install -e '.[agent]'")
 
 from blastradius.providers.client import provider_api_key
 from blastradius.providers.registry import PROVIDER_REGISTRY
