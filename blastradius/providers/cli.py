@@ -75,6 +75,46 @@ def cmd_test(_args) -> int:
     return 0
 
 
+def cmd_cost(_args) -> int:
+    from blastradius.providers.cost_tracker import CostTracker, cost_tracker
+
+    tracker = cost_tracker
+    session = tracker.get_session_cost()
+    if not tracker.usage:
+        # fresh process: reconstruct usage from the SQLite providers_log
+        try:
+            from blastradius.db.database import SQLiteDB
+
+            db = SQLiteDB()
+            with db._connect() as conn:
+                rows = conn.execute(
+                    "SELECT provider, model, tokens_used FROM providers_log"
+                ).fetchall()
+            tracker = CostTracker()
+            for row in rows:
+                provider = str(row["provider"])
+                if provider.startswith("notify:"):
+                    continue
+                tracker.track_usage(provider, row["model"], int(row["tokens_used"]), 0)
+            session = tracker.get_session_cost()
+        except Exception:
+            pass
+
+    monthly = tracker.get_monthly_estimate()
+    display = RichDisplay()
+    display.print_stats_panel({
+        "total_scans": len(session["breakdown"]),
+        "confirmed_cves": round(session["total_usd"], 6),
+        "patches_generated": 0,
+        "success_rate": 0.0,
+    })
+    print(f"Session cost: ${session['total_usd']}")
+    for key, value in session["breakdown"].items():
+        print(f"  {key}: ${value}")
+    print(f"Monthly estimate ({monthly['sessions_per_month']} sessions): ${monthly['monthly_usd']}")
+    return 0
+
+
 def cmd_set(args) -> int:
     if args.provider not in PROVIDER_REGISTRY:
         print(f"❌ unknown provider {args.provider!r}; choose from: {', '.join(PROVIDER_REGISTRY)}")
@@ -104,10 +144,12 @@ def main(argv=None) -> int:
     set_p.add_argument("--provider", required=True)
     set_p.add_argument("--model", default=None)
 
+    sub.add_parser("cost", help="print LLM cost report")
+
     args = parser.parse_args(argv)
     if args.command != "set":
         RichDisplay().print_banner()
-    return {"list": cmd_list, "test": cmd_test, "set": cmd_set}[args.command](args)
+    return {"list": cmd_list, "test": cmd_test, "set": cmd_set, "cost": cmd_cost}[args.command](args)
 
 
 if __name__ == "__main__":

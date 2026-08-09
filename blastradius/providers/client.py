@@ -14,6 +14,7 @@ import urllib.request
 from typing import Callable, Dict, List, Optional
 
 from blastradius.providers.registry import PROVIDER_PRIORITY, PROVIDER_REGISTRY
+from blastradius.providers.rate_limiter import RateLimitedError
 
 
 class LLMUnavailableError(RuntimeError):
@@ -27,8 +28,13 @@ def _default_http(url: str, headers: Dict, payload: dict, timeout: int) -> dict:
         headers={"Content-Type": "application/json", **headers},
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read().decode("utf-8"))
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as exc:
+        if exc.code == 429:
+            raise RateLimitedError(f"rate limited (429): {url}") from exc
+        raise
 
 
 def provider_key_set(name: str) -> bool:
@@ -70,12 +76,19 @@ class LLMClient:
         http: Optional[Callable] = None,
         timeout: int = 30,
         verbose: bool = True,
+        limiter=None,
+        tracker=None,
     ):
+        from blastradius.providers.cost_tracker import cost_tracker
+        from blastradius.providers.rate_limiter import RateLimiter
+
         self.provider = provider
         self.model = model
         self.http = http or _default_http
         self.timeout = timeout
         self.verbose = verbose
+        self.limiter = limiter or RateLimiter()
+        self.tracker = tracker if tracker is not None else cost_tracker
         # Explicit model that is not in the given provider's list still works:
         # the registry is only used for base_url/key resolution.
 
@@ -105,17 +118,36 @@ class LLMClient:
     def chat(self, messages: List, system_prompt: str = "") -> str:
         """Send messages and return the assistant reply.
 
-        Tries each provider in the chain; the first success wins. Raises
+        Per provider: rate-limited, retried on 429 with exponential backoff,
+        circuit-breaker skipped when DOWN. The first success wins. Raises
         LLMUnavailableError when every provider fails (callers fall back to
         rule-based logic).
         """
         failures = []
         for name in self._chain():
+            if self.limiter.is_open(name):
+                failures.append(f"{name}: circuit open (down)")
+                continue
             model = provider_model(name, self.model)
-            try:
-                return self._chat_with(name, model, messages, system_prompt)
-            except Exception as exc:
-                failures.append(f"{name}: {exc}")
+            for attempt in range(4):  # 1 + 3 retries on 429
+                self.limiter.wait_if_needed(name)
+                try:
+                    reply = self._chat_with(name, model, messages, system_prompt)
+                    self.limiter.record_success(name)
+                    return reply
+                except RateLimitedError:
+                    if attempt < 3:
+                        import time as _time
+
+                        _time.sleep(self.limiter.backoff_sleep(attempt))
+                        continue
+                    self.limiter.record_failure(name)
+                    failures.append(f"{name}: rate limited (retries exhausted)")
+                    break
+                except Exception as exc:
+                    self.limiter.record_failure(name)
+                    failures.append(f"{name}: {exc}")
+                    break
         raise LLMUnavailableError("; ".join(failures) or "no provider configured")
 
     def test_connection(self) -> bool:
@@ -141,6 +173,14 @@ class LLMClient:
         data = self.http(url, headers, payload, self.timeout)
         if self.verbose:
             print(f"Using provider: {name} / {model} ({(time.monotonic() - start) * 1000:.0f}ms)")
+        usage = data.get("usage") or {}
+        self.tracker.track_usage(
+            name, model,
+            input_tokens=usage.get("prompt_tokens", 0),
+            output_tokens=usage.get("completion_tokens", 0),
+        )
+        self.limiter.track(name, usage.get("prompt_tokens", 0),
+                           usage.get("completion_tokens", 0))
         return data["choices"][0]["message"]["content"]
 
     @staticmethod
