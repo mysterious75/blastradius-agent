@@ -31,6 +31,184 @@ auto-generates and verifies patches, and tracks the whole lifecycle — from
 target discovery to CVE disclosure — in a local SQLite database with a web
 dashboard, multi-channel notifications, and a self-improving scanner.
 
+## Installation
+
+### Prerequisites
+
+| Requirement | Minimum | Notes |
+|---|---|---|
+| Python | 3.11+ | `python3 --version` |
+| Git | Any | `git --version` |
+| Docker | 20.10+ | Optional — needed for sandbox |
+| gVisor (runsc) | Any | Optional — stronger sandbox isolation |
+
+<details>
+<summary>🐧 Kali Linux / Debian / Ubuntu</summary>
+
+```bash
+# 1. System dependencies
+sudo apt update && sudo apt install -y \
+  python3 python3-pip python3-venv \
+  git docker.io docker-compose \
+  libpq-dev gcc
+
+# 2. Add your user to docker group (avoid sudo every time)
+sudo usermod -aG docker $USER && newgrp docker
+
+# 3. Clone the repo
+git clone https://github.com/mysterious75/blastradius-agent
+cd blastradius-agent
+
+# 4. Create virtual environment (REQUIRED on Debian/Kali)
+python3 -m venv venv
+source venv/bin/activate
+
+# 5. Install BlastRadius
+pip install -e ".[all]"
+
+# 6. Run setup wizard (configure API keys, notifications)
+python -m blastradius.cli.wizard
+
+# 7. Verify installation
+python -m pytest tests/ -q
+# Expected: 339 passed, 0 failed
+
+# 8. Run your first scan
+python -m blastradius.hunter --target https://github.com/WebGoat/WebGoat
+```
+
+> **Kali Linux note:** If you see `externally-managed-environment` error,
+> always use a virtual environment (step 4). Never use `--break-system-packages`
+> on Kali — it can break system tools.
+
+</details>
+
+<details>
+<summary>gVisor Installation (Stronger Sandbox — Recommended)</summary>
+
+```bash
+# Install gVisor on Kali/Debian
+curl -fsSL https://gvisor.dev/archive.key | sudo gpg --dearmor -o /usr/share/keyrings/gvisor-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/gvisor-archive-keyring.gpg] https://storage.googleapis.com/gvisor/releases release main" | sudo tee /etc/apt/sources.list.d/gvisor.list
+sudo apt update && sudo apt install -y runsc
+
+# Configure Docker to use gVisor
+sudo runsc install
+sudo systemctl restart docker
+
+# Verify
+docker run --runtime=runsc --rm hello-world
+```
+
+</details>
+
+<details>
+<summary>🍎 macOS</summary>
+
+```bash
+# 1. Install dependencies
+brew install python@3.11 git docker
+
+# 2. Clone + venv
+git clone https://github.com/mysterious75/blastradius-agent
+cd blastradius-agent
+python3.11 -m venv venv && source venv/bin/activate
+
+# 3. Install
+pip install -e ".[all]"
+
+# 4. Setup
+python -m blastradius.cli.wizard
+```
+
+</details>
+
+<details>
+<summary>🪟 Windows (WSL2 recommended)</summary>
+
+```powershell
+# Option A: WSL2 (recommended)
+wsl --install
+# Then follow Kali/Debian steps inside WSL2
+
+# Option B: Native Windows
+git clone https://github.com/mysterious75/blastradius-agent
+cd blastradius-agent
+python -m venv venv && venv\Scripts\activate
+pip install -e ".[all]"
+python -m blastradius.cli.wizard
+```
+
+</details>
+
+<details>
+<summary>🐳 Docker (Zero-dependency install)</summary>
+
+```bash
+git clone https://github.com/mysterious75/blastradius-agent
+cd blastradius-agent
+cp .env.example .env   # add your API keys
+docker-compose up
+
+# Access:
+# Dashboard  → http://localhost:8080
+# REST API   → http://localhost:8001
+# Neo4j      → http://localhost:7474
+# Webhook    → http://localhost:8000
+```
+
+</details>
+
+### Post-Install: Configure API Key
+
+Minimum requirement — one LLM provider key:
+
+```bash
+# Recommended (free): OpenCode
+export OPENCODE_API_KEY=your-key-here
+
+# Or DeepSeek (cheap)
+export DEEPSEEK_API_KEY=your-key-here
+
+# Save permanently
+echo "OPENCODE_API_KEY=your-key" >> ~/.bashrc
+source ~/.bashrc
+```
+
+Or run the wizard: `python -m blastradius.cli.wizard`
+
+### Verify Everything Works
+
+```bash
+# Check installation
+blastradius version
+
+# Check providers
+blastradius providers list
+
+# Run tests
+python -m pytest tests/ -q
+
+# First real scan (WebGoat = safe practice target)
+blastradius scan --target https://github.com/WebGoat/WebGoat
+
+# Start dashboard
+blastradius dashboard
+# Open http://localhost:8080
+```
+
+### Troubleshooting
+
+| Error | Fix |
+|---|---|
+| `externally-managed-environment` | Use `python3 -m venv venv && source venv/bin/activate` first |
+| `docker: permission denied` | `sudo usermod -aG docker $USER && newgrp docker` |
+| `ModuleNotFoundError: rich` | `pip install rich` inside venv |
+| `No module named pytest` | `pip install pytest` inside venv |
+| `docker: Cannot connect to daemon` | `sudo systemctl start docker` |
+| `runsc: unknown runtime` | Install gVisor (see above) — sandbox falls back to Docker automatically |
+| `OPENCODE_API_KEY not set` | Rule-based patches still work; set key for AI patches |
+
 ## Demo
 
 ```
@@ -53,15 +231,6 @@ src/views/user.rb               17  xss     0.85     HIGH       CANDIDATE
 │ 5 Total Scans  2 Confirmed CVEs       │
 │ 3 Patches      80% Success Rate       │
 └───────────────────────────────────────┘
-```
-
-## Quick Start
-
-```bash
-git clone https://github.com/mysterious75/blastradius-agent
-cd blastradius-agent && pip install -e ".[all]"
-python -m blastradius.cli.wizard    # interactive setup
-python -m blastradius.hunter --target https://github.com/target/repo
 ```
 
 ## Supported Providers
