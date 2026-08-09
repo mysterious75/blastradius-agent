@@ -57,6 +57,22 @@ CREATE TABLE IF NOT EXISTS providers_log (
     cost_est REAL DEFAULT 0.0,
     timestamp TEXT
 );
+CREATE TABLE IF NOT EXISTS fingerprints (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    fingerprint TEXT UNIQUE,
+    finding_id INTEGER,
+    first_seen TEXT,
+    last_seen TEXT,
+    count INTEGER DEFAULT 1
+);
+CREATE TABLE IF NOT EXISTS cve_tracking (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    finding_id INTEGER,
+    cve_id TEXT,
+    disclosed_at TEXT,
+    fixed_at TEXT,
+    bounty_usd REAL DEFAULT 0
+);
 """
 
 
