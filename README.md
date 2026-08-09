@@ -1,3 +1,24 @@
+> [!WARNING]
+> **Legal Disclaimer — Authorized Use Only**
+>
+> BlastRadius Agent is designed exclusively for:
+> - Security research on systems you OWN
+> - Authorized penetration testing with WRITTEN permission
+> - Scanning your own repositories and codebases
+> - Academic and educational research in isolated environments
+>
+> **Unauthorized use against systems you do not own or have explicit
+> written permission to test is ILLEGAL** under the Computer Fraud and
+> Abuse Act (CFAA), UK Computer Misuse Act, India IT Act 2000, and
+> equivalent laws worldwide.
+>
+> The authors assume NO liability for misuse. By using this tool,
+> you agree to comply with all applicable laws and regulations.
+> Use responsibly. Hack ethically.
+
+See [DISCLAIMER.md](DISCLAIMER.md) for the full legal terms and
+[SECURITY.md](SECURITY.md) for reporting and disclosure policies.
+
 # BlastRadius Agent
 
 Autonomous security engineer: **scan → prove exploitability → patch → verify →

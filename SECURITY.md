@@ -52,6 +52,33 @@ Out of scope (report these to the affected project instead):
 - Vulnerabilities in Prometheus scanners (report to the Prometheus project)
 - Misconfigurations in your own environment
 
+## Legal
+
+**Authorized use only.** BlastRadius Agent is for security research on
+systems you own, authorized penetration testing with written permission,
+scanning your own repositories, and academic/educational research in isolated
+environments. Unauthorized use against systems you do not own or have
+permission to test is illegal under the Computer Fraud and Abuse Act (CFAA),
+UK Computer Misuse Act, India IT Act 2000, and equivalent laws worldwide.
+The authors assume no liability for misuse. See
+[DISCLAIMER.md](DISCLAIMER.md) for the full legal terms.
+
+**Responsible disclosure.** Found a vulnerability in a third-party project?
+Follow the guidelines in the [Disclosure policy](#disclosure-policy) above:
+report privately, wait for the fix, and coordinate public disclosure. Use the
+disclosure reports BlastRadius writes to `reports/` as reproducible evidence.
+
+**CVE submission.** To request a CVE for a confirmed vulnerability:
+
+- **CVE Program:** submit through a CNA — use the form at
+  <https://cve.mitre.org/cve/request_id.html> or contact the appropriate
+  CNA for the affected project.
+- **GitHub Security Advisories:** for open-source projects, create an
+  advisory on the affected repository (Repository → Security → Security
+  advisory). GitHub can reserve a CVE number on your behalf.
+- Include the disclosure report (payload, evidence, sandbox proof, suggested
+  patch) to make the submission verifiable.
+
 ## Hall of Fame
 
 We are grateful to everyone who helps make BlastRadius safer. Thank you!
