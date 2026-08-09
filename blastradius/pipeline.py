@@ -11,8 +11,9 @@ Progress callbacks (``FullPipeline(progress={...})``):
 """
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from blastradius.blast_radius.graph import BlastRadiusGraph, parse_dependencies
 from blastradius.hunter.disclosure import DisclosureReport
@@ -46,6 +47,7 @@ class FullPipeline:
         graph: Optional[BlastRadiusGraph] = None,
         reports_dir: str = "reports",
         progress: Optional[Dict[str, Callable]] = None,
+        db: Optional[Any] = None,
     ):
         self.hunter = hunter or CVEHunter()
         self.patch_loop = patch_loop or PatchLoop()
@@ -53,6 +55,22 @@ class FullPipeline:
         self.reports_dir = reports_dir
         self.progress = progress or {}
         self.summary = SummaryReporter()
+        # Persistent SQLite storage (created automatically; failures never break a run).
+        try:
+            from blastradius.db.database import SQLiteDB
+
+            self.db = db if db is not None else SQLiteDB()
+        except Exception:
+            self.db = None
+
+    def _db(self, method: str, *args, **kwargs):
+        """Best-effort DB call — persistence must never break a scan."""
+        if self.db is None:
+            return None
+        try:
+            return getattr(self.db, method)(*args, **kwargs)
+        except Exception:
+            return None
 
     # ------------------------------------------------------------------
     # Public API
@@ -64,9 +82,11 @@ class FullPipeline:
         result = PipelineResult(target=target, blast_radius=self.graph)
 
         self._emit("on_scan", target=target, repo_path=repo_path)
+        scan_id = self._db("save_scan", target)
         findings = self.hunter.scan_repo(repo_path)
         result.findings = findings
         result.files_scanned = self.hunter.files_scanned
+        self._db("update_scan", scan_id, status="running", files_scanned=result.files_scanned)
 
         deps = parse_dependencies(repo_path)
         result.dependencies = deps
@@ -74,7 +94,11 @@ class FullPipeline:
             self.graph.add_package(name, version)
             self.graph.link_package_to_repo(name, repo_name)
 
+        finding_ids: Dict[int, int] = {}
         for finding in findings:
+            db_finding_id = self._db("save_finding", scan_id, finding)
+            if db_finding_id is not None:
+                finding_ids[finding.line] = db_finding_id
             try:
                 self._emit("on_exploit", finding=finding)
                 sandbox_result = run_exploit_sandbox(
@@ -87,13 +111,32 @@ class FullPipeline:
                 self._emit("on_patch", finding=finding)
                 patch_result = self.patch_loop.run(finding)
                 result.patches.append((finding, patch_result))
+                if patch_result.verification is not None:
+                    self._db("save_patch", finding_ids.get(finding.line), patch_result.patch,
+                             patch_result.attempts, patch_result.needs_human,
+                             patch_result.verification.confidence)
 
                 self._emit("on_report", finding=finding, patch_result=patch_result)
                 report = DisclosureReport()
                 path = report.save_report(finding, repo_name, self.reports_dir, sandbox_result)
                 result.reports.append(path)
+                self._db("save_report", finding_ids.get(finding.line), str(path))
             except Exception:
                 continue  # never let one finding break the pipeline
+
+        self._db("update_scan", scan_id, status="done",
+                 finished_at=datetime.now().isoformat(timespec="seconds"))
+        # Log provider usage when the LLM was actually used for a patch.
+        if any(pr.patch.source == "api" for _, pr in result.patches):
+            sel = None
+            try:
+                from blastradius.providers.selector import auto_select
+
+                sel = auto_select(verbose=False)
+            except Exception:
+                sel = None
+            if sel:
+                self._db("log_provider_usage", sel["provider"], sel["model"], 0, 0.0)
 
         summary_path = self.summary.save_summary(result, self.reports_dir)
         result.reports.append(summary_path)
