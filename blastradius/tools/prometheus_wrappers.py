@@ -152,15 +152,21 @@ def prometheus_ssrf_scan(
     return _findings_json(_scan_target(target, "ssrf"))
 
 
+def _get(obj, key, default=""):
+    if isinstance(obj, dict):
+        return obj.get(key, default)
+    return getattr(obj, key, default)
+
+
 def _local_verdict(finding) -> Dict[str, Any]:
     """Heuristic verdict used when prometheus is not installed."""
     return {
-        "finding_id": getattr(finding, "finding_id", 0),
-        "vuln_type": getattr(finding, "vuln_type", ""),
-        "url": getattr(finding, "url", ""),
+        "finding_id": _get(finding, "finding_id", 0),
+        "vuln_type": _get(finding, "vuln_type", ""),
+        "url": _get(finding, "url", ""),
         "verdict": "needs_manual_review",
-        "confidence": getattr(finding, "confidence", 0.0),
-        "evidence_strength": "moderate" if getattr(finding, "evidence", "") else "none",
+        "confidence": _get(finding, "confidence", 0.0),
+        "evidence_strength": "moderate" if _get(finding, "evidence", "") else "none",
         "hunter_notes": "prometheus unavailable — local heuristic verdict",
         "skeptic_notes": "",
         "referee_reasoning": "Prometheus not installed; manual review recommended.",

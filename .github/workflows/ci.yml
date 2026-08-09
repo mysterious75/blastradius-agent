@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # BlastRadius is self-contained — no prometheus clone needed.
+      # BlastRadius is self-contained — no external scanner repo needed.
       - name: Install
         run: pip install -e ".[dev]"
 
