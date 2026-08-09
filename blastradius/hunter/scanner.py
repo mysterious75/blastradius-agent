@@ -22,10 +22,6 @@ from typing import List, Optional
 from blastradius.prometheus_bootstrap import ensure_prometheus_importable
 from blastradius.security.input_validator import validate_github_url, validate_repo_path
 
-ensure_prometheus_importable()
-
-from src.scanner.adversarial import AdversarialValidator  # noqa: E402
-
 # ---------------------------------------------------------------------------
 # Static analysis rules (file-level equivalents of the URL scanners)
 # ---------------------------------------------------------------------------
@@ -431,7 +427,7 @@ class CVEHunter:
         self.min_confidence = min_confidence
         self.clone_timeout = clone_timeout
         self.files_scanned: int = 0
-        self._validator: Optional[AdversarialValidator] = None
+        self._validator = None
         # learned rules override defaults (confidence thresholds, skip
         # patterns, payload weights) — empty when nothing has been learned.
         self.learned_rules = _load_learned_rules()
@@ -441,10 +437,17 @@ class CVEHunter:
         return max(self.min_confidence, float(learned))
 
     @property
-    def validator(self) -> AdversarialValidator:
+    def validator(self):
+        """Prometheus AdversarialValidator (lazy, optional — no prometheus needed)."""
         if self._validator is None:
-            self._validator = AdversarialValidator()
-        return self._validator
+            try:
+                ensure_prometheus_importable()
+                from src.scanner.adversarial import AdversarialValidator  # noqa: E402
+
+                self._validator = AdversarialValidator()
+            except Exception:
+                self._validator = False  # prometheus unavailable — use fallback
+        return self._validator or None
 
     # ------------------------------------------------------------------
     # Repo acquisition
@@ -491,7 +494,10 @@ class CVEHunter:
         return findings
 
     def validate(self, finding: Finding) -> str:
-        """Adversarial false-positive verdict via Prometheus's AdversarialValidator."""
+        """Adversarial false-positive verdict (Prometheus when available)."""
+        validator = self.validator
+        if validator is None:
+            return "needs_manual_review"  # prometheus absent — safe default
         from src.scanner.findings import Finding as PrometheusFinding
 
         pf = PrometheusFinding(
@@ -513,7 +519,7 @@ class CVEHunter:
             request="",
             response_snippet=finding.context[:500],
         )
-        return self.validator.validate(pf).verdict
+        return validator.validate(pf).verdict
 
     # ------------------------------------------------------------------
     # Internals
