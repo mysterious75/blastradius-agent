@@ -48,6 +48,7 @@ class FullPipeline:
         reports_dir: str = "reports",
         progress: Optional[Dict[str, Callable]] = None,
         db: Optional[Any] = None,
+        plugins: Optional[Any] = None,
     ):
         self.hunter = hunter or CVEHunter()
         self.patch_loop = patch_loop or PatchLoop()
@@ -69,6 +70,13 @@ class FullPipeline:
             self.improver = SelfImprover()
         except Exception:
             self.improver = None
+        # Plugin system: fires on_finding / on_patch / on_scan_complete.
+        try:
+            from blastradius.plugins.loader import PluginLoader
+
+            self.plugins = plugins if plugins is not None else PluginLoader()
+        except Exception:
+            self.plugins = None
 
     def _db(self, method: str, *args, **kwargs):
         """Best-effort DB call — persistence must never break a scan."""
@@ -106,6 +114,11 @@ class FullPipeline:
             db_finding_id = self._db("save_finding", scan_id, finding)
             if db_finding_id is not None:
                 finding_ids[finding.line] = db_finding_id
+            if self.plugins is not None:
+                try:
+                    self.plugins.on_finding(finding)
+                except Exception:
+                    pass
             try:
                 self._emit("on_exploit", finding=finding)
                 sandbox_result = run_exploit_sandbox(
@@ -118,6 +131,11 @@ class FullPipeline:
                     self._emit("on_patch", finding=finding)
                     patch_result = self.patch_loop.run(finding)
                     result.patches.append((finding, patch_result))
+                    if self.plugins is not None:
+                        try:
+                            self.plugins.on_patch(patch_result)
+                        except Exception:
+                            pass
                     if patch_result.verification is not None:
                         patch_confidence = patch_result.verification.confidence
                         self._db("save_patch", finding_ids.get(finding.line), patch_result.patch,
@@ -156,6 +174,11 @@ class FullPipeline:
 
         summary_path = self.summary.save_summary(result, self.reports_dir)
         result.reports.append(summary_path)
+        if self.plugins is not None:
+            try:
+                self.plugins.on_scan_complete(result)
+            except Exception:
+                pass
         return result
 
     # ------------------------------------------------------------------
