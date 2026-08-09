@@ -477,19 +477,29 @@ class CVEHunter:
     # Scanning
     # ------------------------------------------------------------------
 
-    def scan_repo(self, repo_path: str) -> List[Finding]:
-        """Scan every .py/.js/.php file in ``repo_path``.
+    def scan_repo(self, repo_path: str, progress=None, use_cache: Optional[bool] = None) -> List[Finding]:
+        """Scan every eligible file in ``repo_path`` (parallel by default).
 
         The path must resolve inside an allowed directory (see
         security.input_validator). Returns candidate findings with confidence
-        >= ``min_confidence``, sorted by file/line.
+        >= ``min_confidence``, sorted by file/line. ``progress`` is an optional
+        on_file_scanned(file, findings_count) callback. The content cache is
+        used when BLASTRADIUS_SCAN_CACHE=1 (or ``use_cache=True``).
         """
         repo_path = validate_repo_path(repo_path)
-        findings: List[Finding] = []
-        self.files_scanned = 0
-        for path in self._iter_files(repo_path):
-            self.files_scanned += 1
-            findings.extend(self._scan_file(path))
+        from blastradius.scanners.cache import ScanCache
+        from blastradius.scanners.parallel import ParallelScanner
+
+        cache = None
+        if use_cache is None:
+            use_cache = os.getenv("BLASTRADIUS_SCAN_CACHE", "").lower() in ("1", "true", "yes")
+        if use_cache:
+            cache = ScanCache()
+        parallel = ParallelScanner(progress=progress, cache=cache)
+        findings = parallel.scan_repo_parallel(
+            repo_path, self._scan_file, list(self._iter_files(repo_path))
+        )
+        self.files_scanned = parallel.file_count
         findings.sort(key=lambda f: (f.file, f.line, f.vuln_type))
         return findings
 
