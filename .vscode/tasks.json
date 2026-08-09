@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "BlastRadius: Scan Current Repo",
+      "type": "shell",
+      "command": "python -m blastradius.hunter --target ${workspaceFolder}",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "BlastRadius: Start Dashboard",
+      "type": "shell",
+      "command": "python -m blastradius.dashboard",
+      "isBackground": true,
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "new" }
+    },
+    {
+      "label": "BlastRadius: Run Tests",
+      "type": "shell",
+      "command": "python -m pytest tests -q",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    },
+    {
+      "label": "BlastRadius: Provider Status",
+      "type": "shell",
+      "command": "python -m blastradius.providers list",
+      "problemMatcher": [],
+      "presentation": { "reveal": "always", "panel": "shared" }
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "BlastRadius Security Engineer",
+  "mcpServers": {
+    "blastradius": {
+      "command": "python",
+      "args": ["-m", "blastradius.mcp"],
+      "env": {
+        "OPENCODE_API_KEY": "${env:OPENCODE_API_KEY}"
+      }
+    }
+  },
+  "systemPrompt": "You are a security engineer with access to BlastRadius vulnerability scanner tools. Use them to scan repositories, inspect findings, validate exploitability in the sandbox, generate patches, and track CVEs. Always respect scope and only work on systems you are authorized to test.",
+  "experimental": {
+    "promptCaching": true
+  }
+}
