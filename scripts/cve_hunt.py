@@ -86,14 +86,14 @@ def print_disclosure_template(finding: Finding, repo_name: str, report_path: Pat
 
 
 def _print_table(rows: list) -> None:
+    from blastradius.cli.display import RichDisplay
+
     print()
-    print(TABLE_HEADER)
-    print("-" * len(TABLE_HEADER))
-    for row in rows:
-        print(
-            f"{row['repo']:<18} | {row['files']:>6} | {row['findings']:>9} "
-            f"| {row['confirmed']:>10} | {row['reports']:>8}"
-        )
+    RichDisplay().print_table(
+        ["Repo", "Files", "Findings", "Confirmed", "Reports"],
+        [[r["repo"], r["files"], r["findings"], r["confirmed"], r["reports"]] for r in rows],
+        title="CVE Hunt Summary",
+    )
     print()
 
 

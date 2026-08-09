@@ -129,8 +129,10 @@ def test_cli_prints_blast_radius(tmp_path, capsys):
     rc = cli_main(["--repo", str(tmp_path)])
     assert rc == 0
     out = capsys.readouterr().out
-    assert "Package flask v2.3.2 affects 1 repos:" in out
-    assert "Package requests v2.31.0 affects 1 repos:" in out
+    # rich table headers + package rows
+    assert "Package" in out and "Affected Repos" in out
+    assert "flask" in out and "2.3.2" in out
+    assert "requests" in out and "2.31.0" in out
 
 
 def test_cli_no_dependencies(tmp_path, capsys):

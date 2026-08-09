@@ -78,7 +78,9 @@ def test_cli_test_reports_ok_and_no_key(capsys, monkeypatch):
     out = capsys.readouterr().out
     assert "✅ opencode_zen" in out
     assert "✅ deepseek" in out
-    assert "❌ anthropic (no key)" in out
+    assert "❌ anthropic" in out
+    assert "No API key" in out
+    assert "Connected" in out
 
 
 def test_cli_list_key_status(capsys, monkeypatch):

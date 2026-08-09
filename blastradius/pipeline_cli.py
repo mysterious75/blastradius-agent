@@ -8,6 +8,7 @@ Usage:
 
 import argparse
 
+from blastradius.cli.display import RichDisplay
 from blastradius.pipeline import FullPipeline
 
 
@@ -20,6 +21,9 @@ def main(argv=None) -> int:
     parser.add_argument("--reports-dir", default="reports")
     args = parser.parse_args(argv)
 
+    display = RichDisplay()
+    display.print_banner()
+
     pipeline = FullPipeline(reports_dir=args.reports_dir)
     result = pipeline.run(args.target)
 
@@ -31,6 +35,15 @@ def main(argv=None) -> int:
     print(f"[*] Reports saved:   {len(result.reports)}")
     for path in result.reports:
         print(f"    - {path}")
+
+    if result.findings:
+        display.print_findings_table(result.findings)
+    display.print_stats_panel({
+        "total_scans": 1,
+        "confirmed_cves": len(result.confirmed),
+        "patches_generated": len(result.patches),
+        "success_rate": 100.0 if result.findings else 0.0,
+    })
     return 0
 
 
