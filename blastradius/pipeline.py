@@ -77,6 +77,21 @@ class FullPipeline:
             self.plugins = plugins if plugins is not None else PluginLoader()
         except Exception:
             self.plugins = None
+        # Tamper-evident audit log.
+        try:
+            from blastradius.security.audit_log import AuditLogger
+
+            self.audit = AuditLogger()
+        except Exception:
+            self.audit = None
+
+    def _audit(self, event: str, **data) -> None:
+        if self.audit is None:
+            return
+        try:
+            self.audit.log(event, **data)
+        except Exception:
+            pass
 
     def _db(self, method: str, *args, **kwargs):
         """Best-effort DB call — persistence must never break a scan."""
@@ -98,6 +113,7 @@ class FullPipeline:
 
         self._emit("on_scan", target=target, repo_path=repo_path)
         scan_id = self._db("save_scan", target)
+        self._audit("scan_started", target=target)
         findings = self.hunter.scan_repo(repo_path)
         result.findings = findings
         result.files_scanned = self.hunter.files_scanned
@@ -174,6 +190,9 @@ class FullPipeline:
 
         summary_path = self.summary.save_summary(result, self.reports_dir)
         result.reports.append(summary_path)
+        self._audit("scan_completed", target=target,
+                    findings=len(result.findings), confirmed=len(result.confirmed),
+                    patches=len(result.patches))
         if self.plugins is not None:
             try:
                 self.plugins.on_scan_complete(result)

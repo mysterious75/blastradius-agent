@@ -23,7 +23,9 @@ from blastradius.hunter.scanner import Finding
 from blastradius.providers.client import provider_api_key
 from blastradius.providers.registry import PROVIDER_REGISTRY
 from blastradius.providers.selector import auto_select
+from blastradius.security.audit_log import AuditLogger
 from blastradius.security.input_validator import validate_target_code
+from blastradius.security.prompt_injection_guard import guard_llm_call, log_attempt
 
 PATCH_RULES = {
     "sqli": "SQL Injection: use parameterized queries (prepared statements) only.",
@@ -141,10 +143,20 @@ class PatchGenerator:
             raise RuntimeError("no LLM provider key configured; falling back to rule-based patch")
         # Hardening: never forward code that could carry prompt injection or
         # exceed size limits; the caller falls back to rule-based patching.
-        validate_target_code(finding.original_code or finding.payload)
+        code = finding.original_code or finding.payload
+        validate_target_code(code)
+        safe, reason = guard_llm_call(code)
+        if not safe:
+            log_attempt(code, context=f"patch:{finding.vuln_type}")
+            raise RuntimeError(f"blocked by prompt-injection guard: {reason}")
         payload = self._build_messages(finding, failure_context)
         data = self._http_post(payload)
         content = data["choices"][0]["message"]["content"]
+        try:
+            AuditLogger().log("llm_call", provider=self.provider or "auto", model=self.model,
+                              event_detail=f"patch:{finding.vuln_type}")
+        except Exception:
+            pass
         return self._parse_patch_response(content, finding)
 
     def _build_messages(self, finding: Finding, failure_context: str) -> Dict:
