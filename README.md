@@ -76,7 +76,8 @@ pip install -e ".[all]"
 # 6. Run setup wizard (configure API keys, notifications)
 python -m blastradius.cli.wizard
 
-# 7. Verify installation
+# 7. Verify installation (install pytest inside the venv if needed)
+pip install pytest  # if running tests
 python -m pytest tests/ -q
 # Expected: 339 passed, 0 failed
 

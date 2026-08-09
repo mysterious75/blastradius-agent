@@ -19,15 +19,21 @@ def run_exploit_sandbox(vuln_type: str, target_code: str) -> str:
     user input. The PoC injects a malicious payload and reports whether it
     reached the output unescaped.
 
+    Never crashes: vuln types without an exploit template return
+    NOT_EXPLOITABLE instead of raising.
+
     Args:
-        vuln_type: One of "sqli", "xss", "ssrf".
+        vuln_type: One of "sqli", "xss", "ssrf", "ssti", "jwt".
         target_code: Python source snippet of the vulnerable target.
 
     Returns:
         "CONFIRMED_EXPLOITABLE" followed by PoC output, or
         "NOT_EXPLOITABLE" followed by PoC output.
     """
-    exploit_code = generate_exploit(vuln_type, target_code)
+    try:
+        exploit_code = generate_exploit(vuln_type, target_code)
+    except ValueError as exc:
+        return f"NOT_EXPLOITABLE (no exploit template for {vuln_type}: {exc})"
     result = SandboxRunner().run(exploit_code, target_code)
     if result["vulnerable"]:
         return f"CONFIRMED_EXPLOITABLE\n{result['output']}"

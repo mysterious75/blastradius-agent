@@ -379,11 +379,12 @@ _SCORERS = (
 
 
 def reconstruct_target_code(finding: Finding) -> str:
-    """Build a minimal runnable reproduction of the detected pattern.
+    """Build a minimal reproduction of the detected pattern.
 
     Used to sandbox-validate the finding. The reproduction is synthetic: it
     proves the *pattern* is exploitable, not that the real file is — manual
-    confirmation is required before disclosure.
+    confirmation is required before disclosure. Never raises: unknown vuln
+    types get a generic template so the pipeline always completes.
     """
     if finding.vuln_type == "sqli":
         return 'def target(user_input):\n    return "SELECT * FROM users WHERE name = \'" + user_input + "\'"\n'
@@ -391,16 +392,17 @@ def reconstruct_target_code(finding: Finding) -> str:
         return 'def target(user_input):\n    return "<html><body>" + user_input + "</body></html>"\n'
     if finding.vuln_type == "ssrf":
         return 'def target(user_input):\n    return "http://internal-service/fetch?url=" + user_input\n'
-    if finding.vuln_type == "ssti":
-        return "def target(user_input):\n    from jinja2 import Template\n    return Template(user_input).render()\n"
+    if finding.vuln_type == "graphql":
+        return '# GraphQL resolver\nresult = db.execute("{}".format(user_input))\n'
+    if finding.vuln_type == "idor":
+        return '# IDOR\nobj = db.get(request.args.get("id"))\n'
     if finding.vuln_type == "jwt":
-        return (
-            "def target(user_input):\n"
-            "    import base64, json\n"
-            "    parts = user_input.split('.')\n"
-            "    return json.loads(base64.urlsafe_b64decode(parts[1] + '=='))\n"
-        )
-    raise ValueError(f"Unsupported vuln_type {finding.vuln_type!r}")
+        return '# JWT\nimport jwt\ndata = jwt.decode(token, options={"verify_signature": False})\n'
+    if finding.vuln_type == "xxe":
+        return '# XXE\nimport xml.etree.ElementTree as ET\nET.parse(user_input)\n'
+    if finding.vuln_type == "ssti":
+        return '# SSTI\nfrom jinja2 import Environment\nenv = Environment()\nenv.from_string(user_input).render()\n'
+    return f"# {finding.vuln_type}\nresult = process(user_input)\n"
 
 
 # ---------------------------------------------------------------------------
