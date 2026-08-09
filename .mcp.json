@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "blastradius": {
+      "command": "python",
+      "args": ["-m", "blastradius.mcp"],
+      "env": {
+        "OPENCODE_API_KEY": "${OPENCODE_API_KEY}",
+        "BLASTRADIUS_DB": "${BLASTRADIUS_DB:-~/.blastradius/blastradius.db}"
+      }
+    }
+  }
+}

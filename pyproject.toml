@@ -35,6 +35,9 @@ scheduler = [
 cli = [
     "questionary>=2.0.0",
 ]
+mcp = [
+    "mcp>=1.0",
+]
 dashboard = [
     "fastapi>=0.110.0",
     "uvicorn>=0.29.0",
