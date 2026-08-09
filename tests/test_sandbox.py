@@ -119,9 +119,11 @@ def test_ssrf_blocked_is_not_vulnerable():
     assert run_exploit_sandbox("ssrf", SAFE_SSRF).startswith("NOT_EXPLOITABLE")
 
 
-def test_sandbox_tool_rejects_invalid_vuln_type():
-    with pytest.raises(ValueError, match="Unsupported vuln_type"):
-        run_exploit_sandbox("rce", VULN_SQLI)
+def test_sandbox_tool_unknown_vuln_type_returns_not_exploitable():
+    # never-crash contract: unknown vuln types return a string, not a raise
+    result = run_exploit_sandbox("rce", VULN_SQLI)
+    assert result.startswith("NOT_EXPLOITABLE")
+    assert "no exploit template" in result
 
 
 # --- Runner behavior ---------------------------------------------------------
