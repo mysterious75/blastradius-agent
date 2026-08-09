@@ -27,7 +27,10 @@ from src.scanner.adversarial import AdversarialValidator  # noqa: E402
 # Static analysis rules (file-level equivalents of the URL scanners)
 # ---------------------------------------------------------------------------
 
-FILE_EXTENSIONS = ("*.py", "*.js", "*.php", "*.ts", "*.tsx")
+FILE_EXTENSIONS = (
+    "*.py", "*.js", "*.php", "*.ts", "*.tsx",
+    "*.rb", "*.java", "*.go", "*.rs", "*.erb", "*.jsx",
+)
 
 # Paths/dirs that are never scanned (vendored code, build artifacts, migrations)
 SKIP_DIRS = {
@@ -69,6 +72,8 @@ _XSS_SINKS = [
 _XSS_SAFE = [
     r"htmlspecialchars", r"html\.escape", r"\bescape\(", r"sanitize", r"purify",
     r"escapejs", r"DOMPurify", r"markupsafe",
+    r"escape_html", r"html_escape", r"escapeHtml", r"htmlEscape",
+    r"HTMLEscape", r"EscapeString", r"escapeJavaScript",
 ]
 
 _SSRF_SINKS = [
@@ -77,8 +82,18 @@ _SSRF_SINKS = [
     r"\bgot\(", r"\bcurl\(", r"httpx\.", r"aiohttp\.", r"\brequest\(",
 ]
 
-# Language-specific XSS sinks (populated by the language-expansion rules)
-_LANG_XSS_SINKS = {}
+# Language-specific XSS sinks (Ruby/Java/Go/Rust/ERB)
+_LANG_XSS_SINKS = {
+    "rb": [r"render\s+inline:", r"\braw\s*\(", r"\.html_safe\b", r"params\["],
+    "erb": [r"<%=\s*[^%]*(?:params|request)\b"],
+    "java": [r"getParameter\(|\.write\s*\("],
+    "go": [r"fmt\.Fprintf\s*\([^)]*r\.FormValue\("],
+    "rs": [r"format!\s*\([^)]*(?:request|query|param|input|args)"],
+}
+# Source keywords that carry untrusted data inside a sink line
+_LANG_SOURCE_KEYWORDS = (
+    r"\b(?:params|request|query|input|data|body|getParameter|FormValue|args|user_input)\b"
+)
 
 VULN_META = {
     "sqli": {
@@ -343,11 +358,14 @@ _IDOR_AUTH = [
 
 
 def _score_lang_xss(line: str, lang: str, has_source: bool) -> float:
-    """Language-specific XSS sinks (Ruby/Java/Go/Rust — Task 4)."""
+    """Language-specific XSS sinks (Ruby/Java/Go/Rust/ERB)."""
     sinks = _LANG_XSS_SINKS.get(lang)
     if not sinks or not any(re.search(p, line, re.I) for p in sinks):
         return 0.0
-    if not _line_references_variable(line):
+    if any(re.search(p, line, re.I) for p in _XSS_SAFE):
+        return 0.0
+    stripped = re.sub(r"['\"][^'\"]*['\"]", " ", line)
+    if not re.search(_LANG_SOURCE_KEYWORDS, stripped, re.I) and not has_source:
         return 0.0
     return 0.85 if has_source else 0.75
 
