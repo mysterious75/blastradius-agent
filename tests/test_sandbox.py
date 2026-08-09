@@ -192,3 +192,44 @@ def test_docker_command_flags_and_detection(mock_run):
     assert "--read-only" in cmd
     assert "--memory=256m" in cmd
     assert mock_run.call_args.kwargs["timeout"] == 7
+
+
+def test_docker_image_missing_falls_back_to_local(monkeypatch):
+    """Docker present but image not built -> fall back to local subprocess."""
+    import subprocess as real_subprocess
+
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        if cmd[0] == "docker":
+            return real_subprocess.CompletedProcess(
+                cmd, 1, stdout="", stderr="Unable to find image 'blastradius-sandbox' locally"
+            )
+        return real_subprocess.CompletedProcess(cmd, 0, stdout="[VULNERABLE] local\n", stderr="")
+
+    monkeypatch.setattr("blastradius.sandbox.runner.subprocess.run", fake_run)
+    runner = SandboxRunner(use_docker=True)
+    result = runner.run("print('x')", "print('y')")
+
+    assert result["vulnerable"] is True
+    assert calls[-1][0] != "docker"  # last candidate was the local subprocess
+    assert any("falling back to local" in w for w in runner.warnings)
+
+
+def test_docker_success_does_not_fall_back(monkeypatch):
+    import subprocess as real_subprocess
+
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        return real_subprocess.CompletedProcess(cmd, 0, stdout="[VULNERABLE] docker\n", stderr="")
+
+    monkeypatch.setattr("blastradius.sandbox.runner.subprocess.run", fake_run)
+    runner = SandboxRunner(use_docker=True)
+    result = runner.run("print('x')", "print('y')")
+
+    assert result["vulnerable"] is True
+    assert all(c[0] == "docker" for c in calls)  # no local fallback used
+    assert not any("falling back to local" in w for w in runner.warnings)
