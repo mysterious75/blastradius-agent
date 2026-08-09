@@ -88,13 +88,15 @@ and wait for the fix before public disclosure.
         reports_dir: str = "reports",
         sandbox_result: Optional[str] = None,
     ) -> Path:
-        """Save the report to ``reports_dir/YYYY-MM-DD_<vuln_type>_<repo>.md``.
+        """Save the report to ``reports_dir/YYYY-MM-DD_<type>_<repo>_<file>-<line>.md``.
 
-        Returns the written path.
+        The file stem + line suffix keeps reports from multiple findings of
+        the same type+repo from overwriting each other. Returns the path.
         """
         content = self.generate_report(finding, repo_name, sandbox_result)
         date = datetime.date.today().isoformat()
-        path = Path(reports_dir) / f"{date}_{finding.vuln_type}_{repo_name}.md"
+        stem = Path(finding.file).stem
+        path = Path(reports_dir) / f"{date}_{finding.vuln_type}_{repo_name}_{stem}-{finding.line}.md"
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
         return path
