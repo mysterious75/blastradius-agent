@@ -11,6 +11,9 @@ import os
 import urllib.request
 from pathlib import Path
 
+from blastradius.cli.display import RichDisplay
+from blastradius.cli.wizard import _text
+
 REQUIRED_KEYS = [
     ("GITHUB_APP_ID", "GitHub App ID"),
     ("GITHUB_PRIVATE_KEY", "GitHub App private key (path to .pem file, or the raw key)"),
@@ -19,12 +22,6 @@ REQUIRED_KEYS = [
 ]
 
 WEBHOOK_HEALTH_URL = "http://localhost:8000/health"
-
-
-def _ask(label: str, current: str) -> str:
-    suffix = "[set]" if current else ""
-    value = input(f"{label} {suffix}: ").strip() if suffix else input(f"{label}: ").strip()
-    return value or current
 
 
 def _resolve_private_key(value: str) -> str:
@@ -84,12 +81,13 @@ def main() -> int:
     env_path = Path.cwd() / ".env"
     env = load_env(env_path)
 
-    print("BlastRadius — GitHub App setup wizard")
+    RichDisplay().print_banner()
+    print("[*] Welcome to the GitHub App setup (wizard-style prompts)")
     print(f"Writing configuration to {env_path}")
     print("(press Enter to keep the current value)\n")
 
     for key, label in REQUIRED_KEYS:
-        value = _ask(label, env.get(key, os.getenv(key, "")))
+        value = _text(label, default=env.get(key, os.getenv(key, "")))
         if key == "GITHUB_PRIVATE_KEY" and value:
             value = _resolve_private_key(value)
         env[key] = value
