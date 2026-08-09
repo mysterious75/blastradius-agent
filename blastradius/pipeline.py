@@ -62,6 +62,13 @@ class FullPipeline:
             self.db = db if db is not None else SQLiteDB()
         except Exception:
             self.db = None
+        # Self-improvement loop: records outcomes so rules can be learned.
+        try:
+            from blastradius.learning.improver import SelfImprover
+
+            self.improver = SelfImprover()
+        except Exception:
+            self.improver = None
 
     def _db(self, method: str, *args, **kwargs):
         """Best-effort DB call — persistence must never break a scan."""
@@ -104,23 +111,32 @@ class FullPipeline:
                 sandbox_result = run_exploit_sandbox(
                     finding.vuln_type, reconstruct_target_code(finding)
                 )
-                if not sandbox_result.startswith("CONFIRMED_EXPLOITABLE"):
-                    continue
+                was_fp = not sandbox_result.startswith("CONFIRMED_EXPLOITABLE")
+                patch_confidence = 0.0
+                if not was_fp:
+                    result.confirmed.append(finding)
+                    self._emit("on_patch", finding=finding)
+                    patch_result = self.patch_loop.run(finding)
+                    result.patches.append((finding, patch_result))
+                    if patch_result.verification is not None:
+                        patch_confidence = patch_result.verification.confidence
+                        self._db("save_patch", finding_ids.get(finding.line), patch_result.patch,
+                                 patch_result.attempts, patch_result.needs_human,
+                                 patch_confidence)
 
-                result.confirmed.append(finding)
-                self._emit("on_patch", finding=finding)
-                patch_result = self.patch_loop.run(finding)
-                result.patches.append((finding, patch_result))
-                if patch_result.verification is not None:
-                    self._db("save_patch", finding_ids.get(finding.line), patch_result.patch,
-                             patch_result.attempts, patch_result.needs_human,
-                             patch_result.verification.confidence)
-
-                self._emit("on_report", finding=finding, patch_result=patch_result)
-                report = DisclosureReport()
-                path = report.save_report(finding, repo_name, self.reports_dir, sandbox_result)
-                result.reports.append(path)
-                self._db("save_report", finding_ids.get(finding.line), str(path))
+                    self._emit("on_report", finding=finding, patch_result=patch_result)
+                    report = DisclosureReport()
+                    path = report.save_report(finding, repo_name, self.reports_dir, sandbox_result)
+                    result.reports.append(path)
+                    self._db("save_report", finding_ids.get(finding.line), str(path))
+                if self.improver is not None:
+                    try:
+                        self.improver.record_outcome(
+                            finding, was_fp=was_fp, sandbox_result=sandbox_result,
+                            patch_confidence=patch_confidence,
+                        )
+                    except Exception:
+                        pass
             except Exception:
                 continue  # never let one finding break the pipeline
 

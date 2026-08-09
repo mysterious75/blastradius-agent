@@ -8,6 +8,9 @@ false-positive verdict, and exploitability is proven in the sandbox before a
 disclosure report is written (see cli.py / disclosure.py).
 """
 
+import fnmatch
+import json
+import os
 import re
 import shutil
 import subprocess
@@ -409,6 +412,18 @@ def reconstruct_target_code(finding: Finding) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _load_learned_rules() -> dict:
+    """Read ~/.blastradius/learned_rules.json (written by SelfImprover)."""
+    try:
+        path = Path(os.getenv("BLASTRADIUS_HOME", str(Path.home()))) \
+            / ".blastradius" / "learned_rules.json"
+        if path.is_file():
+            return json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return {}
+
+
 class CVEHunter:
     """Clone a repo and scan its source files for vulnerability candidates."""
 
@@ -417,6 +432,13 @@ class CVEHunter:
         self.clone_timeout = clone_timeout
         self.files_scanned: int = 0
         self._validator: Optional[AdversarialValidator] = None
+        # learned rules override defaults (confidence thresholds, skip
+        # patterns, payload weights) — empty when nothing has been learned.
+        self.learned_rules = _load_learned_rules()
+
+    def _learned_threshold(self, vuln_type: str) -> float:
+        learned = self.learned_rules.get("confidence_thresholds", {}).get(vuln_type, 0.0)
+        return max(self.min_confidence, float(learned))
 
     @property
     def validator(self) -> AdversarialValidator:
@@ -499,23 +521,33 @@ class CVEHunter:
 
     def _iter_files(self, repo_path: str):
         root = Path(repo_path)
+        skip_patterns = self.learned_rules.get("skip_patterns", [])
         for ext in FILE_EXTENSIONS:
             for path in root.rglob(ext):
                 if any(part in SKIP_DIRS for part in path.parts):
                     continue
                 if "min." in path.name:  # minified bundles — noise, never real code
                     continue
+                if any(fnmatch.fnmatch(path.name, p) or fnmatch.fnmatch(str(path), p)
+                       for p in skip_patterns):
+                    continue
                 yield path
 
     def _make_finding(self, path: Path, idx: int, lines: list, vuln_type: str, score: float) -> Finding:
         meta = VULN_META[vuln_type]
+        payload = lines[idx - 1].strip()
+        # learned payload weights boost proven patterns (capped at 1.0)
+        weights = self.learned_rules.get("payload_weights", {}).get(vuln_type, {})
+        for substring, weight in weights.items():
+            if substring and substring in payload:
+                score = min(1.0, score * float(weight))
         return Finding(
             file=str(path),
             line=idx,
             vuln_type=vuln_type,
-            payload=lines[idx - 1].strip(),
+            payload=payload,
             confidence=round(score, 2),
-            evidence=lines[idx - 1].strip(),
+            evidence=payload,
             context="\n".join(lines[max(0, idx - 2):idx + 1]),
             severity=meta["severity"],
             cwe=meta["cwe"],
@@ -544,18 +576,18 @@ class CVEHunter:
                 continue
             for vuln_type, scorer in _SCORERS:
                 score = scorer(line, has_source)
-                if score < self.min_confidence:
+                if score < self._learned_threshold(vuln_type):
                     continue
                 findings.append(self._make_finding(path, idx, lines, vuln_type, score))
             if lang == "py":
                 xxe_score = _score_xxe(line, has_source, has_defusedxml)
-                if xxe_score >= self.min_confidence:
+                if xxe_score >= self._learned_threshold("xxe"):
                     findings.append(self._make_finding(path, idx, lines, "xxe", xxe_score))
             graphql_score = _score_graphql(line, has_source, has_graphql)
-            if graphql_score >= self.min_confidence:
+            if graphql_score >= self._learned_threshold("graphql"):
                 findings.append(self._make_finding(path, idx, lines, "graphql", graphql_score))
             lang_score = _score_lang_xss(line, lang, has_source)
-            if lang_score >= self.min_confidence:
+            if lang_score >= self._learned_threshold("xss"):
                 findings.append(self._make_finding(path, idx, lines, "xss", lang_score))
         if lang == "py":
             findings.extend(self._scan_idor_py(lines, path))
