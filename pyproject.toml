@@ -32,6 +32,9 @@ all = [
 scheduler = [
     "APScheduler>=3.10",
 ]
+cli = [
+    "questionary>=2.0.0",
+]
 dashboard = [
     "fastapi>=0.110.0",
     "uvicorn>=0.29.0",
