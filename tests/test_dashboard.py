@@ -3,6 +3,8 @@
 import time
 
 import pytest
+
+pytest.importorskip("fastapi")  # optional dep — skip gracefully when not installed
 from fastapi.testclient import TestClient
 
 from blastradius.dashboard.app import app

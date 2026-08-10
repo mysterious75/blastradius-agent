@@ -79,7 +79,7 @@ python -m blastradius.cli.wizard
 # 7. Verify installation (install pytest inside the venv if needed)
 pip install pytest  # if running tests
 python -m pytest tests/ -q
-# Expected: 339 passed, 0 failed
+# Expected: 371 passed, 0 failed
 
 # 8. Run your first scan
 python -m blastradius.hunter --target https://github.com/WebGoat/WebGoat
