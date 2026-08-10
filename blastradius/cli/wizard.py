@@ -38,87 +38,90 @@ CHANNEL_PROMPTS = {
 # Prompt helpers (questionary first, input() fallback)
 # ---------------------------------------------------------------------------
 
-def _text(message: str, default: str = "") -> str:
+def _use_interactive() -> bool:
+    """questionary only in a real terminal — plain input() otherwise (tests, pipes)."""
     try:
+        import questionary  # noqa: F401
+    except ImportError:
+        return False
+    return sys.stdin.isatty()
+
+
+def _text(message: str, default: str = "") -> str:
+    if _use_interactive():
         import questionary
 
         return questionary.text(message, default=default).ask() or default
-    except ImportError:
-        prompt = f"{message} [{default}]" if default else f"{message}: "
-        value = input(prompt).strip()
-        return value or default
+    prompt = f"{message} [{default}]" if default else f"{message}: "
+    value = input(prompt).strip()
+    return value or default
 
 
 def _password(message: str) -> str:
-    try:
+    if _use_interactive():
         import questionary
 
         return questionary.password(message).ask() or ""
-    except ImportError:
-        return getpass.getpass(message + ": ")
+    return getpass.getpass(message + ": ")
 
 
 def _select(message: str, choices: List[str], default: Optional[str] = None) -> str:
-    try:
+    if _use_interactive():
         import questionary
 
         return questionary.select(message, choices=choices, default=default or choices[0]).ask()
-    except ImportError:
-        print(message)
-        for i, choice in enumerate(choices, 1):
-            print(f"  {i}. {choice}")
-        default_idx = choices.index(default) + 1 if default in choices else 1
-        raw = input(f"Enter number [{default_idx}]: ").strip()
-        if not raw:
-            return default or choices[0]
-        if raw.isdigit() and 0 < int(raw) <= len(choices):
-            return choices[int(raw) - 1]
+    print(message)
+    for i, choice in enumerate(choices, 1):
+        print(f"  {i}. {choice}")
+    default_idx = choices.index(default) + 1 if default in choices else 1
+    raw = input(f"Enter number [{default_idx}]: ").strip()
+    if not raw:
         return default or choices[0]
+    if raw.isdigit() and 0 < int(raw) <= len(choices):
+        return choices[int(raw) - 1]
+    return default or choices[0]
 
 
 def _checkbox(message: str, choices: List[str]) -> List[str]:
-    try:
+    if _use_interactive():
         import questionary
 
         return questionary.checkbox(message, choices=choices).ask() or []
-    except ImportError:
-        print(message)
-        print("  (comma-separated numbers; empty = none)")
-        for i, choice in enumerate(choices, 1):
-            print(f"  {i}. {choice}")
-        raw = input("> ").strip()
-        if not raw:
-            return []
-        picked = []
-        for part in raw.split(","):
-            part = part.strip()
-            if part.isdigit() and 0 < int(part) <= len(choices):
-                picked.append(choices[int(part) - 1])
-        return picked
+    print(message)
+    print("  (comma-separated numbers; empty = none)")
+    for i, choice in enumerate(choices, 1):
+        print(f"  {i}. {choice}")
+    raw = input("> ").strip()
+    if not raw:
+        return []
+    picked = []
+    for part in raw.split(","):
+        part = part.strip()
+        if part.isdigit() and 0 < int(part) <= len(choices):
+            picked.append(choices[int(part) - 1])
+    return picked
 
 
 def _confirm(message: str, default: bool = True) -> bool:
-    try:
+    if _use_interactive():
         import questionary
 
         return questionary.confirm(message, default=default).ask()
-    except ImportError:
-        suffix = "[Y/n]" if default else "[y/N]"
-        raw = input(f"{message} {suffix}: ").strip().lower()
-        if not raw:
-            return default
-        return raw in ("y", "yes")
+    suffix = "[Y/n]" if default else "[y/N]"
+    raw = input(f"{message} {suffix}: ").strip().lower()
+    if not raw:
+        return default
+    return raw in ("y", "yes")
 
 
 def _int(message: str, default: int) -> int:
-    try:
+    if _use_interactive():
         import questionary
 
         value = questionary.text(message, default=str(default)).ask()
         return int(value or default)
-    except ImportError:
-        raw = input(f"{message} [{default}]: ").strip()
-        return int(raw) if raw.isdigit() else default
+    raw = input(f"{message} [{default}]: ").strip()
+    return int(raw) if raw.isdigit() else default
 
 
 # ---------------------------------------------------------------------------
