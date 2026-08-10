@@ -81,3 +81,55 @@ def test_review_skips_bare_test_dir(tmp_path):
     assert Path(findings[0]["file"]).name == "core.cc"  # bare test/ dir file was skipped
     assert "test" not in Path(findings[0]["file"]).parts
     assert client.calls == 1
+
+
+def test_review_parallel_runs_concurrently(tmp_path):
+    import threading
+    import time
+
+    state = {"active": 0, "max_active": 0, "lock": threading.Lock()}
+
+    class SlowClient:
+        def chat(self, messages, system_prompt=""):
+            with state["lock"]:
+                state["active"] += 1
+                state["max_active"] = max(state["max_active"], state["active"])
+            time.sleep(0.05)
+            with state["lock"]:
+                state["active"] -= 1
+            return "FILE:1 | HIGH | unchecked unwrap"
+
+    for i in range(6):
+        (tmp_path / f"f{i}.cc").write_text("void f() { x.unwrap(); }\n", encoding="utf-8")
+    findings = review_repo(str(tmp_path), limit=10, client=SlowClient(), workers=4)
+    assert len(findings) == 6
+    assert state["max_active"] > 1  # chunks overlapped
+
+
+def test_review_retries_transient_failure(tmp_path):
+    class FlakyClient:
+        def __init__(self):
+            self.calls = 0
+
+        def chat(self, messages, system_prompt=""):
+            self.calls += 1
+            if self.calls == 1:
+                raise TimeoutError("transient")
+            return "FILE:1 | HIGH | unchecked unwrap"
+
+    (tmp_path / "a.cc").write_text("void f() { x.unwrap(); }\n", encoding="utf-8")
+    client = FlakyClient()
+    findings = review_repo(str(tmp_path), limit=1, client=client)
+    assert len(findings) == 1  # retried and succeeded
+
+
+def test_review_stops_after_failure_streak(tmp_path):
+    class DeadClient:
+        def chat(self, messages, system_prompt=""):
+            raise TimeoutError("down")
+
+    for i in range(10):
+        (tmp_path / f"f{i}.cc").write_text("void f() { x.unwrap(); }\n", encoding="utf-8")
+    # 10 files, each chunk fails twice (retry) — must stop early via the streak guard
+    findings = review_repo(str(tmp_path), limit=10, client=DeadClient(), workers=4)
+    assert findings == []

@@ -353,6 +353,19 @@ def test_function_request_definition_not_ssrf(tmp_path):
     assert "ssrf" not in _types(CVEHunter(), tmp_path)
 
 
+def test_internal_dirs_skipped(tmp_path):
+    (tmp_path / "internal").mkdir()
+    (tmp_path / "internal" / "app.py").write_text(
+        "return this.#fetcher.fetch(input, init);\n", encoding="utf-8"
+    )
+    (tmp_path / "api").mkdir()
+    (tmp_path / "api" / "proxy.ts").write_text(
+        "const url = req.query.url;\nreturn fetch(url);\n", encoding="utf-8"
+    )
+    types = _types(CVEHunter(), tmp_path)
+    assert types == {"ssrf"}  # internal/ skipped, api/ still scanned
+
+
 # --- round 3: method-name fetch/request, string-literal SQL, PHP Template ------
 
 
