@@ -119,23 +119,18 @@ def build_agent(api_key=None) -> dict:
     }
 
 
-async def run_scan(target: str, agent: dict = None) -> str:
-    """Run the BlastRadius agent against a target and return its final output.
+async def _run_conversation(messages: list, agent: dict, max_iterations: int) -> str:
+    """Bounded tool-calling loop over an existing message list.
 
-    Async tool-calling loop: sends the target plus the tool schemas, executes
-    any tool calls the model requests, feeds the results back, and returns the
-    final text answer. ``agent`` is injectable for tests.
+    Shared by ``run_scan`` (one conversation per target) and the focused-task
+    orchestrator (one small conversation per finding). Returns the final text
+    answer, or the last assistant content when the iteration budget runs out.
     """
-    agent = agent or build_agent()
     client = agent["client"]
     tools = [_tool_schema(t) for t in agent["tools"]]
-    messages = [
-        {"role": "system", "content": agent["instructions"]},
-        {"role": "user", "content": target},
-    ]
     seen_calls = set()
     last_content = ""
-    for _ in range(MAX_ITERATIONS):
+    for _ in range(max_iterations):
         response = await client.chat.completions.create(
             model=agent["model"], messages=messages, tools=tools
         )
@@ -168,6 +163,22 @@ async def run_scan(target: str, agent: dict = None) -> str:
             )
     return (
         last_content
-        or "Agent loop exceeded max iterations — try a smaller target, or raise "
-        "BLASTRADIUS_AGENT_MAX_ITERATIONS."
+        or f"conversation exceeded {max_iterations} iterations — try a smaller task, "
+        "or raise BLASTRADIUS_AGENT_MAX_ITERATIONS."
     )
+
+
+async def run_scan(target: str, agent: dict = None) -> str:
+    """Run the BlastRadius agent against a target and return its final output.
+
+    One bounded conversation: sends the target plus the tool schemas, executes
+    any tool calls the model requests, feeds the results back, and returns the
+    final text answer. For large targets prefer ``run_focused_hunt`` (per-finding
+    sub-tasks) instead. ``agent`` is injectable for tests.
+    """
+    agent = agent or build_agent()
+    messages = [
+        {"role": "system", "content": agent["instructions"]},
+        {"role": "user", "content": target},
+    ]
+    return await _run_conversation(messages, agent, MAX_ITERATIONS)
