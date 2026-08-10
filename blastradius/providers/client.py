@@ -25,7 +25,8 @@ def _default_http(url: str, headers: Dict, payload: dict, timeout: int) -> dict:
     req = urllib.request.Request(
         url,
         data=json.dumps(payload).encode("utf-8"),
-        headers={"Content-Type": "application/json", **headers},
+        # curl-like UA: some LLM gateways 403 the default Python-urllib agent
+        headers={"Content-Type": "application/json", "User-Agent": "curl/8.6.0", **headers},
         method="POST",
     )
     try:
