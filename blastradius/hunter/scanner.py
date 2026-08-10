@@ -59,9 +59,13 @@ SOURCES = [
     r"window\.location",
 ]
 
-# SQL keywords — dot-preceded ones (axios.delete, http.delete, el.remove()) are
-# method names, not SQL, and must not count as SQL context.
-_SQL_KEYWORDS = r"(?<!\.)\b(?:SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|UNION)\b"
+# SQL keywords as keyword+context pairs — a bare SELECT/DELETE/update method
+# name (axios.delete, call('delete', ...), minified code) is not SQL.
+_SQL_KEYWORDS = (
+    r"SELECT[^;]{0,200}FROM|INSERT\s+INTO|UPDATE[^;]{0,200}SET|"
+    r"DELETE\s+FROM|DELETE\s+INTO|DROP\s+TABLE|CREATE\s+TABLE|"
+    r"ALTER\s+TABLE|UNION\s+(?:ALL\s+)?SELECT"
+)
 # String literal concatenated with a variable. f-strings and plain literals
 # are intentionally NOT flagged (too many false positives).
 _SQL_CONCAT = [
@@ -88,8 +92,8 @@ _XSS_SAFE = [
 
 _SSRF_SINKS = [
     r"requests\.(?:get|post|put|delete|request|head)\(", r"urllib\.request\b",
-    r"urlopen\(", r"\bfetch\(", r"http\.(?:get|request)\(", r"axios\.",
-    r"\bgot\(", r"\bcurl\(", r"httpx\.", r"aiohttp\.", r"\brequest\(",
+    r"urlopen\(", r"(?<![.>])\bfetch\(", r"http\.(?:get|request)\(", r"axios\.",
+    r"\bgot\(", r"\bcurl\(", r"httpx\.", r"aiohttp\.", r"(?<![.>])\brequest\(",
 ]
 # Same-origin URL builders, explicit browser-side fetch, and config-marked
 # endpoints (webhook/response URLs set by admins or third-party services) are
@@ -323,12 +327,18 @@ def _score_ssrf(line: str, has_source: bool) -> float:
     return 0.9 if has_source else 0.7
 
 
-def _score_ssti(line: str, has_source: bool) -> float:
+def _score_ssti(line: str, has_source: bool, lang: str = "") -> float:
     if re.search(r"render_template_string\s*\(", line):
         if _line_references_variable(line):
             return 0.9 if has_source else 0.8
         return 0.0
-    if re.search(r"(?:jinja2\.Template|Environment\s*\(\).*from_string|\bTemplate\s*\()", line):
+    # bare Template( is only an SSTI signal in Python — `new Template(...)` in
+    # PHP/etc. is a class constructor, not template evaluation
+    template_sinks = r"(?:jinja2\.Template|Environment\s*\(\).*from_string"
+    if lang == "py":
+        template_sinks += r"|\bTemplate\s*\("
+    template_sinks += r")"
+    if re.search(template_sinks, line):
         if _line_references_variable(line):
             return 0.8 if has_source else 0.7
     return 0.0
@@ -622,6 +632,8 @@ class CVEHunter:
             for vuln_type, scorer in _SCORERS:
                 if vuln_type == "xss":
                     score = _score_xss(line, has_source, lang)
+                elif vuln_type == "ssti":
+                    score = _score_ssti(line, has_source, lang)
                 else:
                     score = scorer(line, has_source)
                 if score < self._learned_threshold(vuln_type):

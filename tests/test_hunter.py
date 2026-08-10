@@ -276,6 +276,69 @@ def test_spec_files_skipped(tmp_path):
     assert _types(CVEHunter(), tmp_path) == set()
 
 
+# --- round 3: method-name fetch/request, string-literal SQL, PHP Template ------
+
+
+def test_db_row_fetch_not_ssrf(tmp_path):
+    # $result->fetch() is a DB row fetch, not an HTTP fetch
+    (tmp_path / "db.php").write_text(
+        "$row = $result->fetch();\n", encoding="utf-8"
+    )
+    assert "ssrf" not in _types(CVEHunter(), tmp_path)
+
+
+def test_ruby_params_fetch_not_ssrf(tmp_path):
+    # params.fetch(:key) is Hash#fetch, not HTTP
+    (tmp_path / "c.rb").write_text(
+        "filename = params.fetch(:resumableFilename)\n", encoding="utf-8"
+    )
+    assert "ssrf" not in _types(CVEHunter(), tmp_path)
+
+
+def test_http_request_still_ssrf_sink(tmp_path):
+    # real HTTP fetches must stay detectable
+    (tmp_path / "svc.rb").write_text(
+        "req = Net::HTTP::Get.new(URI(user_url))\nhttp.request(req)\n",
+        encoding="utf-8",
+    )
+    assert "ssrf" in _types(CVEHunter(), tmp_path)
+
+
+def test_string_literal_method_delete_not_sqli(tmp_path):
+    # call('delete', ...) is a method-name string, not the SQL keyword DELETE
+    (tmp_path / "appconfig.ts").write_text(
+        "call('delete', '/' + app + '/' + key, options)\n", encoding="utf-8"
+    )
+    assert "sqli" not in _types(CVEHunter(), tmp_path)
+
+
+def test_select_concat_requires_from_context(tmp_path):
+    # bare SELECT without FROM is not SQL context
+    (tmp_path / "a.py").write_text(
+        "q = 'SELECT ' + col\n", encoding="utf-8"
+    )
+    assert "sqli" not in _types(CVEHunter(), tmp_path)
+    # SELECT ... FROM ... with concat still is
+    (tmp_path / "b.py").write_text(
+        "q = 'SELECT * FROM users WHERE id=' + uid\n", encoding="utf-8"
+    )
+    assert "sqli" in _types(CVEHunter(), tmp_path)
+
+
+def test_php_new_template_not_ssti(tmp_path):
+    (tmp_path / "tmpl.php").write_text(
+        "$template = new Template($app, $name, $renderAs);\n", encoding="utf-8"
+    )
+    assert "ssti" not in _types(CVEHunter(), tmp_path)
+
+
+def test_py_template_constructor_still_ssti(tmp_path):
+    (tmp_path / "v.py").write_text(
+        "out = Template(user_input).render()\n", encoding="utf-8"
+    )
+    assert "ssti" in _types(CVEHunter(), tmp_path)
+
+
 def test_sqli_finding_has_file_line_and_payload(repo):
     hunter = CVEHunter()
     sqli = _finding(hunter, repo, "sqli")
