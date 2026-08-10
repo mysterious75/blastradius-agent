@@ -162,6 +162,14 @@ def test_validate_repo_path_under_temp(tmp_path):
     assert validate_repo_path(str(p)) == str(p.resolve())
 
 
+def test_allowed_roots_include_home():
+    from blastradius.security.input_validator import allowed_repo_roots
+
+    from pathlib import Path
+
+    assert Path.home().resolve() in allowed_repo_roots()
+
+
 def test_validate_repo_path_rejects_missing(tmp_path):
     with pytest.raises(ValueError, match="does not exist"):
         validate_repo_path(str(tmp_path / "nope"))
