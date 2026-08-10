@@ -37,6 +37,7 @@ SKIP_DIRS = {
     ".git", "node_modules", "venv", ".venv", "__pycache__", ".tox",
     ".mypy_cache", ".pytest_cache", "dist", "build", "vendor", "migrations",
     "tests", "spec", "buildtest", "__tests__", "testdata",
+    "test", "wpt",  # bare test dirs (internal/test) and Web Platform Tests harness
 }
 
 # Extension -> language key used by the comment/docstring skipping logic

@@ -54,3 +54,30 @@ def test_review_repo_no_issues(tmp_path):
     (tmp_path / "a.cc").write_text("int f() { return 1; }\n", encoding="utf-8")
     client = FakeClient()
     assert review_repo(str(tmp_path), limit=10, client=client) == []
+
+
+def test_review_passes_timeout_to_client(monkeypatch, tmp_path):
+    (tmp_path / "a.cc").write_text("int f() { return 1; }\n", encoding="utf-8")
+    captured = {}
+
+    def fake_llm_client(**kwargs):
+        captured.update(kwargs)
+        return FakeClient()
+
+    monkeypatch.setattr("blastradius.review.LLMClient", fake_llm_client)
+    review_repo(str(tmp_path), limit=1, timeout=180)
+    assert captured["timeout"] == 180
+
+
+def test_review_skips_bare_test_dir(tmp_path):
+    src = tmp_path / "src"
+    src.mkdir()
+    (src / "core.cc").write_text("void f() { x.unwrap(); }\n", encoding="utf-8")
+    (src / "test").mkdir(parents=True)
+    (src / "test" / "x.cc").write_text("void f() { x.unwrap(); }\n", encoding="utf-8")
+    client = FakeClient("FILE:1 | HIGH | unchecked unwrap")
+    findings = review_repo(str(tmp_path), limit=10, client=client)
+    assert len(findings) == 1
+    assert Path(findings[0]["file"]).name == "core.cc"  # bare test/ dir file was skipped
+    assert "test" not in Path(findings[0]["file"]).parts
+    assert client.calls == 1
