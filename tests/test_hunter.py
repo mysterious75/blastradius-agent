@@ -276,6 +276,32 @@ def test_spec_files_skipped(tmp_path):
     assert _types(CVEHunter(), tmp_path) == set()
 
 
+# --- secret / hard-coded credential detection (detection only) ----------------
+
+
+def test_secret_key_detected(tmp_path):
+    (tmp_path / "cfg.py").write_text(
+        'API_KEY = "sk-abcdefghijklmnopqrstuvwx"\n', encoding="utf-8"
+    )
+    assert "secret" in _types(CVEHunter(), tmp_path)
+
+
+def test_secret_placeholder_not_flagged(tmp_path):
+    (tmp_path / "cfg.py").write_text(
+        'API_KEY = "sk-your-api-key-here-xxxx"\n', encoding="utf-8"
+    )
+    assert "secret" not in _types(CVEHunter(), tmp_path)
+
+
+def test_google_and_aws_keys_detected(tmp_path):
+    (tmp_path / "cfg.py").write_text(
+        'g = "AIzaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"\n'
+        'aws = "AKIAABCDEFGHIJKLMNOP"\n',
+        encoding="utf-8",
+    )
+    assert "secret" in _types(CVEHunter(), tmp_path)
+
+
 # --- round 3: method-name fetch/request, string-literal SQL, PHP Template ------
 
 

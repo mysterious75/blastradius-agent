@@ -30,7 +30,7 @@ REVIEW_PROMPT = (
     "or exactly NO_ISSUES if none. Do not report style, theory, or hardening-only items.\n\n"
 )
 
-MAX_CHUNK_BYTES = 24 * 1024  # small chunks = fast LLM turns, fewer timeouts
+MAX_CHUNK_BYTES = 16 * 1024  # small chunks = fast LLM turns, fewer timeouts
 
 DEFAULT_EXTS = (".cc", ".cxx", ".cpp", ".h", ".hh", ".ts", ".js")
 
@@ -110,6 +110,7 @@ def review_repo(
     client = client or LLMClient(timeout=timeout)
     findings: List[dict] = []
     skipped = 0
+    failed = 0
     seen = 0
     for path in _iter_files(root, exts):
         if seen >= limit:
@@ -127,12 +128,15 @@ def review_repo(
                 continue
             try:
                 reply = client.chat([{"role": "user", "content": REVIEW_PROMPT + chunk}])
-            except LLMUnavailableError as exc:
-                print(f"[!] LLM unavailable: {exc}", file=sys.stderr)
-                return findings
+            except Exception as exc:  # a slow/failed chunk must not abort the review
+                failed += 1
+                print(f"[!] chunk failed ({type(exc).__name__}): {path}", file=sys.stderr)
+                continue
             findings.extend(_parse_findings(reply, path, start_line))
     if skipped:
         print(f"[*] {skipped} chunk(s) skipped by the prompt-injection guard", file=sys.stderr)
+    if failed:
+        print(f"[!] {failed} chunk(s) failed (timeouts/errors) — partial results", file=sys.stderr)
     return findings
 
 

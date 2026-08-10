@@ -5,7 +5,14 @@ from blastradius.scanners import get_scanner, get_scanners, scan_file
 
 def test_registry_discovers_all_scanners():
     scanners = get_scanners()
-    assert set(scanners) == {"sqli", "xss", "ssrf", "ssti", "xxe"}
+    assert set(scanners) == {"sqli", "xss", "ssrf", "ssti", "xxe", "secret"}
+
+
+def test_secret_detects_keys_and_skips_placeholders():
+    scanner = get_scanner("secret")
+    assert scanner.detect('api_key = "sk-abcdefghijklmnopqrstuvwx"\n')
+    assert scanner.detect('key = "AIzaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"\n')
+    assert scanner.detect('key = "sk-your-api-key-here"\n') == []
 
 
 def test_sqli_detects_concat_and_ignores_parameterized():

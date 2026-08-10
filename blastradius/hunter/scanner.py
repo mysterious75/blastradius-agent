@@ -228,6 +228,19 @@ VULN_META = {
             "never concatenate resolver arguments into query strings."
         ),
     },
+    "secret": {
+        "severity": "HIGH",
+        "cvss": 8.0,
+        "cwe": "CWE-798",
+        "description": (
+            "Hard-coded credential: a high-signal API key or token is committed "
+            "to the repository. Detection only — never validate or use the key."
+        ),
+        "remediation": (
+            "Rotate the credential, remove it from history, and load secrets "
+            "from environment variables or a secret manager."
+        ),
+    },
 }
 
 VALID_VULN_TYPES = tuple(VULN_META)
@@ -375,6 +388,29 @@ def _score_graphql(line: str, has_source: bool, has_graphql: bool) -> float:
     return 0.0
 
 
+# Hard-coded credentials (detection only — never validate or use a found key)
+_SECRET_PATTERNS = [
+    r"\bAIza[0-9A-Za-z\-_]{35}\b",
+    r"\bsk-[A-Za-z0-9]{20,}\b",
+    r"\bghp_[A-Za-z0-9]{36}\b",
+    r"\bgithub_pat_[A-Za-z0-9_]{22,}\b",
+    r"\bAKIA[0-9A-Z]{16}\b",
+    r"\bxox[baprs]-[A-Za-z0-9\-]{10,}\b",
+    r"\bsk_live_[A-Za-z0-9]{20,}\b",
+]
+_SECRET_PLACEHOLDER = re.compile(
+    r"example|your-|your_|xxxx|placeholder|changeme|sample|demo|<[a-z_]+>", re.I
+)
+
+
+def _score_secret(line: str, has_source: bool) -> float:
+    if _SECRET_PLACEHOLDER.search(line):
+        return 0.0
+    if any(re.search(p, line) for p in _SECRET_PATTERNS):
+        return 0.95
+    return 0.0
+
+
 # IDOR: object-id read from user input, no authorization check nearby
 _IDOR_ID_SOURCES = [
     r"request\.(?:args|form|values|get_json)\s*\([^)]*['\"]id['\"]",
@@ -409,6 +445,7 @@ _SCORERS = (
     ("ssrf", _score_ssrf),
     ("ssti", _score_ssti),
     ("jwt", _score_jwt),
+    ("secret", _score_secret),
 )
 
 
