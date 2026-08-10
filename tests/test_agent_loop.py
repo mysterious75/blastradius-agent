@@ -63,7 +63,7 @@ def _agent(responses):
     }
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_run_scan_executes_tool_calls_and_returns_final():
     agent = _agent([
         Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", '{"target": "x"}')]))),
@@ -76,7 +76,7 @@ async def test_run_scan_executes_tool_calls_and_returns_final():
     assert last[-1]["content"] == "scanned:x"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_run_scan_unknown_tool_does_not_crash():
     agent = _agent([
         Resp(Choice("tool_calls", Msg(tool_calls=[Call("nope", "{}")]))),
@@ -87,7 +87,7 @@ async def test_run_scan_unknown_tool_does_not_crash():
     assert "unknown tool: nope" in last[-1]["content"]
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_run_scan_bad_tool_args_does_not_crash():
     agent = _agent([
         Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", "not-json")]))),
@@ -96,7 +96,7 @@ async def test_run_scan_bad_tool_args_does_not_crash():
     assert await run_scan("go", agent) == "final"
 
 
-@pytest.mark.asyncio
+@pytest.mark.anyio
 async def test_run_scan_plain_answer_returns_directly():
     agent = _agent([Resp(Choice("stop", Msg(content="no tools needed")))])
 

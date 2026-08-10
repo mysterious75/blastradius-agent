@@ -40,10 +40,16 @@ def test_weekly_schedule(monkeypatch):
 
 def test_stdlib_loop_runs_job(monkeypatch):
     monkeypatch.setenv("HUNT_SCHEDULE", "daily")
+    # force the stdlib fallback regardless of whether APScheduler is installed
+    monkeypatch.setattr(
+        HuntScheduler,
+        "_start_apscheduler",
+        lambda self: (_ for _ in ()).throw(ImportError("no apscheduler")),
+    )
     calls = []
     s = HuntScheduler(tick=0.1)
     s.auto_hunt = lambda strategy, max_targets, min_stars: calls.append(strategy)
-    assert s.start() is True  # stdlib fallback (APScheduler not installed)
+    assert s.start() is True  # stdlib fallback
     time.sleep(0.5)
     s.stop()
     assert calls  # daily_hunt fires immediately on the first tick
