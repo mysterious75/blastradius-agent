@@ -64,13 +64,10 @@ python3 -m venv venv
 source venv/bin/activate
 
 # 5. Install BlastRadius
-# Core install (fast, no CAI)
+# Core install (fast — AI agent is built-in, no heavy deps)
 pip install -e "."
 
-# With AI agent support (slow, installs CAI+litellm)
-pip install -e ".[agent]"
-
-# Everything
+# Everything (dashboard/API/notifications extras)
 pip install -e ".[all]"
 
 # 6. Run setup wizard (configure API keys, notifications)
@@ -89,9 +86,9 @@ python -m blastradius.hunter --target https://github.com/WebGoat/WebGoat
 > always use a virtual environment (step 4). Never use `--break-system-packages`
 > on Kali — it can break system tools.
 
-> **Note:** cai-framework (agent.py) is optional and large (~500MB — pulls litellm).
-> It is NOT part of `.[all]`; install it only if you need the AI agent:
-> `pip install -e ".[agent]"`. For scanning/sandbox/core use `pip install -e "."` (fast, <50MB).
+> **Note:** The AI agent (agent.py) is **built-in** — it runs on the core
+> install and needs no extra dependencies (no cai-framework, no litellm).
+> Just set one provider API key (see below) and it works.
 
 </details>
 
@@ -234,7 +231,7 @@ blastradius dashboard
 | `docker: Cannot connect to daemon` | `sudo systemctl start docker` |
 | `runsc: unknown runtime` | Install gVisor (see above) — sandbox falls back to Docker automatically |
 | `OPENCODE_API_KEY not set` | Rule-based patches still work; set key for AI patches |
-| `litellm downloading forever` | Use `pip install -e "."` for core install without CAI |
+| `No module named cai` | Not needed — the AI agent is built-in and works without CAI |
 
 ## Demo
 
