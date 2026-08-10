@@ -38,7 +38,7 @@ DEFAULT_EXTS = (".cc", ".cxx", ".cpp", ".h", ".hh", ".ts", ".js")
 def _iter_files(root: Path, exts: Tuple[str, ...]):
     for ext in exts:
         for path in root.rglob(f"*{ext}"):
-            if any(part in SKIP_DIRS for part in path.parts):
+            if any(part in SKIP_DIRS or part.endswith("-test") for part in path.parts):
                 continue
             stem = path.stem
             if (stem.endswith("_test") or stem.startswith("test_")

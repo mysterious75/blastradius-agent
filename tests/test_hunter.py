@@ -302,6 +302,36 @@ def test_google_and_aws_keys_detected(tmp_path):
     assert "secret" in _types(CVEHunter(), tmp_path)
 
 
+# --- workerd FP classes: -test dirs and Fetcher-wrapper plumbing ----------------
+
+
+def test_hyphen_test_dirs_skipped(tmp_path):
+    (tmp_path / "jsg-test").mkdir()
+    (tmp_path / "jsg-test" / "lib.rs").write_text(
+        'unsafe { self.inner.eval(code) }\n', encoding="utf-8"
+    )
+    (tmp_path / "latest").mkdir()
+    (tmp_path / "latest" / "app.py").write_text(
+        "query = \"SELECT * FROM users WHERE id='\" + uid + \"'\"\n", encoding="utf-8"
+    )
+    types = _types(CVEHunter(), tmp_path)
+    assert types == {"sqli"}  # jsg-test skipped, "latest" (ends in -test) still scanned
+
+
+def test_fetcher_wrapper_fetch_not_ssrf(tmp_path):
+    (tmp_path / "ai-api.ts").write_text(
+        "return this.#fetcher.fetch(input, init);\n", encoding="utf-8"
+    )
+    assert "ssrf" not in _types(CVEHunter(), tmp_path)
+
+
+def test_plain_fetch_url_still_ssrf(tmp_path):
+    (tmp_path / "proxy.ts").write_text(
+        "const url = req.query.url;\nreturn fetch(url);\n", encoding="utf-8"
+    )
+    assert "ssrf" in _types(CVEHunter(), tmp_path)
+
+
 # --- round 3: method-name fetch/request, string-literal SQL, PHP Template ------
 
 

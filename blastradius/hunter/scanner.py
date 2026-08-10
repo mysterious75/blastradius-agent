@@ -96,13 +96,15 @@ _SSRF_SINKS = [
     r"urlopen\(", r"(?<![.>])\bfetch\(", r"http\.(?:get|request)\(", r"axios\.",
     r"\bgot\(", r"\bcurl\(", r"httpx\.", r"aiohttp\.", r"(?<![.>])\brequest\(",
 ]
-# Same-origin URL builders, explicit browser-side fetch, and config-marked
-# endpoints (webhook/response URLs set by admins or third-party services) are
-# NOT attacker-controlled server-side fetches.
+# Same-origin URL builders, explicit browser-side fetch, config-marked
+# endpoints (webhook/response URLs set by admins or third-party services), and
+# Fetcher-wrapper plumbing (binding -> internal service) are NOT
+# attacker-controlled server-side fetches.
 _SSRF_SAFE = [
     r"generateUrl|generateOcsUrl",                 # same-origin builders (Nextcloud)
     r"window\.fetch",                              # explicit browser-side fetch
     r"webhook_url|response_url|slack_api_http",    # config-driven endpoints
+    r"fetcher\.fetch",                             # binding/Fetcher wrapper plumbing
 ]
 
 # Language-specific XSS sinks (Ruby/Java/Go/Rust/ERB). params[ is a SOURCE,
@@ -613,7 +615,7 @@ class CVEHunter:
         skip_patterns = self.learned_rules.get("skip_patterns", [])
         for ext in FILE_EXTENSIONS:
             for path in root.rglob(ext):
-                if any(part in SKIP_DIRS for part in path.parts):
+                if any(part in SKIP_DIRS or part.endswith("-test") for part in path.parts):
                     continue
                 if "min." in path.name:  # minified bundles — noise, never real code
                     continue
