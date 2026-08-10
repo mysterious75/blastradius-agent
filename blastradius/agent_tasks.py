@@ -26,22 +26,23 @@ from blastradius.hunter.ranking import (
     rank_findings,
 )
 from blastradius.hunter.scanner import reconstruct_target_code
+from blastradius.tools.sandbox_tool import run_exploit_sandbox
 
 FOCUSED_TASK_INSTRUCTIONS = (
-    "You are validating ONE security finding in isolation.\n"
-    "1. The user message includes 'reconstructed_target' — runnable code that "
-    "defines target(user_input). Call run_exploit_sandbox(vuln_type, reconstructed_target) "
-    "to prove exploitability. 'code_context' shows the surrounding source.\n"
-    "2. If the sandbox confirms it, call generate_and_verify_patch.\n"
-    "3. Reply with a short verdict only: EXPLOITABLE with a one-line reason, "
-    "NOT_EXPLOITABLE with a one-line reason, or NEEDS_MANUAL_REVIEW.\n"
-    "Use only these two tools. Stop as soon as you have a verdict."
+    "You are reviewing ONE security finding where the sandbox could not reach "
+    "a conclusion.\n"
+    "1. The user message includes 'reconstructed_target' (runnable code that "
+    "defines target(user_input)) and 'sandbox_output' (what the sandbox said).\n"
+    "2. Re-run run_exploit_sandbox(vuln_type, reconstructed_target) if useful.\n"
+    "3. Reply with a short verdict only: EXPLOITABLE, NOT_EXPLOITABLE, or "
+    "NEEDS_MANUAL_REVIEW, each with a one-line reason.\n"
+    "Use only these tools. Stop as soon as you have a verdict."
 )
 
 DEFAULT_TASK_ITERATIONS = 8
 
 
-def _finding_payload(finding) -> str:
+def _finding_payload(finding, sandbox_output: str = "") -> str:
     try:
         reconstructed = reconstruct_target_code(finding)
     except Exception:
@@ -57,17 +58,44 @@ def _finding_payload(finding) -> str:
             "description": finding.description,
             "code_context": finding.context,
             "reconstructed_target": reconstructed,
+            "sandbox_output": sandbox_output,
         },
         default=str,
     )
 
 
 async def run_focused_task(finding, agent: dict = None, max_iterations: int = DEFAULT_TASK_ITERATIONS) -> dict:
-    """Validate a single finding in its own bounded conversation."""
+    """Validate a single finding: deterministic sandbox first, LLM only when needed.
+
+    The sandbox is authoritative — the LLM's free-text verdicts were unreliable
+    to parse. When the sandbox is conclusive (exploitable / not_exploitable /
+    unsupported) the task returns immediately without any LLM call; the LLM
+    runs only for inconclusive cases to add reasoning.
+    """
     agent = agent or build_agent()
+    try:
+        sandbox_output = run_exploit_sandbox(
+            finding.vuln_type, reconstruct_target_code(finding)
+        )
+    except Exception as exc:
+        sandbox_output = f"error: {exc}"
+    sandbox_verdict = classify_verdict(sandbox_output)
+    if sandbox_verdict in ("exploitable", "not_exploitable", "unsupported"):
+        return {
+            "finding": finding_key(finding),
+            "file": finding.file,
+            "line": finding.line,
+            "vuln_type": finding.vuln_type,
+            "output": sandbox_output,
+            "verdict": sandbox_verdict,
+            "sandbox_output": sandbox_output,
+            "sandbox_verdict": sandbox_verdict,
+            "llm_output": "",
+        }
+
     messages = [
         {"role": "system", "content": FOCUSED_TASK_INSTRUCTIONS},
-        {"role": "user", "content": _finding_payload(finding)},
+        {"role": "user", "content": _finding_payload(finding, sandbox_output)},
     ]
     output = await _run_conversation(messages, agent, max_iterations)
     return {
@@ -77,6 +105,9 @@ async def run_focused_task(finding, agent: dict = None, max_iterations: int = DE
         "vuln_type": finding.vuln_type,
         "output": output,
         "verdict": classify_verdict(output),
+        "sandbox_output": sandbox_output,
+        "sandbox_verdict": sandbox_verdict,
+        "llm_output": output,
     }
 
 

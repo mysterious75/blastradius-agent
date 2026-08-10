@@ -65,8 +65,9 @@ def classify_verdict(output: str) -> str:
 def _verdict_score(verdict: str, w: Dict[str, float]) -> float:
     if verdict == "exploitable":
         return w["confirmed"]
-    if verdict in ("not_exploitable", "unsupported"):
+    if verdict == "not_exploitable":
         return w["ruled_out"]
+    # "unsupported" (no exploit template) is "can't validate", not "not vulnerable"
     return 0.0
 
 
