@@ -89,8 +89,9 @@ python -m blastradius.hunter --target https://github.com/WebGoat/WebGoat
 > always use a virtual environment (step 4). Never use `--break-system-packages`
 > on Kali — it can break system tools.
 
-> **Note:** `.[all]` installs cai-framework which is large (~500MB).
-> For scanning only, use `pip install -e "."` (fast, <50MB).
+> **Note:** cai-framework (agent.py) is optional and large (~500MB — pulls litellm).
+> It is NOT part of `.[all]`; install it only if you need the AI agent:
+> `pip install -e ".[agent]"`. For scanning/sandbox/core use `pip install -e "."` (fast, <50MB).
 
 </details>
 

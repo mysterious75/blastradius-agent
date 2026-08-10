@@ -41,7 +41,6 @@ all = [
     "APScheduler>=3.10",
     "questionary>=2.0.0",
     "mcp>=1.0",
-    "cai-framework>=0.5.0",
 ]
 scheduler = [
     "APScheduler>=3.10",
