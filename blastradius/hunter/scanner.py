@@ -105,6 +105,10 @@ _SSRF_SAFE = [
     r"window\.fetch",                              # explicit browser-side fetch
     r"webhook_url|response_url|slack_api_http",    # config-driven endpoints
     r"fetcher\.fetch",                             # binding/Fetcher wrapper plumbing
+    # Worker fetch-handler signature: fetch(req, env, ctx) — a definition, not a call
+    r"fetch\(\s*\w+\s*:?[^,)]*,\s*\w+\s*:?[^,)]*,\s*\w+\s*:?[^,)]*\)",
+    # function definitions named request/fetch
+    r"function\s+(?:request|fetch)\s*\(",
 ]
 
 # Language-specific XSS sinks (Ruby/Java/Go/Rust/ERB). params[ is a SOURCE,
