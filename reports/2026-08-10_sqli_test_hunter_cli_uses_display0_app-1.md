@@ -2,7 +2,7 @@
 
 - **Date:** 2026-08-10
 - **Severity:** CRITICAL | **CVSS estimate:** 9.8 | **CWE:** CWE-89
-- **Affected file:** `C:\Users\Admin\AppData\Local\Temp\pytest-of-Admin\pytest-154\test_hunter_cli_uses_display0\app.py` line 1
+- **Affected file:** `C:\Users\Admin\AppData\Local\Temp\pytest-of-Admin\pytest-155\test_hunter_cli_uses_display0\app.py` line 1
 - **Confidence:** 0.9
 
 ## Vulnerability description
