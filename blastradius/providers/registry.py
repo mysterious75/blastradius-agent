@@ -59,14 +59,15 @@ PROVIDER_REGISTRY = {
         ],
     },
     "opencode_go": {
-        "base_url": "https://opencode.ai/go/v1",
+        # OpenCode Go (subscription) serves its OpenAI-compatible models at the
+        # same zen/go host (per official docs) — NOT opencode.ai/go/v1.
+        "base_url": "https://opencode.ai/zen/go/v1",
         "key_env": "OPENCODE_API_KEY",
         "models": [
-            "deepseek-v4-flash",
-            "deepseek-v4-pro", "mimo-v2.5", "mimo-v2.5-pro", "grok-4.5",
-            "gpt-5.6-luna", "glm-5.2", "glm-5.1", "kimi-k3",
-            "kimi-k2.7-code", "kimi-k2.6", "minimax-m3", "qwen3.8-max",
-            "qwen3.7-max", "qwen3.7-plus", "hy3",
+            "deepseek-v4-flash", "deepseek-v4-pro", "grok-4.5", "gpt-5.6-luna",
+            "glm-5.2", "glm-5.1", "kimi-k3", "kimi-k2.7-code", "kimi-k2.6",
+            "mimo-v2.5", "mimo-v2.5-pro", "minimax-m3", "minimax-m2.7",
+            "qwen3.8-max", "qwen3.7-max", "qwen3.7-plus", "qwen3.6-plus", "hy3",
         ],
     },
     "openrouter": {
