@@ -175,6 +175,50 @@ def test_test_files_and_dirs_skipped(tmp_path):
     assert _types(CVEHunter(), tmp_path) == set()
 
 
+# --- client-side / config fetches are not SSRF --------------------------------
+
+
+def test_client_side_fetch_not_flagged_as_ssrf(tmp_path):
+    (tmp_path / "x.js").write_text(
+        "const { data } = await axios.get(generateUrl('/apps/files/' + id))\n"
+        "const res = await window.fetch('/api/' + q)\n",
+        encoding="utf-8",
+    )
+    assert "ssrf" not in _types(CVEHunter(), tmp_path)
+
+
+def test_server_side_axios_url_still_flagged(tmp_path):
+    (tmp_path / "proxy.js").write_text(
+        "const url = req.query.url;\naxios.get(url)\n", encoding="utf-8"
+    )
+    assert "ssrf" in _types(CVEHunter(), tmp_path)
+
+
+def test_webhook_response_url_not_flagged(tmp_path):
+    (tmp_path / "provider.rb").write_text(
+        "resp = http.request(Net::HTTP::Post.new(URI(response_url)))\n",
+        encoding="utf-8",
+    )
+    assert "ssrf" not in _types(CVEHunter(), tmp_path)
+
+
+# --- Ruby params[ is a source, not a sink ------------------------------------
+
+
+def test_ruby_params_alone_not_flagged(tmp_path):
+    (tmp_path / "c.rb").write_text(
+        "def show\n  params[:name]\nend\n", encoding="utf-8"
+    )
+    assert "xss" not in _types(CVEHunter(), tmp_path)
+
+
+def test_ruby_raw_params_still_flagged(tmp_path):
+    (tmp_path / "d.rb").write_text(
+        "def show\n  raw(params[:name])\nend\n", encoding="utf-8"
+    )
+    assert "xss" in _types(CVEHunter(), tmp_path)
+
+
 def test_sqli_finding_has_file_line_and_payload(repo):
     hunter = CVEHunter()
     sqli = _finding(hunter, repo, "sqli")
