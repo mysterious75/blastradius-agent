@@ -219,6 +219,63 @@ def test_ruby_raw_params_still_flagged(tmp_path):
     assert "xss" in _types(CVEHunter(), tmp_path)
 
 
+# --- round 2: method-name DELETE, i18n echo, version eval ---------------------
+
+
+def test_js_axios_delete_url_not_sqli(tmp_path):
+    # axios.delete(...) is a method call, not the SQL keyword DELETE
+    (tmp_path / "x.js").write_text(
+        "axios.delete(generateUrl('/apps/files_sharing/api/externalShares/' + share.id))\n",
+        encoding="utf-8",
+    )
+    assert "sqli" not in _types(CVEHunter(), tmp_path)
+
+
+def test_php_i18n_echo_not_flagged(tmp_path):
+    (tmp_path / "cli.php").write_text(
+        'echo $l->t(\'Cannot write into "config" directory!\') . "\\n";\n'
+        "echo json_encode(['error' => 'Strict Cookie']);\n",
+        encoding="utf-8",
+    )
+    assert "xss" not in _types(CVEHunter(), tmp_path)
+
+
+def test_php_echo_raw_variable_still_flagged(tmp_path):
+    (tmp_path / "page.php").write_text(
+        '<?php echo $name; ?>\n', encoding="utf-8"
+    )
+    assert "xss" in _types(CVEHunter(), tmp_path)
+
+
+def test_version_info_eval_not_flagged(tmp_path):
+    (tmp_path / "setup.py").write_text(
+        "__version__ = '.'.join(eval(line.split('__version_info__ = ')[-1]))\n",
+        encoding="utf-8",
+    )
+    assert "xss" not in _types(CVEHunter(), tmp_path)
+
+
+def test_graphql_concat_requires_sql_keyword(tmp_path):
+    # string concat in a graphql-ish file without any SQL keyword is not graphql-injection
+    (tmp_path / "build.go").write_text(
+        'package main\nfunc f() string {\n  return "runner-" + hex.EncodeToString(sum[:byteLen])\n}\n'
+        "var _ = struct{ Field func() }{}\n",
+        encoding="utf-8",
+    )
+    assert "graphql" not in _types(CVEHunter(), tmp_path)
+
+
+def test_spec_files_skipped(tmp_path):
+    # .spec.ts / _spec.rb are test files too
+    (tmp_path / "openLocallyAction.spec.ts").write_text(
+        "expect(axios.post).toBeCalledTimes(1)\n", encoding="utf-8"
+    )
+    (tmp_path / "user_spec.rb").write_text(
+        'raw(params[:name])\n', encoding="utf-8"
+    )
+    assert _types(CVEHunter(), tmp_path) == set()
+
+
 def test_sqli_finding_has_file_line_and_payload(repo):
     hunter = CVEHunter()
     sqli = _finding(hunter, repo, "sqli")
