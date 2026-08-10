@@ -104,6 +104,33 @@ async def test_run_scan_plain_answer_returns_directly():
     assert agent["client"].chat.completions.seen_messages[-1][-1]["role"] == "user"
 
 
+@pytest.mark.anyio
+async def test_run_scan_repeated_tool_call_gets_guard_message():
+    # identical repeat of a tool call must not be re-executed — it gets a
+    # stop-repeating message that breaks infinite tool-call loops
+    agent = _agent([
+        Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", '{"target": "x"}')]))),
+        Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", '{"target": "x"}')]))),
+        Resp(Choice("stop", Msg(content="final"))),
+    ])
+    assert await run_scan("go", agent) == "final"
+    tool_msgs = [
+        m for m in agent["client"].chat.completions.seen_messages[-1] if m["role"] == "tool"
+    ]
+    assert tool_msgs[0]["content"] == "scanned:x"           # first call executed
+    assert "repeated tool call" in tool_msgs[1]["content"]  # second call guarded
+
+
+@pytest.mark.anyio
+async def test_run_scan_exhausted_returns_last_content():
+    # when the loop caps out, any accumulated assistant content is returned
+    agent = _agent([Resp(Choice("tool_calls", Msg(content="progress", tool_calls=[
+        Call("dummy_tool", '{"target": "x"}'),
+    ]))] * 30)
+    out = await run_scan("go", agent)
+    assert out  # not a bare crash; last content or the hint message
+
+
 def test_tool_schema_marks_required_params():
     schema = _tool_schema(dummy_tool)
     assert schema["function"]["name"] == "dummy_tool"

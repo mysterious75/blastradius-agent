@@ -39,7 +39,7 @@ _MODEL = _selection["model"] if _selection else "deepseek-v4-flash"
 _PROVIDER_CFG = PROVIDER_REGISTRY[_PROVIDER]
 _API_KEY = provider_api_key(_PROVIDER)
 
-MAX_ITERATIONS = 10
+MAX_ITERATIONS = int(os.getenv("BLASTRADIUS_AGENT_MAX_ITERATIONS", "25"))
 
 SYSTEM_INSTRUCTIONS = (
     "You are an autonomous security engineer.\n"
@@ -133,25 +133,41 @@ async def run_scan(target: str, agent: dict = None) -> str:
         {"role": "system", "content": agent["instructions"]},
         {"role": "user", "content": target},
     ]
+    seen_calls = set()
+    last_content = ""
     for _ in range(MAX_ITERATIONS):
         response = await client.chat.completions.create(
             model=agent["model"], messages=messages, tools=tools
         )
         choice = response.choices[0]
+        last_content = choice.message.content or ""
         if choice.finish_reason != "tool_calls" or not choice.message.tool_calls:
-            return choice.message.content or ""
+            return last_content
         messages.append(choice.message)  # assistant message carrying tool_calls
         for call in choice.message.tool_calls:
             fn = next((t for t in agent["tools"] if t.__name__ == call.function.name), None)
             if fn is None:
                 result = f"unknown tool: {call.function.name}"
             else:
-                try:
-                    args = json.loads(call.function.arguments or "{}")
-                    result = fn(**args)
-                except Exception as exc:  # a failed tool call must not kill the loop
-                    result = f"error: {exc}"
+                key = f"{call.function.name}:{call.function.arguments}"
+                if key in seen_calls:
+                    # break infinite tool-call loops: identical repeat gets no new work
+                    result = (
+                        "repeated tool call with identical arguments — result unchanged; "
+                        "stop calling this tool and write your final answer"
+                    )
+                else:
+                    seen_calls.add(key)
+                    try:
+                        args = json.loads(call.function.arguments or "{}")
+                        result = fn(**args)
+                    except Exception as exc:  # a failed tool call must not kill the loop
+                        result = f"error: {exc}"
             messages.append(
                 {"role": "tool", "tool_call_id": call.id, "content": str(result)}
             )
-    return "Agent loop exceeded max iterations."
+    return (
+        last_content
+        or "Agent loop exceeded max iterations — try a smaller target, or raise "
+        "BLASTRADIUS_AGENT_MAX_ITERATIONS."
+    )
