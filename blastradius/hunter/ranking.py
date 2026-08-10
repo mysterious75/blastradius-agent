@@ -2,10 +2,13 @@
 
 Sorts candidate findings by expected value so the focused-task orchestrator
 (hunter/agent_tasks.py) and humans alike spend effort on the findings most
-likely to be real and impactful first.
+likely to be real and impactful first. Weights are customizable via the
+``weights`` argument or the BLASTRADIUS_RANK_WEIGHTS env var (JSON).
 """
 
-from dataclasses import dataclass, field
+import json
+import os
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 from blastradius.hunter.scanner import Finding
@@ -17,10 +20,29 @@ SEVERITY_WEIGHT = {
     "LOW": 0.4,
 }
 
-_CONFIRMED_BONUS = 0.25
-_NOT_EXPLOITABLE_PENALTY = -0.25
+DEFAULT_RANK_WEIGHTS = {
+    "confidence": 0.55,
+    "severity": 0.30,
+    "confirmed": 0.25,
+    "ruled_out": -0.25,
+}
 
 FindingKey = Tuple[str, int, str]
+
+
+def rank_weights(weights: Optional[Dict[str, float]] = None) -> Dict[str, float]:
+    """Effective rank weights: explicit argument > BLASTRADIUS_RANK_WEIGHTS
+    env JSON > defaults. Partial dicts merge over the defaults."""
+    merged = dict(DEFAULT_RANK_WEIGHTS)
+    raw = os.getenv("BLASTRADIUS_RANK_WEIGHTS", "").strip()
+    if raw:
+        try:
+            merged.update(json.loads(raw))
+        except (ValueError, TypeError):
+            pass
+    if weights:
+        merged.update(weights)
+    return merged
 
 
 def finding_key(f: Finding) -> FindingKey:
@@ -40,11 +62,11 @@ def classify_verdict(output: str) -> str:
     return "needs_manual_review"
 
 
-def _verdict_score(verdict: str) -> float:
+def _verdict_score(verdict: str, w: Dict[str, float]) -> float:
     if verdict == "exploitable":
-        return _CONFIRMED_BONUS
+        return w["confirmed"]
     if verdict in ("not_exploitable", "unsupported"):
-        return _NOT_EXPLOITABLE_PENALTY
+        return w["ruled_out"]
     return 0.0
 
 
@@ -85,21 +107,24 @@ class RankedFinding:
 def rank_findings(
     findings: List[Finding],
     sandbox_verdicts: Optional[Dict[FindingKey, str]] = None,
+    weights: Optional[Dict[str, float]] = None,
 ) -> List[RankedFinding]:
     """Rank findings by expected value; higher score = investigate first.
 
-    Score = 0.55 * confidence + 0.30 * severity weight + sandbox verdict bonus.
+    Score = w[confidence] * confidence + w[severity] * severity weight
+            + sandbox verdict (w[confirmed] / w[ruled_out]).
     Verified-exploitable findings rise, ruled-out findings sink. Ties break by
     confidence, then file/line/type for determinism.
     """
+    w = rank_weights(weights)
     verdicts = sandbox_verdicts or {}
     ranked = []
     for f in findings:
         verdict = verdicts.get(finding_key(f), "")
         score = (
-            0.55 * float(f.confidence)
-            + 0.30 * SEVERITY_WEIGHT.get(f.severity or "", 0.5)
-            + _verdict_score(verdict)
+            w["confidence"] * float(f.confidence)
+            + w["severity"] * SEVERITY_WEIGHT.get(f.severity or "", 0.5)
+            + _verdict_score(verdict, w)
         )
         ranked.append(
             RankedFinding(

@@ -118,3 +118,30 @@ async def test_run_focused_hunt_empty_repo():
     assert result["total_findings"] == 0
     assert result["tasks"] == []
     assert result["ranked"] == []
+
+
+@pytest.mark.anyio
+async def test_focused_tasks_run_concurrently(monkeypatch):
+    import asyncio
+
+    findings = [_finding(f"{c}.py", 1, "sqli", 0.9, "HIGH") for c in "abc"]
+    state = {"active": 0, "max_active": 0}
+
+    async def slow_task(f, agent=None, max_iterations=8):
+        state["active"] += 1
+        state["max_active"] = max(state["max_active"], state["active"])
+        await asyncio.sleep(0.02)
+        state["active"] -= 1
+        return {
+            "finding": (f.file, f.line, f.vuln_type),
+            "file": f.file,
+            "line": f.line,
+            "vuln_type": f.vuln_type,
+            "output": "CONFIRMED_EXPLOITABLE: yes",
+            "verdict": "exploitable",
+        }
+
+    monkeypatch.setattr("blastradius.agent_tasks.run_focused_task", slow_task)
+    result = await run_focused_hunt(".", top_k=3, agent=_agent(), scan_repo=lambda _: findings)
+    assert state["max_active"] > 1  # at least two tasks overlapped (parallel)
+    assert len(result["tasks"]) == 3
