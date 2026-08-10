@@ -20,8 +20,11 @@ def test_cai_framework_is_optional():
 
     data = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
     extras = data["project"]["optional-dependencies"]
+    # cai-framework lives ONLY in the agent extra — NOT in core deps nor in `all`
     assert "cai-framework>=0.5.0" in extras["agent"]
-    assert "cai-framework>=0.5.0" in extras["all"]
+    assert "cai-framework>=0.5.0" not in extras["all"]
+    deps = data["project"]["dependencies"]
+    assert "cai-framework>=0.5.0" not in deps
 
 
 def test_check_clean(monkeypatch):
