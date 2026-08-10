@@ -14,17 +14,17 @@ def test_project_deps_parsed():
     assert all(">=" not in d for d in deps)
 
 
-def test_cai_framework_is_optional():
+def test_cai_framework_not_required_anywhere():
     import tomllib
     from pathlib import Path
 
     data = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
-    extras = data["project"]["optional-dependencies"]
-    # cai-framework lives ONLY in the agent extra — NOT in core deps nor in `all`
-    assert "cai-framework>=0.5.0" in extras["agent"]
-    assert "cai-framework>=0.5.0" not in extras["all"]
-    deps = data["project"]["dependencies"]
-    assert "cai-framework>=0.5.0" not in deps
+    # the AI agent is built-in (openai SDK) — cai-framework/litellm must not
+    # appear anywhere in the project's dependencies
+    assert "cai-framework>=0.5.0" not in data["project"]["dependencies"]
+    extras = data["project"].get("optional-dependencies", {})
+    for extra_deps in extras.values():
+        assert "cai-framework>=0.5.0" not in extra_deps
 
 
 def test_check_clean(monkeypatch):
