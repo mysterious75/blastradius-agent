@@ -126,13 +126,27 @@ def validate_target_code(code: str) -> str:
 
 def allowed_repo_roots() -> List[Path]:
     """Allowed roots for local repo paths (env BLASTRADIUS_ALLOWED_ROOTS,
-    defaulting to the system temp dir + the current working directory)."""
+    defaulting to the system temp dir + cwd + the user's home directory).
+
+    The home dir is included so the CLI can scan any local directory the user
+    owns; paths outside these roots (e.g. /etc, /proc) stay blocked for the
+    REST API surface.
+    """
     raw = os.getenv("BLASTRADIUS_ALLOWED_ROOTS", "").strip()
     if raw:
         roots = [Path(p).resolve() for p in raw.split(os.pathsep) if p.strip()]
         if roots:
             return roots
-    return [Path(tempfile.gettempdir()).resolve(), Path.cwd().resolve()]
+    candidates = [
+        Path(tempfile.gettempdir()).resolve(),
+        Path.cwd().resolve(),
+        Path.home().resolve(),
+    ]
+    roots = []
+    for r in candidates:
+        if r not in roots:
+            roots.append(r)
+    return roots
 
 
 def validate_repo_path(path: str) -> str:
