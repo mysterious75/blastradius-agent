@@ -332,6 +332,27 @@ def test_plain_fetch_url_still_ssrf(tmp_path):
     assert "ssrf" in _types(CVEHunter(), tmp_path)
 
 
+def test_worker_fetch_handler_not_ssrf(tmp_path):
+    (tmp_path / "worker.ts").write_text(
+        "async fetch(req: Request, env?: unknown, ctx?: unknown): Promise<Response> {\n"
+        "  return await handleAsNodeRequest(req, env, ctx);\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    assert "ssrf" not in _types(CVEHunter(), tmp_path)
+
+
+def test_function_request_definition_not_ssrf(tmp_path):
+    (tmp_path / "http.ts").write_text(
+        "export function request(...args: unknown[]): ClientRequest {\n"
+        "  let options: RequestOptions = {};\n"
+        "  return requestImpl(args, options);\n"
+        "}\n",
+        encoding="utf-8",
+    )
+    assert "ssrf" not in _types(CVEHunter(), tmp_path)
+
+
 # --- round 3: method-name fetch/request, string-literal SQL, PHP Template ------
 
 
