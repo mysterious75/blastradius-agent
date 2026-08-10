@@ -52,6 +52,7 @@ SOURCES = [
     r"\$_GET|\$_POST|\$_REQUEST",
     r"getParameter\(",
     r"\binput\(",
+    r"params\[",  # Rails: params is user input (a source, never a sink by itself)
     r"searchParams\.get\(",
     r"ctx\.query\b",
     r"context\.(?:request|args)\b",
@@ -85,10 +86,19 @@ _SSRF_SINKS = [
     r"urlopen\(", r"\bfetch\(", r"http\.(?:get|request)\(", r"axios\.",
     r"\bgot\(", r"\bcurl\(", r"httpx\.", r"aiohttp\.", r"\brequest\(",
 ]
+# Same-origin URL builders, explicit browser-side fetch, and config-marked
+# endpoints (webhook/response URLs set by admins or third-party services) are
+# NOT attacker-controlled server-side fetches.
+_SSRF_SAFE = [
+    r"generateUrl|generateOcsUrl",                 # same-origin builders (Nextcloud)
+    r"window\.fetch",                              # explicit browser-side fetch
+    r"webhook_url|response_url|slack_api_http",    # config-driven endpoints
+]
 
-# Language-specific XSS sinks (Ruby/Java/Go/Rust/ERB)
+# Language-specific XSS sinks (Ruby/Java/Go/Rust/ERB). params[ is a SOURCE,
+# not a sink — it only matters when it flows into one of the sinks below.
 _LANG_XSS_SINKS = {
-    "rb": [r"render\s+inline:", r"\braw\s*\(", r"\.html_safe\b", r"params\["],
+    "rb": [r"render\s+inline:", r"\braw\s*\(", r"\.html_safe\b"],
     "erb": [r"<%=\s*[^%]*(?:params|request)\b"],
     "java": [r"getParameter\(|\.write\s*\("],
     "go": [r"fmt\.Fprintf\s*\([^)]*r\.FormValue\("],
@@ -300,6 +310,8 @@ def _score_xss(line: str, has_source: bool, lang: str = "") -> float:
 
 def _score_ssrf(line: str, has_source: bool) -> float:
     if not any(re.search(p, line) for p in _SSRF_SINKS):
+        return 0.0
+    if any(re.search(p, line, re.I) for p in _SSRF_SAFE):
         return 0.0
     if not _line_references_variable(line):
         return 0.0
