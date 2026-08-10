@@ -69,7 +69,7 @@ def cmd_test(_args) -> int:
             ok += 1
         except Exception as exc:
             rows.append({"provider": name, "model": model, "ok": False,
-                         "status": f"Failed ({type(exc).__name__})", "latency": "—"})
+                         "status": f"Failed: {exc}", "latency": "—"})
     display.print_provider_table(rows)
     print(f"{ok} provider(s) reachable")
     return 0
