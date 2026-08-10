@@ -4,6 +4,7 @@ from blastradius.hunter.ranking import (
     classify_verdict,
     finding_key,
     rank_findings,
+    rank_weights,
 )
 from blastradius.hunter.scanner import Finding
 
@@ -57,3 +58,32 @@ def test_classify_verdict_variants():
     assert classify_verdict("UNSUPPORTED: no template") == "unsupported"
     assert classify_verdict("maybe?") == "needs_manual_review"
     assert classify_verdict("") == "needs_manual_review"
+
+
+def test_custom_weights_change_scores():
+    f = _f("a.py", 1, "sqli", 0.9, "CRITICAL")
+    default = rank_findings([f])[0].score
+    confidence_only = rank_findings([f], weights={"confidence": 1.0, "severity": 0.0})[0].score
+    assert confidence_only != default
+    assert confidence_only == 0.9
+
+
+def test_custom_confirmed_bonus():
+    f = _f("a.py", 1, "sqli", 0.7, "MEDIUM")
+    verdicts = {finding_key(f): "exploitable"}
+    normal = rank_findings([f], sandbox_verdicts=verdicts)[0].score
+    boosted = rank_findings(
+        [f], sandbox_verdicts=verdicts, weights={"confirmed": 0.5}
+    )[0].score
+    assert boosted > normal
+
+
+def test_rank_weights_env_override(monkeypatch):
+    monkeypatch.setenv("BLASTRADIUS_RANK_WEIGHTS", '{"confirmed": 0.5, "ruled_out": -0.4}')
+    w = rank_weights()
+    assert w["confirmed"] == 0.5
+    assert w["ruled_out"] == -0.4
+    # unspecified keys fall back to defaults
+    assert w["confidence"] == 0.55
+    # explicit argument wins over env
+    assert rank_weights({"confidence": 0.7})["confidence"] == 0.7

@@ -86,10 +86,14 @@ async def run_focused_hunt(
     agent: dict = None,
     max_task_iterations: int = DEFAULT_TASK_ITERATIONS,
     scan_repo=None,
+    weights: Optional[dict] = None,
 ) -> dict:
     """Deterministic scan -> rank -> focused per-finding sub-tasks -> re-rank.
 
-    ``scan_repo`` is injectable for tests (defaults to CVEHunter().scan_repo).
+    Sub-tasks run CONCURRENTLY (asyncio.gather) since they are independent —
+    one slow task no longer delays the rest. ``scan_repo`` is injectable for
+    tests (defaults to CVEHunter().scan_repo); ``weights`` overrides the rank
+    weights (see hunter.ranking.rank_weights).
     Returns an aggregate result with the ranked list, per-task outputs, and a
     verdict map that re-ranks findings once sandbox verdicts are known.
     """
@@ -98,17 +102,24 @@ async def run_focused_hunt(
 
         scan_repo = CVEHunter().scan_repo
     findings = scan_repo(target)
-    ranked = rank_findings(findings)
+    ranked = rank_findings(findings, weights=weights)
     top: List[RankedFinding] = ranked[:top_k]
+
+    # independent sub-tasks run in parallel
+    results = await asyncio.gather(
+        *(
+            run_focused_task(r.finding, agent=agent, max_iterations=max_task_iterations)
+            for r in top
+        )
+    )
 
     tasks = []
     verdicts = {}
-    for r in top:
-        task = await run_focused_task(r.finding, agent=agent, max_iterations=max_task_iterations)
+    for r, task in zip(top, results):
         verdicts[finding_key(r.finding)] = task["verdict"]
         tasks.append({**task, "rank": r.rank, "score": r.score})
 
-    re_ranked = rank_findings(findings, sandbox_verdicts=verdicts)
+    re_ranked = rank_findings(findings, sandbox_verdicts=verdicts, weights=weights)
     # expose the verdict-adjusted score on each task (verified rise, ruled-out sink)
     adjusted = {finding_key(r.finding): r.score for r in re_ranked}
     for task in tasks:
