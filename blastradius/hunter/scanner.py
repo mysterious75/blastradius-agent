@@ -31,10 +31,12 @@ FILE_EXTENSIONS = (
     "*.rb", "*.java", "*.go", "*.rs", "*.erb", "*.jsx",
 )
 
-# Paths/dirs that are never scanned (vendored code, build artifacts, migrations)
+# Paths/dirs that are never scanned (vendored code, build artifacts, migrations,
+# and test code — findings in tests are never payable and drown the signal)
 SKIP_DIRS = {
     ".git", "node_modules", "venv", ".venv", "__pycache__", ".tox",
     ".mypy_cache", ".pytest_cache", "dist", "build", "vendor", "migrations",
+    "tests", "spec", "buildtest", "__tests__", "testdata",
 }
 
 # Extension -> language key used by the comment/docstring skipping logic
@@ -65,9 +67,12 @@ _SQL_CONCAT = [
 
 _XSS_SINKS = [
     r"\binnerHTML\b", r"\bouterHTML\b", r"\bdocument\.write\(", r"\bdocument\.writeln\(",
-    r"\bdangerouslySetInnerHTML\b", r"\bv-html\b", r"\becho\b", r"\bprint\s*\(",
+    r"\bdangerouslySetInnerHTML\b", r"\bv-html\b",
     r"\brender_template_string\(", r"\binsertAdjacentHTML\(", r"\.html\(", r"\beval\(",
 ]
+# echo/print reach the HTTP response only in PHP — elsewhere they are stdout
+# (Go/Ruby/shell echo lines were a huge false-positive class on real repos)
+_PHP_XSS_SINKS = [r"\becho\b", r"\bprint\s*\("]
 _XSS_SAFE = [
     r"htmlspecialchars", r"html\.escape", r"\bescape\(", r"sanitize", r"purify",
     r"escapejs", r"DOMPurify", r"markupsafe",
@@ -282,10 +287,11 @@ def _score_sqli(line: str, has_source: bool) -> float:
     return 0.0
 
 
-def _score_xss(line: str, has_source: bool) -> float:
+def _score_xss(line: str, has_source: bool, lang: str = "") -> float:
     if any(re.search(p, line, re.I) for p in _XSS_SAFE):
         return 0.0
-    if not any(re.search(p, line, re.I) for p in _XSS_SINKS):
+    sinks = _XSS_SINKS + (_PHP_XSS_SINKS if lang == "php" else [])
+    if not any(re.search(p, line, re.I) for p in sinks):
         return 0.0
     if not _line_references_variable(line):
         return 0.0
@@ -546,6 +552,9 @@ class CVEHunter:
                     continue
                 if "min." in path.name:  # minified bundles — noise, never real code
                     continue
+                if (path.stem.endswith("_test") or path.stem.startswith("test_")
+                        or path.stem.endswith(".test")):  # *_test.go, test_*.py, *.test.js
+                    continue
                 if any(fnmatch.fnmatch(path.name, p) or fnmatch.fnmatch(str(path), p)
                        for p in skip_patterns):
                     continue
@@ -593,7 +602,10 @@ class CVEHunter:
             if _is_skippable_line(line, lang, state):
                 continue
             for vuln_type, scorer in _SCORERS:
-                score = scorer(line, has_source)
+                if vuln_type == "xss":
+                    score = _score_xss(line, has_source, lang)
+                else:
+                    score = scorer(line, has_source)
                 if score < self._learned_threshold(vuln_type):
                     continue
                 findings.append(self._make_finding(path, idx, lines, vuln_type, score))
