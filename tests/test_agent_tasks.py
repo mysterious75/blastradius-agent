@@ -66,18 +66,38 @@ def _finding(file="app.py", line=5, vuln_type="sqli", confidence=0.9, severity="
 
 @pytest.mark.anyio
 async def test_run_focused_task_returns_verdict():
+    # deterministic sandbox: sqli reconstruction is exploitable — no LLM call
     task = await run_focused_task(_finding(), agent=_agent())
     assert task["verdict"] == "exploitable"
+    assert task["sandbox_verdict"] == "exploitable"
+    assert task["llm_output"] == ""
     assert task["finding"] == ("app.py", 5, "sqli")
     assert task["file"] == "app.py" and task["line"] == 5
 
 
 @pytest.mark.anyio
 async def test_run_focused_task_not_exploitable():
+    # jwt reconstruction has no target() function -> sandbox NOT_EXPLOITABLE
     task = await run_focused_task(
-        _finding(vuln_type="xss"), agent=_agent("NOT_EXPLOITABLE: escaped output")
+        _finding(vuln_type="jwt"), agent=_agent()
     )
     assert task["verdict"] == "not_exploitable"
+    assert task["sandbox_verdict"] == "not_exploitable"
+
+
+@pytest.mark.anyio
+async def test_run_focused_task_uses_llm_when_sandbox_inconclusive(monkeypatch):
+    # inconclusive sandbox -> LLM reasoning task decides
+    monkeypatch.setattr(
+        "blastradius.agent_tasks.run_exploit_sandbox",
+        lambda vuln_type, code: "sandbox could not decide",
+    )
+    task = await run_focused_task(
+        _finding(), agent=_agent("NOT_EXPLOITABLE: escaped output")
+    )
+    assert task["sandbox_verdict"] == "needs_manual_review"
+    assert task["verdict"] == "not_exploitable"  # from the LLM output
+    assert task["llm_output"] != ""
 
 
 @pytest.mark.anyio
