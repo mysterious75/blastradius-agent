@@ -13,6 +13,7 @@ Run:  python -m blastradius.review <repo-path> [--limit N] [--ext .cc .h .ts .js
 import argparse
 import json
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Optional, Tuple
 
@@ -94,23 +95,55 @@ def _parse_findings(reply: str, path: Path, start_line: int) -> List[dict]:
     return findings
 
 
+FAILURE_STREAK_STOP = 4
+
+
+def _review_one(args):
+    """Review a single chunk; retries once on transient failure.
+
+    Returns {"status": "ok"|"skipped"|"failed", "path", "findings"}.
+    """
+    path, start_line, chunk, client = args
+    for attempt in range(2):
+        try:
+            validate_target_code(REVIEW_PROMPT + chunk)
+        except ValueError:
+            return {"status": "skipped", "path": path, "findings": []}
+        try:
+            reply = client.chat([{"role": "user", "content": REVIEW_PROMPT + chunk}])
+            return {
+                "status": "ok",
+                "path": path,
+                "findings": _parse_findings(reply, path, start_line),
+            }
+        except Exception:
+            if attempt == 0:
+                import time as _time
+
+                _time.sleep(0.5)  # brief backoff before the retry
+    return {"status": "failed", "path": path, "findings": []}
+
+
 def review_repo(
     repo_path: str,
     limit: int = 100,
     exts: Tuple[str, ...] = DEFAULT_EXTS,
     client=None,
     timeout: int = 120,
+    workers: int = 4,
 ) -> List[dict]:
-    """Review up to ``limit`` source files; returns LLM-flagged findings.
+    """Review up to ``limit`` source files in parallel; returns LLM-flagged findings.
 
-    ``timeout`` is the per-request LLM timeout in seconds (default 120 — the
-    client's default 30s is too short for large code chunks).
+    Chunks run concurrently (``workers`` threads) for throughput; each chunk is
+    retried once on transient failures; after ``FAILURE_STREAK_STOP``
+    consecutive failures the review stops early (provider down) and returns
+    whatever was found so far. Findings stream to stderr as they arrive so a
+    slow run still shows progress.
     """
     root = Path(validate_repo_path(repo_path))
     client = client or LLMClient(timeout=timeout)
-    findings: List[dict] = []
-    skipped = 0
-    failed = 0
+
+    tasks = []
     seen = 0
     for path in _iter_files(root, exts):
         if seen >= limit:
@@ -121,22 +154,46 @@ def review_repo(
             continue
         seen += 1
         for chunk, start_line in _chunks(text):
-            try:
-                validate_target_code(REVIEW_PROMPT + chunk)
-            except ValueError:
-                skipped += 1
-                continue
-            try:
-                reply = client.chat([{"role": "user", "content": REVIEW_PROMPT + chunk}])
-            except Exception as exc:  # a slow/failed chunk must not abort the review
-                failed += 1
-                print(f"[!] chunk failed ({type(exc).__name__}): {path}", file=sys.stderr)
-                continue
-            findings.extend(_parse_findings(reply, path, start_line))
+            tasks.append((path, start_line, chunk, client))
+
+    findings: List[dict] = []
+    skipped = failed = 0
+    streak = 0
+    total = len(tasks)
+    done = 0
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {pool.submit(_review_one, t): t for t in tasks}
+        try:
+            for fut in as_completed(futures):
+                done += 1
+                res = fut.result()
+                if res["status"] == "ok":
+                    streak = 0
+                    for f in res["findings"]:
+                        print(
+                            f"[+] {f['file']}:{f['line']} {f['severity']} — {f['reason']}",
+                            file=sys.stderr,
+                        )
+                    findings.extend(res["findings"])
+                elif res["status"] == "skipped":
+                    skipped += 1
+                else:
+                    streak += 1
+                    failed += 1
+                    print(f"[!] chunk failed: {res['path']}", file=sys.stderr)
+                    if streak >= FAILURE_STREAK_STOP:
+                        print(
+                            "[!] too many consecutive failures — provider flaky; stopping early",
+                            file=sys.stderr,
+                        )
+                        break
+        finally:
+            pool.shutdown(wait=False, cancel_futures=True)
     if skipped:
         print(f"[*] {skipped} chunk(s) skipped by the prompt-injection guard", file=sys.stderr)
     if failed:
         print(f"[!] {failed} chunk(s) failed (timeouts/errors) — partial results", file=sys.stderr)
+    print(f"[*] reviewed {done}/{total} chunk(s) — {len(findings)} finding(s)", file=sys.stderr)
     return findings
 
 
@@ -148,11 +205,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("repo", help="local repo path to review")
     parser.add_argument("--limit", type=int, default=100, help="max files to review")
     parser.add_argument("--timeout", type=int, default=120, help="LLM per-request timeout (s)")
+    parser.add_argument("--workers", type=int, default=4, help="parallel chunk workers")
     parser.add_argument("--ext", nargs="*", default=list(DEFAULT_EXTS), help="file extensions")
     args = parser.parse_args(argv)
 
     findings = review_repo(
-        args.repo, limit=args.limit, exts=tuple(args.ext), timeout=args.timeout
+        args.repo,
+        limit=args.limit,
+        exts=tuple(args.ext),
+        timeout=args.timeout,
+        workers=args.workers,
     )
     print(json.dumps(findings, indent=2, default=str))
     print(f"{len(findings)} finding(s) — LLM-flagged; verify each before reporting")

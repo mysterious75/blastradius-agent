@@ -38,6 +38,7 @@ SKIP_DIRS = {
     ".mypy_cache", ".pytest_cache", "dist", "build", "vendor", "migrations",
     "tests", "spec", "buildtest", "__tests__", "testdata",
     "test", "wpt",  # bare test dirs (internal/test) and Web Platform Tests harness
+    "internal",  # non-public plumbing (binding wrappers, compat internals) — not external attack surface
 }
 
 # Extension -> language key used by the comment/docstring skipping logic
