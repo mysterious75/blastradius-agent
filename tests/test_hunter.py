@@ -136,6 +136,45 @@ def test_scan_finds_all_three_vuln_types(repo):
         assert f.confidence >= 0.7
 
 
+def _types(hunter, path):
+    return {f.vuln_type for f in hunter.scan_repo(str(path))}
+
+
+def test_go_echo_lines_not_flagged_as_xss(tmp_path):
+    (tmp_path / "run.go").write_text(
+        'if IFS= read -r -t 5 leaked; then echo "STDIN_LEAK:[$leaked]"; fi\n'
+        'echo \'executed=$(echo "yes")\' >> $GITLAB_ENV\n',
+        encoding="utf-8",
+    )
+    assert "xss" not in _types(CVEHunter(), tmp_path)
+
+
+def test_python_print_not_flagged_as_xss(tmp_path):
+    (tmp_path / "app.py").write_text("print(user_input)\n", encoding="utf-8")
+    assert "xss" not in _types(CVEHunter(), tmp_path)
+
+
+def test_php_echo_still_flagged_as_xss(tmp_path):
+    (tmp_path / "page.php").write_text(
+        '<?php echo "<h1>Hello " . $_GET["name"] . "</h1>"; ?>\n', encoding="utf-8"
+    )
+    assert "xss" in _types(CVEHunter(), tmp_path)
+
+
+def test_test_files_and_dirs_skipped(tmp_path):
+    # *_test.go with a real sink, and a tests/ dir with a real sink — both skipped
+    (tmp_path / "client_test.go").write_text(
+        'el.innerHTML = req.body["q"]\n', encoding="utf-8"
+    )
+    (tmp_path / "tests").mkdir()
+    (tmp_path / "tests" / "app.py").write_text(
+        "name = request.args.get('name')\n"
+        "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n",
+        encoding="utf-8",
+    )
+    assert _types(CVEHunter(), tmp_path) == set()
+
+
 def test_sqli_finding_has_file_line_and_payload(repo):
     hunter = CVEHunter()
     sqli = _finding(hunter, repo, "sqli")

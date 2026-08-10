@@ -1,0 +1,42 @@
+[
+  {
+    "package": "15five-django-ajax-selects",
+    "url": "https://github.com/crucialfelix/django-ajax-selects/"
+  },
+  {
+    "package": "3DViewer-Flask",
+    "url": "https://github.com/alekssadowski95/3DViewer-Flask"
+  },
+  {
+    "package": "APIFlask",
+    "url": "https://github.com/apiflask/apiflask/issues"
+  },
+  {
+    "package": "AkvoDjangoFormGateway",
+    "url": "https://github.com/akvo/Akvo-DjangoFormGateway"
+  },
+  {
+    "package": "Anna-Flask-Zipkin",
+    "url": "https://github.com/hyperanna01/anna-flask-zipkin"
+  },
+  {
+    "package": "ArangoDjango",
+    "url": "https://github.com/saeschdivara/ArangoDjango"
+  },
+  {
+    "package": "BDD4Django",
+    "url": "http://github.com/danielfranca/BDD4Django"
+  },
+  {
+    "package": "Bcrypt-Flask",
+    "url": "https://github.com/mahenzon/flask-bcrypt"
+  },
+  {
+    "package": "BmorricalDjangoWorkflows",
+    "url": "https://github.com/Bmorrical/django-workflows"
+  },
+  {
+    "package": "BootFlask",
+    "url": "https://github.com/riquellopes/boot-flask"
+  }
+]
