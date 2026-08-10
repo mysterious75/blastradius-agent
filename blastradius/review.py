@@ -30,7 +30,7 @@ REVIEW_PROMPT = (
     "or exactly NO_ISSUES if none. Do not report style, theory, or hardening-only items.\n\n"
 )
 
-MAX_CHUNK_BYTES = 40 * 1024  # under the 50KB target-code cap
+MAX_CHUNK_BYTES = 24 * 1024  # small chunks = fast LLM turns, fewer timeouts
 
 DEFAULT_EXTS = (".cc", ".cxx", ".cpp", ".h", ".hh", ".ts", ".js")
 
@@ -99,10 +99,15 @@ def review_repo(
     limit: int = 100,
     exts: Tuple[str, ...] = DEFAULT_EXTS,
     client=None,
+    timeout: int = 120,
 ) -> List[dict]:
-    """Review up to ``limit`` source files; returns LLM-flagged findings."""
+    """Review up to ``limit`` source files; returns LLM-flagged findings.
+
+    ``timeout`` is the per-request LLM timeout in seconds (default 120 — the
+    client's default 30s is too short for large code chunks).
+    """
     root = Path(validate_repo_path(repo_path))
-    client = client or LLMClient()
+    client = client or LLMClient(timeout=timeout)
     findings: List[dict] = []
     skipped = 0
     seen = 0
@@ -138,10 +143,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     parser.add_argument("repo", help="local repo path to review")
     parser.add_argument("--limit", type=int, default=100, help="max files to review")
+    parser.add_argument("--timeout", type=int, default=120, help="LLM per-request timeout (s)")
     parser.add_argument("--ext", nargs="*", default=list(DEFAULT_EXTS), help="file extensions")
     args = parser.parse_args(argv)
 
-    findings = review_repo(args.repo, limit=args.limit, exts=tuple(args.ext))
+    findings = review_repo(
+        args.repo, limit=args.limit, exts=tuple(args.ext), timeout=args.timeout
+    )
     print(json.dumps(findings, indent=2, default=str))
     print(f"{len(findings)} finding(s) — LLM-flagged; verify each before reporting")
     return 0
