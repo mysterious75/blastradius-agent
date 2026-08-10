@@ -59,7 +59,9 @@ SOURCES = [
     r"window\.location",
 ]
 
-_SQL_KEYWORDS = r"\b(?:SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|UNION)\b"
+# SQL keywords — dot-preceded ones (axios.delete, http.delete, el.remove()) are
+# method names, not SQL, and must not count as SQL context.
+_SQL_KEYWORDS = r"(?<!\.)\b(?:SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|UNION)\b"
 # String literal concatenated with a variable. f-strings and plain literals
 # are intentionally NOT flagged (too many false positives).
 _SQL_CONCAT = [
@@ -79,6 +81,9 @@ _XSS_SAFE = [
     r"escapejs", r"DOMPurify", r"markupsafe",
     r"escape_html", r"html_escape", r"escapeHtml", r"htmlEscape",
     r"HTMLEscape", r"EscapeString", r"escapeJavaScript",
+    # i18n helpers (static translation output) and self-referential version eval
+    r"->t\(|gettext\b|__(?:\()|_e\(|trans\(|json_encode\(",
+    r"__version_info__\s*=",
 ]
 
 _SSRF_SINKS = [
@@ -354,7 +359,7 @@ def _score_jwt(line: str, has_source: bool) -> float:
 def _score_graphql(line: str, has_source: bool, has_graphql: bool) -> float:
     if not has_graphql:
         return 0.0
-    if any(re.search(p, line) for p in _SQL_CONCAT):
+    if re.search(_SQL_KEYWORDS, line, re.I) and any(re.search(p, line) for p in _SQL_CONCAT):
         return 0.8 if has_source else 0.7
     return 0.0
 
@@ -565,7 +570,8 @@ class CVEHunter:
                 if "min." in path.name:  # minified bundles — noise, never real code
                     continue
                 if (path.stem.endswith("_test") or path.stem.startswith("test_")
-                        or path.stem.endswith(".test")):  # *_test.go, test_*.py, *.test.js
+                        or path.stem.endswith(".test") or path.stem.endswith(".spec")
+                        or path.stem.endswith("_spec")):  # *_test.go, test_*.py, *.test.js, *.spec.ts
                     continue
                 if any(fnmatch.fnmatch(path.name, p) or fnmatch.fnmatch(str(path), p)
                        for p in skip_patterns):
