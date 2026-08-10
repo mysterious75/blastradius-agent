@@ -191,6 +191,8 @@ class PatchGenerator:
         url = cfg["base_url"].rstrip("/") + "/chat/completions"
         headers = {
             "Content-Type": "application/json",
+            # curl-like UA: some LLM gateways 403 the default Python-urllib agent
+            "User-Agent": "curl/8.6.0",
             "Authorization": f"Bearer {self.api_key}",
         }
         headers.update(cfg.get("extra_headers") or {})
