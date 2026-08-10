@@ -25,11 +25,13 @@ from blastradius.hunter.ranking import (
     finding_key,
     rank_findings,
 )
+from blastradius.hunter.scanner import reconstruct_target_code
 
 FOCUSED_TASK_INSTRUCTIONS = (
     "You are validating ONE security finding in isolation.\n"
-    "1. Call run_exploit_sandbox with the finding's vuln_type and the vulnerable "
-    "code to prove exploitability.\n"
+    "1. The user message includes 'reconstructed_target' — runnable code that "
+    "defines target(user_input). Call run_exploit_sandbox(vuln_type, reconstructed_target) "
+    "to prove exploitability. 'code_context' shows the surrounding source.\n"
     "2. If the sandbox confirms it, call generate_and_verify_patch.\n"
     "3. Reply with a short verdict only: EXPLOITABLE with a one-line reason, "
     "NOT_EXPLOITABLE with a one-line reason, or NEEDS_MANUAL_REVIEW.\n"
@@ -40,6 +42,10 @@ DEFAULT_TASK_ITERATIONS = 8
 
 
 def _finding_payload(finding) -> str:
+    try:
+        reconstructed = reconstruct_target_code(finding)
+    except Exception:
+        reconstructed = ""
     return json.dumps(
         {
             "file": finding.file,
@@ -49,6 +55,8 @@ def _finding_payload(finding) -> str:
             "confidence": finding.confidence,
             "severity": finding.severity,
             "description": finding.description,
+            "code_context": finding.context,
+            "reconstructed_target": reconstructed,
         },
         default=str,
     )
@@ -101,6 +109,10 @@ async def run_focused_hunt(
         tasks.append({**task, "rank": r.rank, "score": r.score})
 
     re_ranked = rank_findings(findings, sandbox_verdicts=verdicts)
+    # expose the verdict-adjusted score on each task (verified rise, ruled-out sink)
+    adjusted = {finding_key(r.finding): r.score for r in re_ranked}
+    for task in tasks:
+        task["score"] = adjusted.get(task["finding"], task["score"])
     return {
         "target": target,
         "total_findings": len(findings),
