@@ -84,6 +84,56 @@ def test_chat_retries_on_429_then_succeeds(monkeypatch):
     assert sleeps == [1.0, 2.0]  # backoff 1s then 2s
 
 
+def test_chat_retries_on_timeout_then_succeeds(monkeypatch):
+    monkeypatch.setattr("blastradius.providers.client.time.sleep", lambda s: None)
+    attempts = {"n": 0}
+
+    def flaky_http(url, headers, payload, timeout):
+        attempts["n"] += 1
+        if attempts["n"] <= 2:
+            raise TimeoutError("read timed out")
+        return {"choices": [{"message": {"content": "ok"}}]}
+
+    client = LLMClient(provider="deepseek", model="deepseek-chat", http=flaky_http, verbose=False)
+    assert client.chat(["hi"]) == "ok"
+    assert attempts["n"] == 3  # transient timeouts were retried
+
+
+def test_chat_retries_on_5xx_then_succeeds(monkeypatch):
+    import urllib.error
+
+    monkeypatch.setattr("blastradius.providers.client.time.sleep", lambda s: None)
+    attempts = {"n": 0}
+
+    def flaky_http(url, headers, payload, timeout):
+        attempts["n"] += 1
+        if attempts["n"] <= 2:
+            raise urllib.error.HTTPError(url, 503, "Service Unavailable", {}, None)
+        return {"choices": [{"message": {"content": "ok"}}]}
+
+    client = LLMClient(provider="deepseek", model="deepseek-chat", http=flaky_http, verbose=False)
+    assert client.chat(["hi"]) == "ok"
+    assert attempts["n"] == 3
+
+
+def test_chat_does_not_retry_401(monkeypatch):
+    import urllib.error
+
+    monkeypatch.setattr("blastradius.providers.client.time.sleep", lambda s: None)
+    attempts = {"n": 0}
+
+    def auth_http(url, headers, payload, timeout):
+        attempts["n"] += 1
+        raise urllib.error.HTTPError(url, 401, "Unauthorized", {}, None)
+
+    client = LLMClient(provider="deepseek", model="deepseek-chat", http=auth_http, verbose=False)
+    with pytest.raises(LLMUnavailableError):
+        client.chat(["hi"])
+    # one attempt per provider in the fallback chain — 401 is not transient,
+    # so no per-provider retries are wasted (chain: deepseek + keyed fallbacks)
+    assert attempts["n"] == len(client._chain())
+
+
 def test_chat_429_exhausts_retries_then_falls_back(monkeypatch):
     monkeypatch.setattr("blastradius.providers.client.time.sleep", lambda s: None)
 
