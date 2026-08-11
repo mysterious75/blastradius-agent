@@ -24,11 +24,37 @@ from blastradius.security.input_validator import validate_repo_path, validate_ta
 REVIEW_PROMPT = (
     "You are auditing ONE source-file chunk of Cloudflare workerd (a Workers runtime).\n"
     "Find crash-prone code reachable from standard Worker primitives (fetch, streams,\n"
-    "crypto, HTMLRewriter, WebSocket, JSRPC): panics/aborts, unchecked unwrap()/expect(),\n"
-    "out-of-bounds indexing, integer overflow in size calculations, unbounded recursion,\n"
-    "use-after-free. Reply with exactly one line per issue:\n"
+    "crypto, HTMLRewriter, WebSocket, JSRPC, WebAssembly): panics/aborts, unchecked\n"
+    "unwrap()/expect(), out-of-bounds indexing, integer overflow in size calculations,\n"
+    "unbounded recursion, use-after-free.\n"
+    "DO NOT report:\n"
+    "- deliberate abort/termination paths (KJ_UNREACHABLE, kj::throwFatalException,\n"
+    "  KJ_ASSERT* invariant guards, KJ_UNIMPLEMENTED) unless user-controlled input can\n"
+    "  deterministically reach them across a trust boundary\n"
+    "- lifetime issues where the callee copies the value synchronously before any\n"
+    "  temporary dies (verify the callee body first)\n"
+    "- hardening-only or missing-default robustness nits with no demonstrated reachability\n"
+    "- anything not at the exact line you are quoting\n"
+    "Reply with exactly one line per issue:\n"
     "  FILE:LINE | SEVERITY | ONE-LINE REASON\n"
-    "or exactly NO_ISSUES if none. Do not report style, theory, or hardening-only items.\n\n"
+    "or exactly NO_ISSUES if none. Only report issues you are confident about.\n\n"
+)
+
+VERIFY_PROMPT = (
+    "VERIFY THIS CLAIM against the source window below.\n"
+    "CLAIM: {reason}\n"
+    "SOURCE around line {line}:\n"
+    "{context}\n"
+    "The claim is REJECTED if any of:\n"
+    "- the termination is by design (KJ_UNREACHABLE / kj::throwFatalException / KJ_ASSERT* /\n"
+    "  KJ_UNIMPLEMENTED abort or invariant paths) with no user-controlled cross-boundary path\n"
+    "- the claimed lifetime is safe (e.g. the callee copies the value synchronously before\n"
+    "  any temporary dies)\n"
+    "- the claim does not match the code at the stated line, or impact is hardening-only\n"
+    "- reachability from a Worker primitive is not demonstrated\n"
+    "Reply exactly one of:\n"
+    "  CONFIRMED: one-line justification\n"
+    "  REJECTED: one-line reason\n"
 )
 
 MAX_CHUNK_BYTES = 16 * 1024  # small chunks = fast LLM turns, fewer timeouts
@@ -97,31 +123,58 @@ def _parse_findings(reply: str, path: Path, start_line: int) -> List[dict]:
 
 FAILURE_STREAK_STOP = 4
 
+VERIFY_WINDOW = 30  # source lines around the flag shown to the verifier
+
+
+def verify_finding(finding: dict, source_text: str, client) -> dict:
+    """Two-stage accuracy gate: the LLM re-checks its own flag against the
+    real source window and must CONFIRM it. Fail-closed: anything other than
+    an explicit CONFIRMED prefix is treated as rejected.
+    """
+    line = int(finding.get("line", 0))
+    lines = source_text.splitlines()
+    start = max(0, line - 1 - VERIFY_WINDOW)
+    context = "\n".join(lines[start:start + 2 * VERIFY_WINDOW + 1])
+    prompt = VERIFY_PROMPT.format(reason=finding.get("reason", ""), line=line, context=context)
+    try:
+        reply = client.chat([{"role": "user", "content": prompt}])
+    except Exception as exc:
+        return {**finding, "verified": False, "verify_reason": f"verify call failed: {exc}"}
+    upper = (reply or "").upper()
+    if upper.startswith("CONFIRMED"):
+        return {**finding, "verified": True, "verify_reason": reply}
+    return {**finding, "verified": False, "verify_reason": reply}
+
 
 def _review_one(args):
-    """Review a single chunk; retries once on transient failure.
+    """Review a single chunk; retries once on transient failure; flags that
+    survive the scan are then run through the verification gate.
 
-    Returns {"status": "ok"|"skipped"|"failed", "path", "findings"}.
+    Returns {"status": "ok"|"skipped"|"failed", "path", "findings", "rejected"}.
     """
-    path, start_line, chunk, client = args
+    path, start_line, chunk, source_text, client = args
     for attempt in range(2):
         try:
             validate_target_code(REVIEW_PROMPT + chunk)
         except ValueError:
-            return {"status": "skipped", "path": path, "findings": []}
+            return {"status": "skipped", "path": path, "findings": [], "rejected": []}
         try:
             reply = client.chat([{"role": "user", "content": REVIEW_PROMPT + chunk}])
-            return {
-                "status": "ok",
-                "path": path,
-                "findings": _parse_findings(reply, path, start_line),
-            }
         except Exception:
             if attempt == 0:
                 import time as _time
 
                 _time.sleep(0.5)  # brief backoff before the retry
-    return {"status": "failed", "path": path, "findings": []}
+            continue
+        findings, rejected = [], []
+        for finding in _parse_findings(reply, path, start_line):
+            verified = verify_finding(finding, source_text, client)
+            if verified["verified"]:
+                findings.append(verified)
+            else:
+                rejected.append(verified)
+        return {"status": "ok", "path": path, "findings": findings, "rejected": rejected}
+    return {"status": "failed", "path": path, "findings": [], "rejected": []}
 
 
 def review_repo(
@@ -154,9 +207,10 @@ def review_repo(
             continue
         seen += 1
         for chunk, start_line in _chunks(text):
-            tasks.append((path, start_line, chunk, client))
+            tasks.append((path, start_line, chunk, text, client))
 
     findings: List[dict] = []
+    rejected_count = 0
     skipped = failed = 0
     streak = 0
     total = len(tasks)
@@ -175,6 +229,12 @@ def review_repo(
                             file=sys.stderr,
                         )
                     findings.extend(res["findings"])
+                    for r in res.get("rejected", []):
+                        rejected_count += 1
+                        print(
+                            f"[-] rejected: {r['file']}:{r['line']} — {r['verify_reason'][:100]}",
+                            file=sys.stderr,
+                        )
                 elif res["status"] == "skipped":
                     skipped += 1
                 else:
@@ -193,7 +253,11 @@ def review_repo(
         print(f"[*] {skipped} chunk(s) skipped by the prompt-injection guard", file=sys.stderr)
     if failed:
         print(f"[!] {failed} chunk(s) failed (timeouts/errors) — partial results", file=sys.stderr)
-    print(f"[*] reviewed {done}/{total} chunk(s) — {len(findings)} finding(s)", file=sys.stderr)
+    print(
+        f"[*] reviewed {done}/{total} chunk(s) — {len(findings)} confirmed, "
+        f"{rejected_count} rejected by verification",
+        file=sys.stderr,
+    )
     return findings
 
 

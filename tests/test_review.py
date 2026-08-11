@@ -2,16 +2,25 @@
 
 from pathlib import Path
 
-from blastradius.review import _chunks, _parse_findings, review_repo
+from blastradius.review import (
+    _chunks,
+    _parse_findings,
+    review_repo,
+    verify_finding,
+)
 
 
 class FakeClient:
-    def __init__(self, reply="NO_ISSUES"):
+    def __init__(self, reply="NO_ISSUES", verify_reply="CONFIRMED: matches the code"):
         self.reply = reply
+        self.verify_reply = verify_reply
         self.calls = 0
 
     def chat(self, messages, system_prompt=""):
         self.calls += 1
+        content = messages[0]["content"]
+        if content.startswith("VERIFY THIS CLAIM"):
+            return self.verify_reply
         return self.reply
 
 
@@ -47,7 +56,34 @@ def test_review_repo_collects_findings(tmp_path):
     assert len(findings) == 1
     assert findings[0]["file"].endswith("core.cc")
     assert findings[0]["line"] == 2
-    assert client.calls == 1  # test file was not sent
+    assert findings[0]["verified"] is True
+    assert client.calls == 2  # 1 scan chunk + 1 verification call
+
+
+def test_review_drops_rejected_findings(tmp_path):
+    (tmp_path / "a.cc").write_text(
+        "void f() {\n  return paf.promise.exclusiveJoin(onAbort().then([] { KJ_UNREACHABLE; }));\n}\n",
+        encoding="utf-8",
+    )
+    client = FakeClient(
+        "FILE:3 | CRITICAL | KJ_UNREACHABLE on abort",
+        verify_reply="REJECTED: deliberate abort path, no user-controlled boundary crossing",
+    )
+    findings = review_repo(str(tmp_path), limit=10, client=client)
+    assert findings == []  # verification gate rejected the by-design abort flag
+
+
+def test_verify_finding_confirmed_and_rejected():
+    finding = {"file": "/repo/a.cc", "line": 5, "severity": "HIGH", "reason": "UAF"}
+    confirmed = verify_finding(finding, "x\ny\nz\nw\nv\n", FakeClient(verify_reply="CONFIRMED: real"))
+    assert confirmed["verified"] is True
+    rejected = verify_finding(
+        finding, "x\n", FakeClient(verify_reply="REJECTED: hardening only")
+    )
+    assert rejected["verified"] is False
+    # fail-closed: unparseable / missing verification replies count as rejected
+    unparseable = verify_finding(finding, "x\n", FakeClient(verify_reply="maybe?"))
+    assert unparseable["verified"] is False
 
 
 def test_review_repo_no_issues(tmp_path):
@@ -80,7 +116,7 @@ def test_review_skips_bare_test_dir(tmp_path):
     assert len(findings) == 1
     assert Path(findings[0]["file"]).name == "core.cc"  # bare test/ dir file was skipped
     assert "test" not in Path(findings[0]["file"]).parts
-    assert client.calls == 1
+    assert client.calls == 2  # 1 scan chunk + 1 verification call
 
 
 def test_review_parallel_runs_concurrently(tmp_path):
@@ -97,6 +133,8 @@ def test_review_parallel_runs_concurrently(tmp_path):
             time.sleep(0.05)
             with state["lock"]:
                 state["active"] -= 1
+            if messages[0]["content"].startswith("VERIFY THIS CLAIM"):
+                return "CONFIRMED: matches"
             return "FILE:1 | HIGH | unchecked unwrap"
 
     for i in range(6):
@@ -115,12 +153,14 @@ def test_review_retries_transient_failure(tmp_path):
             self.calls += 1
             if self.calls == 1:
                 raise TimeoutError("transient")
+            if messages[0]["content"].startswith("VERIFY THIS CLAIM"):
+                return "CONFIRMED: matches"
             return "FILE:1 | HIGH | unchecked unwrap"
 
     (tmp_path / "a.cc").write_text("void f() { x.unwrap(); }\n", encoding="utf-8")
     client = FlakyClient()
     findings = review_repo(str(tmp_path), limit=1, client=client)
-    assert len(findings) == 1  # retried and succeeded
+    assert len(findings) == 1  # retried, then the finding passed verification
 
 
 def test_review_stops_after_failure_streak(tmp_path):
