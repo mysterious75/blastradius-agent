@@ -9,12 +9,29 @@ a user's API key works with any model they want.
 import json
 import os
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from typing import Callable, Dict, List, Optional
 
 from blastradius.providers.registry import PROVIDER_PRIORITY, PROVIDER_REGISTRY
 from blastradius.providers.rate_limiter import RateLimitedError
+
+
+def _is_transient(exc: Exception) -> bool:
+    """Whether an error is worth retrying: network blips, timeouts, 5xx, limits.
+
+    Auth/config errors (401/403/404) are NOT transient — retrying them only
+    burns time, so they fail fast to the next provider. HTTPError must be
+    checked BEFORE the OSError branch (HTTPError subclasses OSError in urllib).
+    """
+    if isinstance(exc, RateLimitedError):
+        return True
+    if isinstance(exc, urllib.error.HTTPError):
+        return exc.code >= 500 or exc.code in (408, 425)
+    if isinstance(exc, (TimeoutError, ConnectionError, OSError)):
+        return True  # urllib URLError / socket timeouts / connection resets
+    return False
 
 
 class LLMUnavailableError(RuntimeError):
@@ -119,8 +136,10 @@ class LLMClient:
     def chat(self, messages: List, system_prompt: str = "") -> str:
         """Send messages and return the assistant reply.
 
-        Per provider: rate-limited, retried on 429 with exponential backoff,
-        circuit-breaker skipped when DOWN. The first success wins. Raises
+        Per provider: rate-limited and retried on TRANSIENT errors (429, 5xx,
+        timeouts, connection resets) with exponential backoff; auth/config
+        errors (4xx) fail fast to the next provider; circuit-breaker providers
+        are skipped when DOWN. The first success wins. Raises
         LLMUnavailableError when every provider fails (callers fall back to
         rule-based logic).
         """
@@ -130,24 +149,21 @@ class LLMClient:
                 failures.append(f"{name}: circuit open (down)")
                 continue
             model = provider_model(name, self.model)
-            for attempt in range(4):  # 1 + 3 retries on 429
+            for attempt in range(4):  # 1 + 3 retries on transient errors
                 self.limiter.wait_if_needed(name)
                 try:
                     reply = self._chat_with(name, model, messages, system_prompt)
                     self.limiter.record_success(name)
                     return reply
-                except RateLimitedError:
-                    if attempt < 3:
-                        import time as _time
-
-                        _time.sleep(self.limiter.backoff_sleep(attempt))
+                except Exception as exc:
+                    if _is_transient(exc) and attempt < 3:
+                        time.sleep(self.limiter.backoff_sleep(attempt))
                         continue
                     self.limiter.record_failure(name)
-                    failures.append(f"{name}: rate limited (retries exhausted)")
-                    break
-                except Exception as exc:
-                    self.limiter.record_failure(name)
-                    failures.append(f"{name}: {exc}")
+                    if isinstance(exc, RateLimitedError):
+                        failures.append(f"{name}: rate limited (retries exhausted)")
+                    else:
+                        failures.append(f"{name}: {exc}")
                     break
         raise LLMUnavailableError("; ".join(failures) or "no provider configured")
 
