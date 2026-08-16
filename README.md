@@ -314,6 +314,8 @@ models are passed through as-is.
 |---|---|
 | `python -m blastradius.cli.wizard` | Interactive setup (providers, keys, notifications, schedule) |
 | `python -m blastradius.hunter --target <url\|path>` | Scan a repo, sandbox-validate, save disclosure reports |
+| `python -m blastradius.web --target <url>` | Dynamic web testing: reflected XSS, open redirect, security headers, CORS, exposed files, directory listing |
+| `scripts/pr_scan.py --repo . --base origin/main` | PR diff-scoped scan (sandbox-verified, merge gate; auto-opens fix PRs — see `.github/workflows/pr-scan.yml`) |
 | `python -m blastradius.pipeline_cli --target <url\|path>` | Full end-to-end pipeline |
 | `python -m blastradius.auto_hunt --strategy github --max 20` | Autonomous hunt over discovered targets |
 | `python -m blastradius.recon --strategy all` | Discover targets (GitHub code search / PyPI / Shodan) |
@@ -333,6 +335,34 @@ models are passed through as-is.
 docker-compose up
 # dashboard http://localhost:8080 · webhook :8000 · Neo4j :7474/:7687
 ```
+
+## Dynamic Web Testing
+
+Beyond static source scanning, BlastRadius can test a **live target** with
+behavioral checks (`blastradius.web` — stdlib only):
+
+- Reflected XSS (payload injection into every query param and form input)
+- Open redirects (via `url`/`next`/`return`-style params)
+- Missing security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options)
+- Wildcard CORS with credentials
+- Exposed files (`.git/config`, `.env`, `/admin`) and directory listing
+- HTTP interception proxy (records + replays traffic, builds sitemaps)
+
+```bash
+python -m blastradius.web --target http://localhost:8000
+```
+
+Dynamic findings are HTTP-response evidence and are reported as *candidates*
+(no sandbox execution marker) — exactly like static candidates that fail
+sandbox verification.
+
+## PR Security Scan (GitHub Action)
+
+`.github/workflows/pr-scan.yml` runs on every PR: diff-scoped scan → sandbox
+verification → findings comment + SARIF upload → **merge gate** (confirmed
+findings fail the check) → **autofix bot-PR** (`scripts/autofix_pr.py` applies
+only parse-safe, exact-match patches on a fresh branch and opens a fix PR).
+Patches that cannot be applied safely are left for manual review.
 
 ## Benchmark
 
