@@ -19,6 +19,7 @@ VALID_VULN_TYPES = {
     "traversal",
     "crlf",
     "auth_bypass",
+    "idor",
 }
 
 _TEMPLATE_FILES = {
@@ -32,6 +33,7 @@ _TEMPLATE_FILES = {
     "traversal": "traversal_exploit.py.template",
     "crlf": "crlf_exploit.py.template",
     "auth_bypass": "auth_bypass_exploit.py.template",
+    "idor": "idor_exploit.py.template",
 }
 
 

@@ -1,0 +1,7 @@
+{
+  "target": "flask-idor",
+  "description": "Flask endpoint returning any user's record keyed only by the URL id.",
+  "expected": [
+    {"file": "app.py", "vuln_type": "idor", "severity": "HIGH", "cwe": "CWE-639"}
+  ]
+}
