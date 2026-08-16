@@ -1,0 +1,7 @@
+{
+  "target": "flask-traversal",
+  "description": "Flask endpoint opening a request parameter as a file path.",
+  "expected": [
+    {"file": "app.py", "vuln_type": "traversal", "severity": "HIGH", "cwe": "CWE-22"}
+  ]
+}
