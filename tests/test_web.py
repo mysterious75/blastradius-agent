@@ -45,8 +45,10 @@ class _Handler(http.server.BaseHTTPRequestHandler):
             q = qs.get("q", [""])[0]
             self._send(200, f"<html><body>you searched: {q}</body></html>".encode())
         elif path == "/safe":
-            q = qs.get("q", [""])[0].replace("<", "&lt;").replace(">", "&gt;")
-            self._send(200, f"<html><body>you searched: {q}</body></html>".encode())
+            # Fully entity-encode the echo so no probe text can appear verbatim.
+            q = qs.get("q", [""])[0]
+            safe = "".join(f"&#{ord(ch)};" for ch in q)
+            self._send(200, f"<html><body>you searched: {safe}</body></html>".encode())
         elif path == "/redirect":
             self._send(302, b"", location=qs.get("next", [""])[0] or "/")
         elif path == "/cors":
