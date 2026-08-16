@@ -36,9 +36,7 @@ def hunt(hunter: CVEHunter, target: str, reports_dir: Path) -> dict:
     report_paths = []
     confirmed = 0
     for finding in findings:
-        sandbox_result = run_exploit_sandbox(
-            finding.vuln_type, reconstruct_target_code(finding)
-        )
+        sandbox_result = run_exploit_sandbox(finding.vuln_type, reconstruct_target_code(finding))
         if not sandbox_result.startswith("CONFIRMED_EXPLOITABLE"):
             continue
         confirmed += 1
@@ -75,7 +73,9 @@ def print_disclosure_template(finding: Finding, repo_name: str, report_path: Pat
     print(f"  Vulnerability: {finding.description}")
     print(f"  Affected file: {finding.file}:{finding.line}")
     print(f"  Payload / evidence: {finding.evidence[:200]}")
-    print(f"  Severity: {finding.severity} | CVSS estimate: {VULN_META[finding.vuln_type]['cvss']} | CWE: {finding.cwe}")
+    print(
+        f"  Severity: {finding.severity} | CVSS estimate: {VULN_META[finding.vuln_type]['cvss']} | CWE: {finding.cwe}"
+    )
     print("  Sandbox validation: CONFIRMED_EXPLOITABLE (reproduced in isolation)")
     print(f"  Suggested patch: {finding.remediation}")
     print(f"  Full disclosure report: {report_path}")
@@ -103,19 +103,20 @@ def main(argv=None) -> int:
         description="Automated CVE hunt over the default targets (and any custom repos)",
     )
     parser.add_argument(
-        "--target", action="append", default=None,
+        "--target",
+        action="append",
+        default=None,
         help="Custom repo URL or local path (repeatable). Default: the 3 blueprint targets.",
     )
     parser.add_argument(
-        "--reports-dir", default=None,
+        "--reports-dir",
+        default=None,
         help="Where to save reports (default: reports/cve_hunt_YYYY-MM-DD)",
     )
     args = parser.parse_args(argv)
 
     targets = args.target or list(DEFAULT_TARGETS)
-    reports_dir = Path(
-        args.reports_dir or f"reports/cve_hunt_{datetime.date.today().isoformat()}"
-    )
+    reports_dir = Path(args.reports_dir or f"reports/cve_hunt_{datetime.date.today().isoformat()}")
     reports_dir.mkdir(parents=True, exist_ok=True)
 
     hunter = CVEHunter()
@@ -124,10 +125,15 @@ def main(argv=None) -> int:
         try:
             rows.append(hunt(hunter, target, reports_dir))
         except Exception as exc:
-            rows.append({
-                "repo": _repo_name(target), "files": 0, "findings": 0,
-                "confirmed": 0, "reports": 0,
-            })
+            rows.append(
+                {
+                    "repo": _repo_name(target),
+                    "files": 0,
+                    "findings": 0,
+                    "confirmed": 0,
+                    "reports": 0,
+                }
+            )
             print(f"[!] failed on {target}: {exc}")
 
     _print_table(rows)

@@ -46,7 +46,13 @@ class SSRFScanner:
                 return None
             confidence = 0.85 if (has_source(line) or has_source_flag) else 0.7
             return make_finding(
-                path, idx, "ssrf", line.strip(), confidence, "HIGH", "CWE-918",
+                path,
+                idx,
+                "ssrf",
+                line.strip(),
+                confidence,
+                "HIGH",
+                "CWE-918",
                 "Server-side request forgery: a variable reaches a server-side URL fetch.",
                 "Validate the destination against an allowlist and block private/loopback ranges.",
             )

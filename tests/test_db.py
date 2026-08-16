@@ -15,9 +15,17 @@ def db(tmp_path):
 
 
 def make_finding(vuln_type="sqli"):
-    return Finding(file="app.py", line=5, vuln_type=vuln_type, payload="x",
-                   confidence=0.95, severity="CRITICAL", cwe="CWE-89",
-                   description="desc", remediation="fix")
+    return Finding(
+        file="app.py",
+        line=5,
+        vuln_type=vuln_type,
+        payload="x",
+        confidence=0.95,
+        severity="CRITICAL",
+        cwe="CWE-89",
+        description="desc",
+        remediation="fix",
+    )
 
 
 def test_save_and_get_scan(db):
@@ -27,8 +35,7 @@ def test_save_and_get_scan(db):
     assert scan["target"] == "https://github.com/org/repo"
     assert scan["status"] == "pending"
 
-    db.update_scan(scan_id, status="done", files_scanned=42,
-                   finished_at=datetime.now().isoformat())
+    db.update_scan(scan_id, status="done", files_scanned=42, finished_at=datetime.now().isoformat())
     scan = db.get_scan(scan_id)
     assert scan["status"] == "done"
     assert scan["files_scanned"] == 42

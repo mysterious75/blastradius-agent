@@ -5,7 +5,6 @@ SQLiteDB (blastradius/db) persists the same data long-term; this store keeps
 the dashboard responsive without a database dependency.
 """
 
-import os
 import threading
 import time
 from datetime import datetime
@@ -154,12 +153,8 @@ class ScanStore:
 
     def blast_radius(self) -> dict:
         with self._lock:
-            nodes = [
-                {"id": name, "type": "package"} for name in self.graph.backend.packages
-            ]
-            nodes += [
-                {"id": name, "type": "repo"} for name in self.graph.backend.repos
-            ]
+            nodes = [{"id": name, "type": "package"} for name in self.graph.backend.packages]
+            nodes += [{"id": name, "type": "repo"} for name in self.graph.backend.repos]
             links = [
                 {"source": pkg, "target": repo}
                 for pkg, repos in self.graph.backend.links.items()
@@ -170,8 +165,9 @@ class ScanStore:
 
 def run_scan_job(store: ScanStore, job_id: str, target: str) -> None:
     """Background scan executor (runs in a thread)."""
-    store.update_job(job_id, status="running",
-                     started_at=datetime.now().isoformat(timespec="seconds"))
+    store.update_job(
+        job_id, status="running", started_at=datetime.now().isoformat(timespec="seconds")
+    )
     hunter = CVEHunter()
     try:
         if target.startswith(("http://", "https://")):
@@ -198,10 +194,12 @@ def run_scan_job(store: ScanStore, job_id: str, target: str) -> None:
         except Exception:
             pass
 
-        store.update_job(job_id, status="done",
-                         finished_at=datetime.now().isoformat(timespec="seconds"))
+        store.update_job(
+            job_id, status="done", finished_at=datetime.now().isoformat(timespec="seconds")
+        )
         store.add_message(job_id, "Scan complete.")
     except Exception as exc:
         store.add_message(job_id, f"ERROR: {exc}")
-        store.update_job(job_id, status="failed",
-                         finished_at=datetime.now().isoformat(timespec="seconds"))
+        store.update_job(
+            job_id, status="failed", finished_at=datetime.now().isoformat(timespec="seconds")
+        )

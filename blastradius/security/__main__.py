@@ -15,7 +15,7 @@ def cmd_audit(args) -> int:
     if args.verify:
         ok, message = logger.verify()
         print(f"[{'OK' if ok else 'TAMPERED'}] {message}")
-    for entry in entries[-args.lines:]:
+    for entry in entries[-args.lines :]:
         print(f"{entry.get('ts', '?')} {entry.get('event', '?')} {entry.get('hash', '')[:8]}")
     return 0
 

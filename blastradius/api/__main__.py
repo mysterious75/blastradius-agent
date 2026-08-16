@@ -8,7 +8,7 @@ import uvicorn
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="blastradius-api")
     parser.add_argument("--port", type=int, default=8001)
-    parser.add_argument("--host", default="0.0.0.0")
+    parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--reload", action="store_true")
     args = parser.parse_args(argv)
 

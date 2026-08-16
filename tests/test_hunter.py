@@ -18,45 +18,45 @@ ALLOWED_VERDICTS = {
     "needs_manual_review",
 }
 
-VULN_APP_PY = '''\
+VULN_APP_PY = """\
 from flask import request
 
 def search():
     name = request.args.get("name")
     query = "SELECT * FROM users WHERE name = '" + name + "'"
     return db.execute(query)
-'''
+"""
 
-SAFE_APP_PY = '''\
+SAFE_APP_PY = """\
 from flask import request
 
 def search():
     name = request.args.get("name")
     query = "SELECT * FROM users WHERE name = %s"
     return db.execute(query, (name,))
-'''
+"""
 
-VULN_PAGE_PHP = '''\
+VULN_PAGE_PHP = """\
 <?php
 $name = $_GET['name'];
 echo "<h1>Hello " . $name . "</h1>";
 ?>
-'''
+"""
 
-VULN_JS = '''\
+VULN_JS = """\
 const params = new URLSearchParams(window.location.search);
 const q = params.get("q");
 document.getElementById("out").innerHTML = q;
-'''
+"""
 
-VULN_SSRF_PY = '''\
+VULN_SSRF_PY = """\
 import requests
 from flask import request
 
 def fetch():
     url = request.args.get("url")
     return requests.get(url).text
-'''
+"""
 
 
 @pytest.fixture
@@ -143,7 +143,7 @@ def _types(hunter, path):
 def test_go_echo_lines_not_flagged_as_xss(tmp_path):
     (tmp_path / "run.go").write_text(
         'if IFS= read -r -t 5 leaked; then echo "STDIN_LEAK:[$leaked]"; fi\n'
-        'echo \'executed=$(echo "yes")\' >> $GITLAB_ENV\n',
+        "echo 'executed=$(echo \"yes\")' >> $GITLAB_ENV\n",
         encoding="utf-8",
     )
     assert "xss" not in _types(CVEHunter(), tmp_path)
@@ -163,13 +163,11 @@ def test_php_echo_still_flagged_as_xss(tmp_path):
 
 def test_test_files_and_dirs_skipped(tmp_path):
     # *_test.go with a real sink, and a tests/ dir with a real sink — both skipped
-    (tmp_path / "client_test.go").write_text(
-        'el.innerHTML = req.body["q"]\n', encoding="utf-8"
-    )
+    (tmp_path / "client_test.go").write_text('el.innerHTML = req.body["q"]\n', encoding="utf-8")
     (tmp_path / "tests").mkdir()
     (tmp_path / "tests" / "app.py").write_text(
         "name = request.args.get('name')\n"
-        "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n",
+        'query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n',
         encoding="utf-8",
     )
     assert _types(CVEHunter(), tmp_path) == set()
@@ -206,16 +204,12 @@ def test_webhook_response_url_not_flagged(tmp_path):
 
 
 def test_ruby_params_alone_not_flagged(tmp_path):
-    (tmp_path / "c.rb").write_text(
-        "def show\n  params[:name]\nend\n", encoding="utf-8"
-    )
+    (tmp_path / "c.rb").write_text("def show\n  params[:name]\nend\n", encoding="utf-8")
     assert "xss" not in _types(CVEHunter(), tmp_path)
 
 
 def test_ruby_raw_params_still_flagged(tmp_path):
-    (tmp_path / "d.rb").write_text(
-        "def show\n  raw(params[:name])\nend\n", encoding="utf-8"
-    )
+    (tmp_path / "d.rb").write_text("def show\n  raw(params[:name])\nend\n", encoding="utf-8")
     assert "xss" in _types(CVEHunter(), tmp_path)
 
 
@@ -241,9 +235,7 @@ def test_php_i18n_echo_not_flagged(tmp_path):
 
 
 def test_php_echo_raw_variable_still_flagged(tmp_path):
-    (tmp_path / "page.php").write_text(
-        '<?php echo $name; ?>\n', encoding="utf-8"
-    )
+    (tmp_path / "page.php").write_text("<?php echo $name; ?>\n", encoding="utf-8")
     assert "xss" in _types(CVEHunter(), tmp_path)
 
 
@@ -270,9 +262,7 @@ def test_spec_files_skipped(tmp_path):
     (tmp_path / "openLocallyAction.spec.ts").write_text(
         "expect(axios.post).toBeCalledTimes(1)\n", encoding="utf-8"
     )
-    (tmp_path / "user_spec.rb").write_text(
-        'raw(params[:name])\n', encoding="utf-8"
-    )
+    (tmp_path / "user_spec.rb").write_text("raw(params[:name])\n", encoding="utf-8")
     assert _types(CVEHunter(), tmp_path) == set()
 
 
@@ -280,23 +270,18 @@ def test_spec_files_skipped(tmp_path):
 
 
 def test_secret_key_detected(tmp_path):
-    (tmp_path / "cfg.py").write_text(
-        'API_KEY = "sk-abcdefghijklmnopqrstuvwx"\n', encoding="utf-8"
-    )
+    (tmp_path / "cfg.py").write_text('API_KEY = "sk-abcdefghijklmnopqrstuvwx"\n', encoding="utf-8")
     assert "secret" in _types(CVEHunter(), tmp_path)
 
 
 def test_secret_placeholder_not_flagged(tmp_path):
-    (tmp_path / "cfg.py").write_text(
-        'API_KEY = "sk-your-api-key-here-xxxx"\n', encoding="utf-8"
-    )
+    (tmp_path / "cfg.py").write_text('API_KEY = "sk-your-api-key-here-xxxx"\n', encoding="utf-8")
     assert "secret" not in _types(CVEHunter(), tmp_path)
 
 
 def test_google_and_aws_keys_detected(tmp_path):
     (tmp_path / "cfg.py").write_text(
-        'g = "AIzaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"\n'
-        'aws = "AKIAABCDEFGHIJKLMNOP"\n',
+        'g = "AIzaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"\naws = "AKIAABCDEFGHIJKLMNOP"\n',
         encoding="utf-8",
     )
     assert "secret" in _types(CVEHunter(), tmp_path)
@@ -308,11 +293,11 @@ def test_google_and_aws_keys_detected(tmp_path):
 def test_hyphen_test_dirs_skipped(tmp_path):
     (tmp_path / "jsg-test").mkdir()
     (tmp_path / "jsg-test" / "lib.rs").write_text(
-        'unsafe { self.inner.eval(code) }\n', encoding="utf-8"
+        "unsafe { self.inner.eval(code) }\n", encoding="utf-8"
     )
     (tmp_path / "latest").mkdir()
     (tmp_path / "latest" / "app.py").write_text(
-        "query = \"SELECT * FROM users WHERE id='\" + uid + \"'\"\n", encoding="utf-8"
+        'query = "SELECT * FROM users WHERE id=\'" + uid + "\'"\n', encoding="utf-8"
     )
     types = _types(CVEHunter(), tmp_path)
     assert types == {"sqli"}  # jsg-test skipped, "latest" (ends in -test) still scanned
@@ -371,9 +356,7 @@ def test_internal_dirs_skipped(tmp_path):
 
 def test_db_row_fetch_not_ssrf(tmp_path):
     # $result->fetch() is a DB row fetch, not an HTTP fetch
-    (tmp_path / "db.php").write_text(
-        "$row = $result->fetch();\n", encoding="utf-8"
-    )
+    (tmp_path / "db.php").write_text("$row = $result->fetch();\n", encoding="utf-8")
     assert "ssrf" not in _types(CVEHunter(), tmp_path)
 
 
@@ -404,14 +387,10 @@ def test_string_literal_method_delete_not_sqli(tmp_path):
 
 def test_select_concat_requires_from_context(tmp_path):
     # bare SELECT without FROM is not SQL context
-    (tmp_path / "a.py").write_text(
-        "q = 'SELECT ' + col\n", encoding="utf-8"
-    )
+    (tmp_path / "a.py").write_text("q = 'SELECT ' + col\n", encoding="utf-8")
     assert "sqli" not in _types(CVEHunter(), tmp_path)
     # SELECT ... FROM ... with concat still is
-    (tmp_path / "b.py").write_text(
-        "q = 'SELECT * FROM users WHERE id=' + uid\n", encoding="utf-8"
-    )
+    (tmp_path / "b.py").write_text("q = 'SELECT * FROM users WHERE id=' + uid\n", encoding="utf-8")
     assert "sqli" in _types(CVEHunter(), tmp_path)
 
 
@@ -423,9 +402,7 @@ def test_php_new_template_not_ssti(tmp_path):
 
 
 def test_py_template_constructor_still_ssti(tmp_path):
-    (tmp_path / "v.py").write_text(
-        "out = Template(user_input).render()\n", encoding="utf-8"
-    )
+    (tmp_path / "v.py").write_text("out = Template(user_input).render()\n", encoding="utf-8")
     assert "ssti" in _types(CVEHunter(), tmp_path)
 
 
@@ -493,7 +470,9 @@ def test_save_report_writes_markdown_file(repo, tmp_path):
     sqli = _finding(hunter, repo, "sqli")
     reports_dir = tmp_path / "reports"
     path = DisclosureReport().save_report(
-        sqli, repo_name="myrepo", reports_dir=str(reports_dir),
+        sqli,
+        repo_name="myrepo",
+        reports_dir=str(reports_dir),
         sandbox_result="CONFIRMED_EXPLOITABLE\n[VULNERABLE]",
     )
     import re as _re

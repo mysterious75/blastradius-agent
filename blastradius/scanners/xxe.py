@@ -7,7 +7,6 @@ import re
 
 from blastradius.scanners._util import (
     code_has_source,
-    has_source,
     make_finding,
     references_variable,
     scan_lines,
@@ -39,7 +38,13 @@ class XXEScanner:
                 return None
             confidence = 0.8 if has_source_flag else 0.7
             return make_finding(
-                path, idx, "xxe", line.strip(), confidence, "HIGH", "CWE-611",
+                path,
+                idx,
+                "xxe",
+                line.strip(),
+                confidence,
+                "HIGH",
+                "CWE-611",
                 "XML External Entity: XML parsed without defusedxml hardening.",
                 "Parse XML with defusedxml or disable external entity resolution.",
             )

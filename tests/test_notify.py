@@ -8,9 +8,17 @@ from blastradius.notify.notifier import Notifier
 
 
 def make_finding(vuln_type="sqli"):
-    return Finding(file="/tmp/repo/flask_admin/rediscli.js", line=27,
-                   vuln_type=vuln_type, payload="x", confidence=0.95,
-                   severity="HIGH", cwe="CWE-79", description="d", remediation="r")
+    return Finding(
+        file="/tmp/repo/flask_admin/rediscli.js",
+        line=27,
+        vuln_type=vuln_type,
+        payload="x",
+        confidence=0.95,
+        severity="HIGH",
+        cwe="CWE-79",
+        description="d",
+        remediation="r",
+    )
 
 
 def make_patch_result(needs_human=False):
@@ -33,9 +41,17 @@ class FakeHttp:
 @pytest.fixture(autouse=True)
 def clean_env(monkeypatch):
     for key in (
-        "SLACK_WEBHOOK_URL", "DISCORD_WEBHOOK_URL", "TELEGRAM_BOT_TOKEN",
-        "TELEGRAM_CHAT_ID", "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS",
-        "NOTIFY_EMAIL", "GITHUB_TOKEN", "BLASTRADIUS_ISSUES_REPO",
+        "SLACK_WEBHOOK_URL",
+        "DISCORD_WEBHOOK_URL",
+        "TELEGRAM_BOT_TOKEN",
+        "TELEGRAM_CHAT_ID",
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_USER",
+        "SMTP_PASS",
+        "NOTIFY_EMAIL",
+        "GITHUB_TOKEN",
+        "BLASTRADIUS_ISSUES_REPO",
     ):
         monkeypatch.delenv(key, raising=False)
 

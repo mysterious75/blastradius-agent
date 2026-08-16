@@ -15,7 +15,7 @@ MAX_SANDBOX_FILE_BYTES = 1_000_000  # 1MB
 
 REQUIRED_DOCKER_FLAGS = {
     "--network": "none",
-    "--read-only": None,   # presence-only flag
+    "--read-only": None,  # presence-only flag
 }
 
 ALLOWED_COMMANDS = ("python",)

@@ -6,7 +6,6 @@ Usage:
 """
 
 import argparse
-import sys
 
 from blastradius.db.database import SQLiteDB
 
@@ -21,8 +20,9 @@ def cmd_stats(db: SQLiteDB) -> int:
     print()
     print("Latest scans:")
     for scan in db.get_scans(limit=10):
-        print(f"  #{scan['id']} [{scan['status']}] {scan['target']} "
-              f"({scan['files_scanned']} files)")
+        print(
+            f"  #{scan['id']} [{scan['status']}] {scan['target']} ({scan['files_scanned']} files)"
+        )
     return 0
 
 

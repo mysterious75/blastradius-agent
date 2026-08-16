@@ -30,7 +30,13 @@ class CsvExportPlugin(BasePlugin):
             writer = csv.writer(fh)
             writer.writerow(["file", "line", "vuln_type", "severity", "confidence", "payload"])
             for finding in self.findings:
-                writer.writerow([
-                    finding.file, finding.line, finding.vuln_type, finding.severity,
-                    finding.confidence, finding.payload,
-                ])
+                writer.writerow(
+                    [
+                        finding.file,
+                        finding.line,
+                        finding.vuln_type,
+                        finding.severity,
+                        finding.confidence,
+                        finding.payload,
+                    ]
+                )

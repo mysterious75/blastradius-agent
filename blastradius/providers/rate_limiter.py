@@ -95,8 +95,9 @@ class RateLimiter:
     # Usage tracking
     # ------------------------------------------------------------------
 
-    def track(self, provider: str, input_tokens: int = 0,
-              output_tokens: int = 0, cost: float = 0.0) -> None:
+    def track(
+        self, provider: str, input_tokens: int = 0, output_tokens: int = 0, cost: float = 0.0
+    ) -> None:
         with self._lock:
             self.requests_made[provider] = self.requests_made.get(provider, 0) + 1
             self.tokens_used[provider] = (

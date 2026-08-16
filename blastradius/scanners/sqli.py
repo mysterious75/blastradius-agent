@@ -44,13 +44,25 @@ class SQLiScanner:
                 return None  # safe pattern
             if _CONCAT.search(line) and (has_source(line) or has_source_flag):
                 return make_finding(
-                    path, idx, "sqli", line.strip(), 0.95, "CRITICAL", "CWE-89",
+                    path,
+                    idx,
+                    "sqli",
+                    line.strip(),
+                    0.95,
+                    "CRITICAL",
+                    "CWE-89",
                     "SQL injection: user input is concatenated into a SQL statement.",
                     "Use parameterized queries / prepared statements for all database interactions.",
                 )
             if _RAW_SINK.search(line) and references_variable(line):
                 return make_finding(
-                    path, idx, "sqli", line.strip(), 0.8, "HIGH", "CWE-89",
+                    path,
+                    idx,
+                    "sqli",
+                    line.strip(),
+                    0.8,
+                    "HIGH",
+                    "CWE-89",
                     "Raw SQL execution with a variable argument; verify parameterization.",
                     "Use parameterized queries; avoid raw SQL execution with untrusted input.",
                 )

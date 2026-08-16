@@ -37,11 +37,14 @@ def _finding_json(finding) -> dict:
 # Tools (plain functions — usable without the mcp SDK)
 # ---------------------------------------------------------------------------
 
+
 def scan_repo(target: str) -> str:
     """Scan a GitHub repo URL or local path; returns findings as JSON."""
     hunter = CVEHunter()
     try:
-        repo_path = hunter.clone_repo(target) if target.startswith(("http://", "https://")) else target
+        repo_path = (
+            hunter.clone_repo(target) if target.startswith(("http://", "https://")) else target
+        )
         findings = hunter.scan_repo(repo_path)
         return json.dumps([_finding_json(f) for f in findings], indent=2)
     except Exception as exc:
@@ -78,16 +81,25 @@ def generate_patch(vuln_type: str, code: str) -> str:
     """Generate + verify a patch for vulnerable code; returns JSON with the diff."""
     try:
         first_line = code.splitlines()[0] if code.strip() else ""
-        finding = Finding(file="mcp-input", line=0, vuln_type=vuln_type,
-                          payload=first_line, confidence=1.0, original_code=code)
+        finding = Finding(
+            file="mcp-input",
+            line=0,
+            vuln_type=vuln_type,
+            payload=first_line,
+            confidence=1.0,
+            original_code=code,
+        )
         result = PatchLoop().run(finding)
         patch = result.patch
-        return json.dumps({
-            "needs_human": result.needs_human,
-            "attempts": result.attempts,
-            "diff": patch.diff,
-            "explanation": patch.explanation,
-        }, indent=2)
+        return json.dumps(
+            {
+                "needs_human": result.needs_human,
+                "attempts": result.attempts,
+                "diff": patch.diff,
+                "explanation": patch.explanation,
+            },
+            indent=2,
+        )
     except Exception as exc:
         return json.dumps({"error": str(exc)})
 
@@ -95,11 +107,14 @@ def generate_patch(vuln_type: str, code: str) -> str:
 def blast_radius(package: str, version: str = "") -> str:
     """Repos affected by a package (from the in-memory blast-radius graph)."""
     _graph.add_package(package, version)
-    return json.dumps({
-        "package": package,
-        "version": version,
-        "affected_repos": _graph.query_blast_radius(package),
-    }, indent=2)
+    return json.dumps(
+        {
+            "package": package,
+            "version": version,
+            "affected_repos": _graph.query_blast_radius(package),
+        },
+        indent=2,
+    )
 
 
 def list_cves() -> str:

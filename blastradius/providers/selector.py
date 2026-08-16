@@ -30,7 +30,10 @@ def auto_select(verbose: bool = True) -> Optional[Dict[str, str]]:
     if forced_model:
         for candidate in PROVIDER_PRIORITY:
             if forced_model in (PROVIDER_REGISTRY[candidate].get("models") or []):
-                if _auto_select_name() != candidate and os.getenv("BLASTRADIUS_PROVIDER", "").strip():
+                if (
+                    _auto_select_name() != candidate
+                    and os.getenv("BLASTRADIUS_PROVIDER", "").strip()
+                ):
                     break  # explicit provider override wins
                 name = candidate
                 break

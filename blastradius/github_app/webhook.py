@@ -82,10 +82,7 @@ def scan_and_report(
     repo_path = hunter.clone_repo(clone_url)
     findings = hunter.scan_repo(repo_path)
     if changed_files:
-        findings = [
-            f for f in findings
-            if any(changed in f.file for changed in changed_files)
-        ]
+        findings = [f for f in findings if any(changed in f.file for changed in changed_files)]
 
     for finding in findings:
         try:
@@ -95,9 +92,7 @@ def scan_and_report(
             if not sandbox_result.startswith("CONFIRMED_EXPLOITABLE"):
                 continue
             patch_result: PatchResult = patch_loop.run(finding)
-            commenter.post_finding_comment(
-                repo, pr_number, finding, patch_result, sandbox_result
-            )
+            commenter.post_finding_comment(repo, pr_number, finding, patch_result, sandbox_result)
         except Exception:
             continue  # never let one finding break the webhook
     return findings
@@ -150,9 +145,14 @@ async def webhook(
     return {"status": "ok", "event": x_github_event, "message": "event ignored"}
 
 
-def start(host: str = "0.0.0.0", port: int = 8000) -> None:
-    """Run the webhook server (console script entry point: blastradius-server)."""
+def start(host: str = "127.0.0.1", port: int = 8000) -> None:
+    """Run the webhook server (console script entry point: blastradius-server).
+
+    Binds loopback by default; set ``BLASTRADIUS_HOST=0.0.0.0`` to expose it
+    (only do that behind a reverse proxy that enforces the HMAC secret).
+    """
     import uvicorn
 
+    host = os.getenv("BLASTRADIUS_HOST", host)
     reload = os.getenv("BLASTRADIUS_RELOAD", "").lower() in ("1", "true", "yes")
     uvicorn.run("blastradius.github_app.webhook:app", host=host, port=port, reload=reload)

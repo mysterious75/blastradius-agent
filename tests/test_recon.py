@@ -58,11 +58,13 @@ def test_github_search_filters_and_prioritizes(engine, monkeypatch):
     dork, fake = engine
     monkeypatch.setenv("GITHUB_TOKEN", "ghp_test")
     fake.responses = {
-        "search/code": {"items": [
-            {"path": "a.py", "repository": {"full_name": "org/hot"}},
-            {"path": "b.py", "repository": {"full_name": "org/cold"}},
-            {"path": "c.py", "repository": {"full_name": "org/mid"}},
-        ]},
+        "search/code": {
+            "items": [
+                {"path": "a.py", "repository": {"full_name": "org/hot"}},
+                {"path": "b.py", "repository": {"full_name": "org/cold"}},
+                {"path": "c.py", "repository": {"full_name": "org/mid"}},
+            ]
+        },
         "repos/org/hot": {"stargazers_count": 500},
         "repos/org/cold": {"stargazers_count": 10},
         "repos/org/mid": {"stargazers_count": 120},
@@ -88,15 +90,26 @@ def test_github_search_skips_without_token(engine, monkeypatch):
 def test_pypi_filters_and_resolves_github_urls(engine):
     dork, fake = engine
     fake.responses = {
-        "pypi.org/pypi/flask-awesome/json": {"info": {"home_page": "", "project_urls": {"Source": "https://github.com/org/flask-awesome"}}},
-        "pypi.org/pypi/django-kit/json": {"info": {"home_page": "https://github.com/org/django-kit", "project_urls": {}}},
-        "pypi.org/pypi/requests/json": {"info": {"home_page": "https://github.com/psf/requests", "project_urls": {}}},
+        "pypi.org/pypi/flask-awesome/json": {
+            "info": {
+                "home_page": "",
+                "project_urls": {"Source": "https://github.com/org/flask-awesome"},
+            }
+        },
+        "pypi.org/pypi/django-kit/json": {
+            "info": {"home_page": "https://github.com/org/django-kit", "project_urls": {}}
+        },
+        "pypi.org/pypi/requests/json": {
+            "info": {"home_page": "https://github.com/psf/requests", "project_urls": {}}
+        },
     }
     results = dork.pypi_web_packages(limit=50)
 
     urls = {r["package"]: r["url"] for r in results}
     # only framework-filtered names are fetched; 'requests' is filtered out
-    assert "flask-awesome" in urls and urls["flask-awesome"] == "https://github.com/org/flask-awesome"
+    assert (
+        "flask-awesome" in urls and urls["flask-awesome"] == "https://github.com/org/flask-awesome"
+    )
     assert "django-kit" in urls
     assert "requests" not in urls
     # package without a GitHub URL is dropped
@@ -106,7 +119,12 @@ def test_pypi_filters_and_resolves_github_urls(engine):
 def test_pypi_cache_read_and_write(engine, tmp_path):
     dork, fake = engine
     fake.responses = {
-        "pypi.org/pypi/flask-awesome/json": {"info": {"home_page": "", "project_urls": {"Source": "https://github.com/org/flask-awesome"}}},
+        "pypi.org/pypi/flask-awesome/json": {
+            "info": {
+                "home_page": "",
+                "project_urls": {"Source": "https://github.com/org/flask-awesome"},
+            }
+        },
     }
     dork.pypi_web_packages(limit=10)
     cache_file = tmp_path / ".cache" / "pypi_packages.json"
@@ -133,10 +151,12 @@ def test_shodan_parses_matches(engine, monkeypatch):
     dork, fake = engine
     monkeypatch.setenv("SHODAN_API_KEY", "shodan-test")
     fake.responses = {
-        "shodan.io": {"matches": [
-            {"ip_str": "1.2.3.4", "port": 5000, "hostnames": ["x.com"], "org": "ACME"},
-            {"ip_str": "5.6.7.8", "port": 5000, "hostnames": [], "org": ""},
-        ]}
+        "shodan.io": {
+            "matches": [
+                {"ip_str": "1.2.3.4", "port": 5000, "hostnames": ["x.com"], "org": "ACME"},
+                {"ip_str": "5.6.7.8", "port": 5000, "hostnames": [], "org": ""},
+            ]
+        }
     }
     results = dork.shodan_search("flask port:5000")
     assert results[0] == {"ip": "1.2.3.4", "port": 5000, "hostname": "x.com", "org": "ACME"}
@@ -151,12 +171,18 @@ def test_find_targets_dedup_and_prioritize(engine, tmp_path, monkeypatch):
     monkeypatch.setenv("GITHUB_TOKEN", "ghp_test")
     monkeypatch.delenv("SHODAN_API_KEY", raising=False)
     fake.responses = {
-        "search/code": {"items": [
-            {"path": "a.py", "repository": {"full_name": "org/hot"}},
-        ]},
+        "search/code": {
+            "items": [
+                {"path": "a.py", "repository": {"full_name": "org/hot"}},
+            ]
+        },
         "repos/org/hot": {"stargazers_count": 900},
-        "pypi.org/pypi/starlette-min/json": {"info": {"home_page": "https://github.com/org/hot", "project_urls": {}}},
-        "pypi.org/pypi/fastapi-pro/json": {"info": {"home_page": "https://github.com/org/fastapi-pro", "project_urls": {}}},
+        "pypi.org/pypi/starlette-min/json": {
+            "info": {"home_page": "https://github.com/org/hot", "project_urls": {}}
+        },
+        "pypi.org/pypi/fastapi-pro/json": {
+            "info": {"home_page": "https://github.com/org/fastapi-pro", "project_urls": {}}
+        },
     }
     # starlette-min resolves to the SAME url as github -> deduped; fastapi-pro is distinct
     targets = dork.find_targets("all", min_stars=0, limit=10)

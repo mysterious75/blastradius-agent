@@ -25,20 +25,19 @@ def _xss(hunter, tmp_path):
 
 
 def test_ruby_render_inline_params_is_xss(tmp_path, hunter):
-    _write(tmp_path, "views/user.rb",
-        "def show\n"
-        "  render inline: params[:name]\n"
-        "end\n",
+    _write(
+        tmp_path,
+        "views/user.rb",
+        "def show\n  render inline: params[:name]\nend\n",
     )
     assert any("user.rb" in f.file for f in _xss(hunter, tmp_path))
 
 
 def test_ruby_html_safe_with_user_data_is_xss(tmp_path, hunter):
-    _write(tmp_path, "views/post.rb",
-        "def show\n"
-        "  @content = params[:body]\n"
-        "  @content.html_safe\n"
-        "end\n",
+    _write(
+        tmp_path,
+        "views/post.rb",
+        "def show\n  @content = params[:body]\n  @content.html_safe\nend\n",
     )
     # .html_safe line carries no params keyword; the params line is the source —
     # the html_safe call is what should be flagged via file-level has_source
@@ -46,10 +45,10 @@ def test_ruby_html_safe_with_user_data_is_xss(tmp_path, hunter):
 
 
 def test_ruby_escaped_output_not_flagged(tmp_path, hunter):
-    _write(tmp_path, "views/safe.rb",
-        "def show\n"
-        "  render inline: escape_html(params[:name])\n"
-        "end\n",
+    _write(
+        tmp_path,
+        "views/safe.rb",
+        "def show\n  render inline: escape_html(params[:name])\nend\n",
     )
     assert not any("safe.rb" in f.file for f in _xss(hunter, tmp_path))
 
@@ -58,11 +57,13 @@ def test_ruby_escaped_output_not_flagged(tmp_path, hunter):
 
 
 def test_java_getparameter_to_write_is_xss(tmp_path, hunter):
-    _write(tmp_path, "HelloServlet.java",
+    _write(
+        tmp_path,
+        "HelloServlet.java",
         "public class HelloServlet extends HttpServlet {\n"
         "  protected void doGet(HttpServletRequest request, HttpServletResponse response) {\n"
         "    PrintWriter out = response.getWriter();\n"
-        "    out.write(request.getParameter(\"name\"));\n"
+        '    out.write(request.getParameter("name"));\n'
         "  }\n"
         "}\n",
     )
@@ -70,11 +71,13 @@ def test_java_getparameter_to_write_is_xss(tmp_path, hunter):
 
 
 def test_java_encoded_output_not_flagged(tmp_path, hunter):
-    _write(tmp_path, "SafeServlet.java",
+    _write(
+        tmp_path,
+        "SafeServlet.java",
         "public class SafeServlet extends HttpServlet {\n"
         "  protected void doGet(HttpServletRequest request, HttpServletResponse response) {\n"
         "    PrintWriter out = response.getWriter();\n"
-        "    out.write(escapeHtml(request.getParameter(\"name\")));\n"
+        '    out.write(escapeHtml(request.getParameter("name")));\n'
         "  }\n"
         "}\n",
     )
@@ -85,20 +88,24 @@ def test_java_encoded_output_not_flagged(tmp_path, hunter):
 
 
 def test_go_formvalue_into_fprintf_is_xss(tmp_path, hunter):
-    _write(tmp_path, "main.go",
+    _write(
+        tmp_path,
+        "main.go",
         "package main\n"
         "func handler(w http.ResponseWriter, r *http.Request) {\n"
-        "    fmt.Fprintf(w, \"<b>%s</b>\", r.FormValue(\"name\"))\n"
+        '    fmt.Fprintf(w, "<b>%s</b>", r.FormValue("name"))\n'
         "}\n",
     )
     assert any("main.go" in f.file for f in _xss(hunter, tmp_path))
 
 
 def test_go_escaped_output_not_flagged(tmp_path, hunter):
-    _write(tmp_path, "main.go",
+    _write(
+        tmp_path,
+        "main.go",
         "package main\n"
         "func handler(w http.ResponseWriter, r *http.Request) {\n"
-        "    fmt.Fprintf(w, \"<b>%s</b>\", template.HTMLEscapeString(r.FormValue(\"name\")))\n"
+        '    fmt.Fprintf(w, "<b>%s</b>", template.HTMLEscapeString(r.FormValue("name")))\n'
         "}\n",
     )
     assert not _xss(hunter, tmp_path)
@@ -108,9 +115,11 @@ def test_go_escaped_output_not_flagged(tmp_path, hunter):
 
 
 def test_rust_format_with_query_is_xss(tmp_path, hunter):
-    _write(tmp_path, "src/main.rs",
+    _write(
+        tmp_path,
+        "src/main.rs",
         "fn handler(request: &Request) {\n"
-        "    let html = format!(\"<div>{}</div>\", query);\n"
+        '    let html = format!("<div>{}</div>", query);\n'
         "    respond(html)\n"
         "}\n",
     )
@@ -121,7 +130,9 @@ def test_rust_format_with_query_is_xss(tmp_path, hunter):
 
 
 def test_erb_params_interpolation_is_xss(tmp_path, hunter):
-    _write(tmp_path, "app/views/show.html.erb",
+    _write(
+        tmp_path,
+        "app/views/show.html.erb",
         "<div><%= params[:name] %></div>\n",
     )
     assert any("show.html.erb" in f.file for f in _xss(hunter, tmp_path))
@@ -131,15 +142,17 @@ def test_erb_params_interpolation_is_xss(tmp_path, hunter):
 
 
 def test_new_extensions_are_scanned(tmp_path, hunter):
-    _write(tmp_path, "app.jsx",
+    _write(
+        tmp_path,
+        "app.jsx",
         "export function App() {\n"
         "  return <div dangerouslySetInnerHTML={{ __html: props.userInput }} />;\n"
         "}\n",
     )
-    _write(tmp_path, "app.rb",
-        "def show\n"
-        "  render inline: params[:name]\n"
-        "end\n",
+    _write(
+        tmp_path,
+        "app.rb",
+        "def show\n  render inline: params[:name]\nend\n",
     )
     findings = hunter.scan_repo(str(tmp_path))
     assert {Path(f.file).suffix for f in findings} == {".jsx", ".rb"}

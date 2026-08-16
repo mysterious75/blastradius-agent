@@ -19,8 +19,9 @@ class CostTracker:
     def __init__(self):
         self.usage: Dict[Tuple[str, str], list] = {}
 
-    def track_usage(self, provider: str, model: str,
-                    input_tokens: int = 0, output_tokens: int = 0) -> None:
+    def track_usage(
+        self, provider: str, model: str, input_tokens: int = 0, output_tokens: int = 0
+    ) -> None:
         key = (provider, model)
         bucket = self.usage.setdefault(key, [0, 0])
         bucket[0] += max(0, input_tokens)

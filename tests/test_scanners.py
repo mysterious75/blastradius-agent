@@ -19,7 +19,7 @@ def test_sqli_detects_concat_and_ignores_parameterized():
     scanner = get_scanner("sqli")
     vuln = (
         "name = request.args.get('name')\n"
-        "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n"
+        'query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n'
     )
     safe = "cur.execute('SELECT * FROM users WHERE name = %s', (name,))"
     assert len(scanner.detect(vuln)) == 1
@@ -30,7 +30,7 @@ def test_sqli_confidence():
     scanner = get_scanner("sqli")
     findings = scanner.detect(
         "name = request.args.get('name')\n"
-        "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n"
+        'query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n'
     )
     assert findings[0].confidence >= 0.9
 
@@ -75,7 +75,7 @@ def test_scan_file_runs_all_scanners(tmp_path):
     path = tmp_path / "app.py"
     path.write_text(
         "name = request.args.get('name')\n"
-        "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n",
+        'query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n',
         encoding="utf-8",
     )
     findings = scan_file(str(path))

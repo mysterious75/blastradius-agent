@@ -10,7 +10,6 @@
 Zero dependencies (stdlib json/jsonl). Data dir honors BLASTRADIUS_HOME.
 """
 
-import fnmatch
 import json
 import os
 from collections import Counter
@@ -41,8 +40,9 @@ class SelfImprover:
     # Recording
     # ------------------------------------------------------------------
 
-    def record_outcome(self, finding, was_fp: bool, sandbox_result: str = "",
-                       patch_confidence: float = 0.0) -> None:
+    def record_outcome(
+        self, finding, was_fp: bool, sandbox_result: str = "", patch_confidence: float = 0.0
+    ) -> None:
         entry = {
             "ts": datetime.now().isoformat(timespec="seconds"),
             "vuln_type": finding.vuln_type,
@@ -59,7 +59,7 @@ class SelfImprover:
     def _trim(self) -> None:
         lines = self.read_outcomes(limit=self.max_history * 2)
         if len(lines) > self.max_history:
-            keep = lines[-self.max_history:]
+            keep = lines[-self.max_history :]
             with open(self.outcomes_file, "w", encoding="utf-8") as fh:
                 for line in keep:
                     fh.write(json.dumps(line) + "\n")
@@ -106,8 +106,7 @@ class SelfImprover:
                 file_fp[name] += 1
         # a file is "always FP" when >= 3 outcomes and every one was FP
         skip_patterns = sorted(
-            name for name, total in file_total.items()
-            if total >= 3 and file_fp[name] == total
+            name for name, total in file_total.items() if total >= 3 and file_fp[name] == total
         )
 
         payload_success = Counter()
@@ -171,7 +170,9 @@ class SelfImprover:
         ]
         for vuln_type, rate in analysis.get("fp_rates", {}).items():
             raised = thresholds.get(vuln_type, BASE_CONFIDENCE)
-            lines.append(f"- {vuln_type.upper()} FP rate: {rate:.0%} → threshold raised to {raised}")
+            lines.append(
+                f"- {vuln_type.upper()} FP rate: {rate:.0%} → threshold raised to {raised}"
+            )
         for pattern in analysis.get("skip_patterns", []):
             lines.append(f"- Skipping {pattern} (100% FP in last {MAX_HISTORY} scans)")
         for token, hits in analysis.get("payload_success", {}).items():

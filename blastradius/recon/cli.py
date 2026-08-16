@@ -17,9 +17,7 @@ def main(argv=None) -> int:
         prog="blastradius-recon",
         description="Discover CVE-hunt targets (GitHub code search / PyPI / Shodan)",
     )
-    parser.add_argument(
-        "--strategy", choices=["github", "pypi", "shodan", "all"], default="all"
-    )
+    parser.add_argument("--strategy", choices=["github", "pypi", "shodan", "all"], default="all")
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--min-stars", type=int, default=0)
     args = parser.parse_args(argv)
@@ -31,10 +29,7 @@ def main(argv=None) -> int:
     targets = engine.find_targets(args.strategy, min_stars=args.min_stars, limit=args.limit)
 
     print(f"[*] {len(targets)} target(s) discovered (strategy={args.strategy})")
-    rows = [
-        [t.get("source", "?"), t["url"], t.get("stars", 0)]
-        for t in targets[:30]
-    ]
+    rows = [[t.get("source", "?"), t["url"], t.get("stars", 0)] for t in targets[:30]]
     if rows:
         display.print_table(["Source", "URL", "Stars"], rows, title="Discovered Targets")
     print("[*] Full list saved to .cache/discovered_targets.json")

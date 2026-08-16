@@ -15,7 +15,7 @@ from pathlib import Path
 
 from blastradius.cli.display import RichDisplay
 from blastradius.hunter.disclosure import DisclosureReport
-from blastradius.hunter.scanner import CVEHunter, Finding, reconstruct_target_code
+from blastradius.hunter.scanner import CVEHunter, reconstruct_target_code
 from blastradius.hunter.targets import DEFAULT_TARGETS
 from blastradius.tools.sandbox_tool import run_exploit_sandbox
 
@@ -75,17 +75,14 @@ def main(argv=None) -> int:
     reports = DisclosureReport()
     saved = 0
     for finding in findings:
-        sandbox_result = run_exploit_sandbox(
-            finding.vuln_type, reconstruct_target_code(finding)
-        )
+        sandbox_result = run_exploit_sandbox(finding.vuln_type, reconstruct_target_code(finding))
         if sandbox_result.startswith("CONFIRMED_EXPLOITABLE"):
             path = reports.save_report(finding, repo_name, args.reports_dir, sandbox_result)
             saved += 1
             print(f"[+] report saved: {path}")
         else:
             print(
-                f"[-] not exploitable in sandbox: "
-                f"{finding.vuln_type}@{finding.file}:{finding.line}"
+                f"[-] not exploitable in sandbox: {finding.vuln_type}@{finding.file}:{finding.line}"
             )
 
     print(f"[*] Done: {saved} report(s) saved to {args.reports_dir}")

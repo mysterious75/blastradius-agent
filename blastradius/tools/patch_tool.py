@@ -37,21 +37,24 @@ def generate_and_verify_patch(vuln_type: str, file_path: str, vulnerable_code: s
     result = PatchLoop().run(finding)
     verification = result.verification
     patch = result.patch
-    return json.dumps({
-        "needs_human": result.needs_human,
-        "attempts": result.attempts,
-        "patch": {
-            "original_code": patch.original_code,
-            "patched_code": patch.patched_code,
-            "diff": patch.diff,
-            "explanation": patch.explanation,
-            "source": patch.source,
+    return json.dumps(
+        {
+            "needs_human": result.needs_human,
+            "attempts": result.attempts,
+            "patch": {
+                "original_code": patch.original_code,
+                "patched_code": patch.patched_code,
+                "diff": patch.diff,
+                "explanation": patch.explanation,
+                "source": patch.source,
+            },
+            "verification": {
+                "syntax_ok": verification.syntax_ok,
+                "exploit_fixed": verification.exploit_fixed,
+                "tests_pass": verification.tests_pass,
+                "confidence": verification.confidence,
+                "failure_reasons": verification.failure_reasons,
+            },
         },
-        "verification": {
-            "syntax_ok": verification.syntax_ok,
-            "exploit_fixed": verification.exploit_fixed,
-            "tests_pass": verification.tests_pass,
-            "confidence": verification.confidence,
-            "failure_reasons": verification.failure_reasons,
-        },
-    }, indent=2)
+        indent=2,
+    )

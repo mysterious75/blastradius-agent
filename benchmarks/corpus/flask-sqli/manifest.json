@@ -1,0 +1,7 @@
+{
+  "target": "flask-sqli",
+  "description": "Flask endpoint concatenating request.args into a SQL query.",
+  "expected": [
+    {"file": "app.py", "vuln_type": "sqli", "severity": "CRITICAL", "cwe": "CWE-89"}
+  ]
+}

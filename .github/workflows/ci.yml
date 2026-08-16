@@ -10,6 +10,35 @@ on:
     - cron: '0 8 * * *'   # daily dependency check (8am)
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Ruff lint
+        run: ruff check blastradius tests scripts
+      - name: Ruff format check
+        run: ruff format --check blastradius tests scripts
+
+  security_scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Bandit security scan
+        # Medium+ gate. Skips: B608 (internal dynamic SQL, no user input),
+        # B310 (HTTP-client by design, URLs pre-validated), B104 (servers
+        # default to loopback; remaining hits are SSRF blocklist/docstrings).
+        run: bandit -q -r blastradius -ll -s B608,B310,B104
+
   test:
     runs-on: ubuntu-latest
     strategy:
@@ -29,13 +58,33 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Run tests with coverage
-        run: pytest tests/ -v --tb=short --cov=blastradius --cov-report=xml
+        run: pytest tests/ -v --tb=short --cov=blastradius --cov-report=xml --cov-fail-under=60
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report-${{ matrix.python-version }}
           path: coverage.xml
+
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Build sandbox image (best-effort)
+        run: docker build -t blastradius-sandbox sandbox/
+        continue-on-error: true
+      - name: "Run verified benchmark (CI gate: F1 >= 0.5)"
+        run: python benchmarks/run.py --verify --min-f1 0.5
+      - name: Upload benchmark report
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-report
+          path: benchmarks/results/**
 
   scheduled_hunt:
     runs-on: ubuntu-latest

@@ -159,15 +159,23 @@ def _main(argv: Optional[List[str]] = None) -> int:
 
     p_add = sub.add_parser("add", help="register/merge a program scope")
     p_add.add_argument("program")
-    p_add.add_argument("--in", dest="in_scope", action="append", default=[], help="in-scope target (repeatable)")
-    p_add.add_argument("--out", dest="out_scope", action="append", default=[], help="out-of-scope target (repeatable)")
+    p_add.add_argument(
+        "--in", dest="in_scope", action="append", default=[], help="in-scope target (repeatable)"
+    )
+    p_add.add_argument(
+        "--out",
+        dest="out_scope",
+        action="append",
+        default=[],
+        help="out-of-scope target (repeatable)",
+    )
     p_add.add_argument("--notes", default="")
 
     p_check = sub.add_parser("check", help="check a target against registered scopes")
     p_check.add_argument("target")
     p_check.add_argument("--program", default=None)
 
-    p_list = sub.add_parser("list", help="list registered programs")
+    sub.add_parser("list", help="list registered programs")
     p_rm = sub.add_parser("rm", help="remove a program scope")
     p_rm.add_argument("program")
 

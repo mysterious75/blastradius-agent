@@ -1,0 +1,7 @@
+{
+  "target": "flask-xss",
+  "description": "Browser-side code writing a URL parameter into innerHTML.",
+  "expected": [
+    {"file": "app.js", "vuln_type": "xss", "severity": "HIGH", "cwe": "CWE-79"}
+  ]
+}

@@ -35,7 +35,7 @@ def test_text_fallback(monkeypatch):
 def test_text_fallback_default(monkeypatch):
     answers = iter(["", "x"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
-    assert _text("Label", default="keep") == "keep"   # blank keeps default
+    assert _text("Label", default="keep") == "keep"  # blank keeps default
     assert _text("Label", default="keep") == "x"
 
 
@@ -76,11 +76,13 @@ def test_wizard_writes_env(tmp_path, monkeypatch):
     monkeypatch.setenv("BLASTRADIUS_ENV_FILE", str(tmp_path / ".env"))
     (tmp_path / ".env").write_text("AUTH_TOKEN=keep\n", encoding="utf-8")
 
-    monkeypatch.setattr(wizard, "_checkbox",
-                        lambda message, choices: ["deepseek"] if "providers" in message.lower() else ["slack"])
+    monkeypatch.setattr(
+        wizard,
+        "_checkbox",
+        lambda message, choices: ["deepseek"] if "providers" in message.lower() else ["slack"],
+    )
     monkeypatch.setattr(wizard, "_password", lambda message: "sk-deepseek-1")
-    monkeypatch.setattr(wizard, "_text",
-                        lambda message, default="": "https://hooks.slack.com/x")
+    monkeypatch.setattr(wizard, "_text", lambda message, default="": "https://hooks.slack.com/x")
     monkeypatch.setattr(wizard, "_select", lambda message, choices, default=None: "daily")
     monkeypatch.setattr(wizard, "_int", lambda message, default: 5)
     monkeypatch.setattr(wizard, "_confirm", lambda message, default=True: False)

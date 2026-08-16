@@ -12,12 +12,16 @@ Production path (Docker):
 Local path (use_docker=False, CI/dev without a daemon):
     runs ``python exploit_poc.py`` in a subprocess with the same timeout.
     This mode is weaker (no network/FS isolation) and must only be used
-    with trusted PoC code.
+    with trusted PoC code. It is opt-in only: either the caller explicitly
+    passes ``use_docker=False`` or ``BLASTRADIUS_ALLOW_UNSANDBOXED=1`` is
+    set. Without Docker and without that opt-in, the run fails closed
+    instead of executing PoCs without isolation.
 
 Detection: a run is considered vulnerable when the exploit's stdout
 contains the marker ``[VULNERABLE]``.
 """
 
+import os
 import shutil
 import subprocess
 import sys
@@ -28,8 +32,6 @@ from typing import Iterator, List, Optional
 from blastradius.security.input_validator import validate_target_code
 
 VULNERABLE_MARKER = "[VULNERABLE]"
-
-_RUNTIME_MISSING_MARKERS = ("unknown runtime", "not found", "does not exist")
 
 _docker_checked: bool = False
 _docker_ok: bool = False
@@ -43,9 +45,7 @@ def _docker_available() -> bool:
         if shutil.which("docker") is None:
             _docker_ok = False
         else:
-            probe = subprocess.run(
-                ["docker", "info"], capture_output=True, text=True, timeout=5
-            )
+            probe = subprocess.run(["docker", "info"], capture_output=True, text=True, timeout=5)
             _docker_ok = probe.returncode == 0
     return _docker_ok
 
@@ -60,6 +60,7 @@ class SandboxRunner:
         runtime: Optional[str] = "runsc",
         image: str = "blastradius-sandbox",
         use_docker: Optional[bool] = None,
+        allow_unsandboxed: Optional[bool] = None,
     ):
         self.timeout = timeout
         self.memory_mb = memory_mb
@@ -67,6 +68,9 @@ class SandboxRunner:
         self.image = image
         # None -> auto-detect a reachable docker daemon; False -> local subprocess.
         self.use_docker = use_docker
+        # Explicit opt-in for the unsandboxed fallback (trusted callers only,
+        # e.g. template-generated PoCs). Falls back to the env var otherwise.
+        self.allow_unsandboxed = allow_unsandboxed
 
     # ------------------------------------------------------------------
     # Public API
@@ -116,12 +120,28 @@ class SandboxRunner:
                         "error": f"sandbox timed out after {self.timeout}s",
                         "exit_code": -1,
                     }
+                if cmd[0] != "docker":
+                    self.warnings.append(
+                        "running exploit as a local subprocess (unsandboxed — opt-in only)"
+                    )
                 if result.returncode == 0:
                     break  # execution succeeded — keep this result
                 # docker failed (e.g. runtime or image missing) — try the next
-                # fallback candidate, ending with the local subprocess
+                # fallback candidate, ending with the local subprocess (opt-in)
                 if cmd[0] == "docker":
-                    self.warnings.append("docker run failed; falling back to local subprocess")
+                    self.warnings.append("docker run failed; trying next candidate")
+
+        if result is None:
+            return {
+                "vulnerable": False,
+                "output": "",
+                "error": (
+                    "no sandbox available: docker is unreachable and unsandboxed "
+                    "execution is disabled; set BLASTRADIUS_ALLOW_UNSANDBOXED=1 "
+                    "to force local execution (unsafe)"
+                ),
+                "exit_code": -1,
+            }
 
         self.escape_flags = detect_sandbox_escape(result.stdout)
         return {
@@ -136,37 +156,49 @@ class SandboxRunner:
     # ------------------------------------------------------------------
 
     def _candidate_commands(self, tmpdir: str) -> Iterator[List[str]]:
-        """Yield commands to try, most preferred first: docker (+runsc), docker,
-        then the local subprocess as a last-resort fallback (so environments
-        with Docker but no built image still run PoCs)."""
+        """Yield commands to try, most preferred first.
+
+        Docker (runsc, then the default runtime) is always attempted when a
+        daemon is reachable. The local subprocess is a last-resort fallback
+        that is ONLY offered on explicit opt-in (``use_docker=False`` or
+        ``BLASTRADIUS_ALLOW_UNSANDBOXED=1``) — otherwise the run fails closed
+        rather than executing PoCs without isolation.
+        """
         if self._use_docker():
             yield self._docker_command(tmpdir, with_runtime=True)
             if self.runtime:
                 yield self._docker_command(tmpdir, with_runtime=False)
+        if self._allow_unsandboxed():
             yield [sys.executable, str(Path(tmpdir) / "exploit_poc.py")]
-        else:
-            yield [sys.executable, str(Path(tmpdir) / "exploit_poc.py")]
+
+    def _allow_unsandboxed(self) -> bool:
+        """Whether unsandboxed local execution is permitted (explicit opt-in)."""
+        if self.allow_unsandboxed is True:
+            return True
+        if self.use_docker is False:
+            return True
+        return os.getenv("BLASTRADIUS_ALLOW_UNSANDBOXED", "").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
 
     def _use_docker(self) -> bool:
         if self.use_docker is None:
             return _docker_available()
         return self.use_docker
 
-    def _is_missing_runtime(self, result: subprocess.CompletedProcess) -> bool:
-        if result.returncode == 0 or not self.runtime:
-            return False
-        stderr = result.stderr.lower()
-        return any(marker in stderr for marker in _RUNTIME_MISSING_MARKERS)
-
     def _docker_command(self, tmpdir: str, with_runtime: bool) -> List[str]:
         cmd = ["docker", "run", "--rm"]
         if with_runtime and self.runtime:
             cmd += ["--runtime", self.runtime]
         cmd += [
-            "--network", "none",
+            "--network",
+            "none",
             "--read-only",
             f"--memory={self.memory_mb}m",
-            "-v", f"{tmpdir}:/app",
+            "-v",
+            f"{tmpdir}:/app",
             self.image,
         ]
         return cmd

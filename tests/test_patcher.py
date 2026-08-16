@@ -15,17 +15,17 @@ from blastradius.patcher.loop import PatchLoop, PatchResult
 from blastradius.patcher.verifier import PatchVerifier, VerificationResult
 from blastradius.tools import generate_and_verify_patch
 
-VULN_SQLI_TARGET = '''def target(user_input):
+VULN_SQLI_TARGET = """def target(user_input):
     return "SELECT * FROM users WHERE name = '" + user_input + "'"
-'''
+"""
 
-PARAMETERIZED_SQLI = '''import sqlite3
+PARAMETERIZED_SQLI = """import sqlite3
 
 def target(user_input):
     conn = sqlite3.connect(":memory:")
     row = conn.execute("SELECT * FROM users WHERE name = ?", (user_input,)).fetchone()
     return str(row)
-'''
+"""
 
 
 @pytest.fixture(autouse=True)
@@ -88,10 +88,18 @@ class FakeSandbox:
 def test_api_patch_sqli_string_concat_to_parameterized(monkeypatch):
     gen = PatchGenerator(api_key="sk-test")
     canned = {
-        "choices": [{"message": {"content": json.dumps({
-            "patched_code": PARAMETERIZED_SQLI,
-            "explanation": "Replaced string concatenation with a parameterized query.",
-        })}}]
+        "choices": [
+            {
+                "message": {
+                    "content": json.dumps(
+                        {
+                            "patched_code": PARAMETERIZED_SQLI,
+                            "explanation": "Replaced string concatenation with a parameterized query.",
+                        }
+                    )
+                }
+            }
+        ]
     }
     monkeypatch.setattr(
         "blastradius.patcher.generator.PatchGenerator._http_post",
@@ -101,7 +109,7 @@ def test_api_patch_sqli_string_concat_to_parameterized(monkeypatch):
 
     assert patch.source == "api"
     assert patch.explanation == "Replaced string concatenation with a parameterized query."
-    assert "?" in patch.patched_code          # parameter placeholder
+    assert "?" in patch.patched_code  # parameter placeholder
     assert "execute(" in patch.patched_code
     assert "+ user_input" not in patch.patched_code
     assert patch.original_code == VULN_SQLI_TARGET
@@ -127,7 +135,7 @@ def test_no_api_key_uses_rule_based():
 def test_rule_based_sqli_patch_escapes_input():
     patch = PatchGenerator(api_key=None)._rule_based_patch(make_finding())
     assert patch.source == "rule"
-    assert "user_input.replace(\"'\", \"''\")" in patch.patched_code
+    assert 'user_input.replace("\'", "\'\'")' in patch.patched_code
     assert patch.explanation
     assert patch.diff
     assert patch.diff != ""
@@ -220,10 +228,12 @@ def test_loop_success_on_attempt_2_with_failure_context():
     patch1 = Patch("a", "b", explanation="first")
     patch2 = Patch("a", "c", explanation="second")
     gen = FakeGenerator([patch1, patch2])
-    ver = FakeVerifier([
-        VerificationResult(True, True, False, 66.67, "regression tests failed"),
-        VerificationResult(True, True, True, 100.0),
-    ])
+    ver = FakeVerifier(
+        [
+            VerificationResult(True, True, False, 66.67, "regression tests failed"),
+            VerificationResult(True, True, True, 100.0),
+        ]
+    )
 
     result = PatchLoop(generator=gen, verifier=ver).run(make_finding())
 
@@ -237,9 +247,12 @@ def test_loop_success_on_attempt_2_with_failure_context():
 def test_loop_escalates_to_human_after_3_failures():
     patches = [Patch("a", "b", explanation=f"p{i}") for i in range(3)]
     gen = FakeGenerator(patches)
-    ver = FakeVerifier([
-        VerificationResult(False, False, False, 0.0, "all checks failed"),
-    ] * 3)
+    ver = FakeVerifier(
+        [
+            VerificationResult(False, False, False, 0.0, "all checks failed"),
+        ]
+        * 3
+    )
 
     result = PatchLoop(generator=gen, verifier=ver).run(make_finding())
 

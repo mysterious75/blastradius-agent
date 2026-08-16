@@ -5,7 +5,6 @@ import importlib
 import tomllib
 from pathlib import Path
 
-import pytest
 import yaml
 
 from scripts.cve_hunt import main as hunt_main
@@ -13,14 +12,14 @@ from scripts.setup_github_app import main as setup_main
 
 ROOT = Path(__file__).resolve().parents[1]
 
-VULN_APP_PY = '''\
+VULN_APP_PY = """\
 from flask import request
 
 def search():
     name = request.args.get("name")
     query = "SELECT * FROM users WHERE name = '" + name + "'"
     return db.execute(query)
-'''
+"""
 
 
 # --- CI workflow -------------------------------------------------------------
@@ -45,7 +44,7 @@ def test_ci_workflow_exists_and_valid_yaml():
         (step.get("name", "") + " " + step.get("run", "") + " " + step.get("uses", ""))
         for step in job["steps"]
     )
-    assert 'pytest tests/ -v --tb=short' in steps
+    assert "pytest tests/ -v --tb=short" in steps
     assert "--cov=blastradius --cov-report=xml" in steps
     assert "upload-artifact" in steps or "actions/upload-artifact" in steps
 
@@ -138,12 +137,14 @@ def test_setup_wizard_writes_env(tmp_path, monkeypatch):
     # pre-existing .env must be preserved
     (tmp_path / ".env").write_text("AUTH_TOKEN=keepme\n", encoding="utf-8")
 
-    answers = iter([
-        "123456",                          # GITHUB_APP_ID
-        "-----BEGIN RSA PRIVATE KEY-----\nline2",  # GITHUB_PRIVATE_KEY
-        "whsec_test",                      # GITHUB_WEBHOOK_SECRET
-        "sk-opencode",                     # OPENCODE_API_KEY
-    ])
+    answers = iter(
+        [
+            "123456",  # GITHUB_APP_ID
+            "-----BEGIN RSA PRIVATE KEY-----\nline2",  # GITHUB_PRIVATE_KEY
+            "whsec_test",  # GITHUB_WEBHOOK_SECRET
+            "sk-opencode",  # OPENCODE_API_KEY
+        ]
+    )
     monkeypatch.setattr("builtins.input", lambda prompt="": next(answers))
     monkeypatch.setattr("scripts.setup_github_app.test_webhook_connectivity", lambda: None)
 

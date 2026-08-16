@@ -12,14 +12,14 @@ from blastradius.api.server import app
 from blastradius.db.database import SQLiteDB
 from blastradius.hunter.scanner import Finding
 
-VULN_APP_PY = '''\
+VULN_APP_PY = """\
 from flask import request
 
 def search():
     name = request.args.get("name")
     query = "SELECT * FROM users WHERE name = '" + name + "'"
     return db.execute(query)
-'''
+"""
 
 
 @pytest.fixture
@@ -48,8 +48,9 @@ def test_openapi_spec(client):
 def test_scan_flow(client, tmp_path, monkeypatch):
     (tmp_path / "repo").mkdir()
     (tmp_path / "repo" / "app.py").write_text(VULN_APP_PY, encoding="utf-8")
-    monkeypatch.setattr("blastradius.hunter.scanner.CVEHunter.clone_repo",
-                        lambda self, url: str(tmp_path / "repo"))
+    monkeypatch.setattr(
+        "blastradius.hunter.scanner.CVEHunter.clone_repo", lambda self, url: str(tmp_path / "repo")
+    )
 
     resp = client.post("/api/v1/scan", json={"target": "https://github.com/org/demo"})
     assert resp.status_code == 200
@@ -71,12 +72,34 @@ def test_scan_requires_target(client):
 def test_findings_filters_and_pagination(client):
     db = api_server._db()
     scan_id = db.save_scan("t")
-    db.save_finding(scan_id, Finding(file="a.py", line=1, vuln_type="sqli", payload="p",
-                                     confidence=0.9, severity="CRITICAL", cwe="CWE-89",
-                                     description="d", remediation="r"))
-    db.save_finding(scan_id, Finding(file="b.py", line=2, vuln_type="xss", payload="q",
-                                     confidence=0.8, severity="HIGH", cwe="CWE-79",
-                                     description="d", remediation="r"))
+    db.save_finding(
+        scan_id,
+        Finding(
+            file="a.py",
+            line=1,
+            vuln_type="sqli",
+            payload="p",
+            confidence=0.9,
+            severity="CRITICAL",
+            cwe="CWE-89",
+            description="d",
+            remediation="r",
+        ),
+    )
+    db.save_finding(
+        scan_id,
+        Finding(
+            file="b.py",
+            line=2,
+            vuln_type="xss",
+            payload="q",
+            confidence=0.8,
+            severity="HIGH",
+            cwe="CWE-79",
+            description="d",
+            remediation="r",
+        ),
+    )
 
     by_sev = client.get("/api/v1/findings?severity=critical").json()
     assert by_sev["total"] == 1 and by_sev["findings"][0]["vuln_type"] == "sqli"
@@ -91,11 +114,21 @@ def test_findings_filters_and_pagination(client):
 def test_finding_detail_and_patch(client):
     db = api_server._db()
     scan_id = db.save_scan("t")
-    fid = db.save_finding(scan_id, Finding(file="a.py", line=1, vuln_type="sqli",
-                                           payload='query = "SELECT * FROM t WHERE id = \'" + x + "\'"',
-                                           confidence=0.9, severity="CRITICAL", cwe="CWE-89",
-                                           description="d", remediation="r",
-                                           original_code='def target(u):\n    return "SELECT * FROM t WHERE id=\'" + u + "\'"'))
+    fid = db.save_finding(
+        scan_id,
+        Finding(
+            file="a.py",
+            line=1,
+            vuln_type="sqli",
+            payload='query = "SELECT * FROM t WHERE id = \'" + x + "\'"',
+            confidence=0.9,
+            severity="CRITICAL",
+            cwe="CWE-89",
+            description="d",
+            remediation="r",
+            original_code='def target(u):\n    return "SELECT * FROM t WHERE id=\'" + u + "\'"',
+        ),
+    )
 
     detail = client.get(f"/api/v1/findings/{fid}").json()
     assert detail["finding"]["vuln_type"] == "sqli"
@@ -127,16 +160,25 @@ def test_webhook_endpoint(client, monkeypatch):
 
     monkeypatch.setattr("blastradius.github_app.webhook.scan_and_report", fake_scan_and_report)
     body = b'{"action":"opened","pull_request":{"number":7},"repository":{"full_name":"org/r","clone_url":"https://github.com/org/r.git"}}'
-    sig = "sha256=" + __import__("hmac").new(b"secret", body, __import__("hashlib").sha256).hexdigest()
+    sig = (
+        "sha256="
+        + __import__("hmac").new(b"secret", body, __import__("hashlib").sha256).hexdigest()
+    )
 
-    resp = client.post("/api/v1/webhook/github", content=body,
-                       headers={"X-GitHub-Event": "pull_request", "X-Hub-Signature-256": sig})
+    resp = client.post(
+        "/api/v1/webhook/github",
+        content=body,
+        headers={"X-GitHub-Event": "pull_request", "X-Hub-Signature-256": sig},
+    )
     assert resp.status_code == 200
     assert resp.json()["pr"] == 7
     assert called["repo"] == "org/r"
 
-    bad = client.post("/api/v1/webhook/github", content=body,
-                      headers={"X-GitHub-Event": "pull_request", "X-Hub-Signature-256": "sha256=bad"})
+    bad = client.post(
+        "/api/v1/webhook/github",
+        content=body,
+        headers={"X-GitHub-Event": "pull_request", "X-Hub-Signature-256": "sha256=bad"},
+    )
     assert bad.status_code == 403
 
 

@@ -2,7 +2,6 @@
 
 import json
 
-import pytest
 
 from blastradius.blast_radius.cli import main as cli_main
 from blastradius.blast_radius.graph import (
@@ -73,11 +72,15 @@ def test_parse_requirements(tmp_path):
 
 
 def test_parse_package_json(tmp_path):
-    (tmp_path / "package.json").write_text(json.dumps({
-        "name": "app",
-        "dependencies": {"lodash": "^4.17.20", "express": "4.18.2"},
-        "devDependencies": {"jest": "~29.0.0"},
-    }))
+    (tmp_path / "package.json").write_text(
+        json.dumps(
+            {
+                "name": "app",
+                "dependencies": {"lodash": "^4.17.20", "express": "4.18.2"},
+                "devDependencies": {"jest": "~29.0.0"},
+            }
+        )
+    )
     deps = _parse_package_json(tmp_path / "package.json")
     assert ("lodash", "4.17.20") in deps
     assert ("express", "4.18.2") in deps
@@ -118,7 +121,12 @@ def test_parse_dependencies_aggregates_and_dedupes(tmp_path):
     (tmp_path / "go.mod").write_text("require github.com/gorilla/mux v1.8.0\n")
 
     deps = parse_dependencies(str(tmp_path))
-    assert deps == [("flask", "2.3.2"), ("requests", "2.31.0"), ("lodash", "4.17.20"), ("mux", "1.8.0")]
+    assert deps == [
+        ("flask", "2.3.2"),
+        ("requests", "2.31.0"),
+        ("lodash", "4.17.20"),
+        ("mux", "1.8.0"),
+    ]
 
 
 # --- CLI --------------------------------------------------------------------

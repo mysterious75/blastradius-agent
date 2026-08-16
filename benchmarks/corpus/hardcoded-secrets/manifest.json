@@ -1,0 +1,7 @@
+{
+  "target": "hardcoded-secrets",
+  "description": "OpenAI API key hardcoded in a config module.",
+  "expected": [
+    {"file": "config.py", "vuln_type": "secret", "severity": "HIGH", "cwe": "CWE-798"}
+  ]
+}

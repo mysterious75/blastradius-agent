@@ -2,7 +2,7 @@
 
 import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from blastradius.pipeline import PipelineResult
@@ -18,9 +18,12 @@ class SummaryReporter:
         by_type: dict = {}
         for finding in result.findings:
             by_type[finding.vuln_type] = by_type.get(finding.vuln_type, 0) + 1
-        type_lines = "\n".join(
-            f"- {_VULN_LABELS.get(t, t.upper())}: {n}" for t, n in sorted(by_type.items())
-        ) or "- none"
+        type_lines = (
+            "\n".join(
+                f"- {_VULN_LABELS.get(t, t.upper())}: {n}" for t, n in sorted(by_type.items())
+            )
+            or "- none"
+        )
 
         patch_rows = []
         human_files = []
@@ -33,9 +36,13 @@ class SummaryReporter:
             if patch_result.needs_human:
                 human_files.append(finding.file)
         patch_table = (
-            "| File | Type | Confidence | Needs human |\n"
-            "|---|---|---|---|\n" + "\n".join(patch_rows)
-        ) if patch_rows else "- none"
+            (
+                "| File | Type | Confidence | Needs human |\n"
+                "|---|---|---|---|\n" + "\n".join(patch_rows)
+            )
+            if patch_rows
+            else "- none"
+        )
 
         human_lines = "\n".join(f"- `{f}`" for f in sorted(set(human_files))) or "- none"
 

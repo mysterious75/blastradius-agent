@@ -2,7 +2,6 @@
 
 import json
 
-import pytest
 
 from blastradius.mcp import server as mcp_server
 from blastradius.mcp.server import (
@@ -23,15 +22,21 @@ VULN_CODE = 'def target(user_input):\n    return "SELECT * FROM users WHERE name
 def test_seven_tools_registered():
     names = {fn.__name__ for fn in TOOLS}
     assert names == {
-        "scan_repo", "get_findings", "get_stats", "run_exploit",
-        "generate_patch", "blast_radius", "list_cves",
+        "scan_repo",
+        "get_findings",
+        "get_stats",
+        "run_exploit",
+        "generate_patch",
+        "blast_radius",
+        "list_cves",
     }
 
 
 def test_scan_repo_local_path(tmp_path, monkeypatch):
     (tmp_path / "app.py").write_text(
         "name = request.args.get('name')\n"
-        "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n", encoding="utf-8"
+        'query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n',
+        encoding="utf-8",
     )
     data = json.loads(scan_repo(str(tmp_path)))
     assert isinstance(data, list)
@@ -100,6 +105,7 @@ def test_main_registers_and_runs(monkeypatch):
             def deco(fn):
                 called.setdefault("tools", []).append(fn.__name__)
                 return fn
+
             return deco
 
         def run(self, *a, **k):

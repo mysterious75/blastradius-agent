@@ -54,20 +54,31 @@ class ScanCache:
     @staticmethod
     def _finding_to_dict(f: Finding) -> dict:
         return {
-            "file": f.file, "line": f.line, "vuln_type": f.vuln_type,
-            "payload": f.payload, "confidence": f.confidence,
-            "evidence": f.evidence, "severity": f.severity, "cwe": f.cwe,
-            "description": f.description, "remediation": f.remediation,
+            "file": f.file,
+            "line": f.line,
+            "vuln_type": f.vuln_type,
+            "payload": f.payload,
+            "confidence": f.confidence,
+            "evidence": f.evidence,
+            "severity": f.severity,
+            "cwe": f.cwe,
+            "description": f.description,
+            "remediation": f.remediation,
         }
 
     @staticmethod
     def _finding_from_dict(d: dict) -> Finding:
         return Finding(
-            file=d.get("file", ""), line=d.get("line", 0),
-            vuln_type=d.get("vuln_type", ""), payload=d.get("payload", ""),
-            confidence=d.get("confidence", 0.0), evidence=d.get("evidence", ""),
-            severity=d.get("severity", ""), cwe=d.get("cwe", ""),
-            description=d.get("description", ""), remediation=d.get("remediation", ""),
+            file=d.get("file", ""),
+            line=d.get("line", 0),
+            vuln_type=d.get("vuln_type", ""),
+            payload=d.get("payload", ""),
+            confidence=d.get("confidence", 0.0),
+            evidence=d.get("evidence", ""),
+            severity=d.get("severity", ""),
+            cwe=d.get("cwe", ""),
+            description=d.get("description", ""),
+            remediation=d.get("remediation", ""),
         )
 
     # ------------------------------------------------------------------

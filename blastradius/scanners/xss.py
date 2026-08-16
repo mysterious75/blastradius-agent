@@ -15,9 +15,17 @@ from blastradius.scanners._util import (
 )
 
 _SINKS = [
-    r"\binnerHTML\b", r"\bouterHTML\b", r"\bdocument\.write\s*\(", r"\bdocument\.writeln\s*\(",
-    r"\beval\s*\(", r"\bdangerouslySetInnerHTML\b", r"\bv-html\b", r"\[innerHTML\]",
-    r"\binsertAdjacentHTML\s*\(", r"\.html\s*\(", r"\brender_template_string\s*\(",
+    r"\binnerHTML\b",
+    r"\bouterHTML\b",
+    r"\bdocument\.write\s*\(",
+    r"\bdocument\.writeln\s*\(",
+    r"\beval\s*\(",
+    r"\bdangerouslySetInnerHTML\b",
+    r"\bv-html\b",
+    r"\[innerHTML\]",
+    r"\binsertAdjacentHTML\s*\(",
+    r"\.html\s*\(",
+    r"\brender_template_string\s*\(",
 ]
 _SAFE = re.compile(
     r"htmlspecialchars|html\.escape|escapeHtml|html_escape|HTMLEscape|"
@@ -43,7 +51,13 @@ class XSSScanner:
                 return None
             confidence = 0.85 if (has_source(line) or has_source_flag) else 0.7
             return make_finding(
-                path, idx, "xss", line.strip(), confidence, "HIGH", "CWE-79",
+                path,
+                idx,
+                "xss",
+                line.strip(),
+                confidence,
+                "HIGH",
+                "CWE-79",
                 "Cross-site scripting: unescaped input reaches an HTML/JS sink.",
                 "Encode all dynamic output with context-aware escaping and apply a strict CSP.",
             )

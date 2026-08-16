@@ -192,12 +192,12 @@ class LLMClient:
             print(f"Using provider: {name} / {model} ({(time.monotonic() - start) * 1000:.0f}ms)")
         usage = data.get("usage") or {}
         self.tracker.track_usage(
-            name, model,
+            name,
+            model,
             input_tokens=usage.get("prompt_tokens", 0),
             output_tokens=usage.get("completion_tokens", 0),
         )
-        self.limiter.track(name, usage.get("prompt_tokens", 0),
-                           usage.get("completion_tokens", 0))
+        self.limiter.track(name, usage.get("prompt_tokens", 0), usage.get("completion_tokens", 0))
         return data["choices"][0]["message"]["content"]
 
     @staticmethod

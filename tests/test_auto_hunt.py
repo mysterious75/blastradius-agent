@@ -1,22 +1,21 @@
 """AutoHunt pipeline tests — discovery and clone mocked, sandbox runs locally."""
 
-import json
 from pathlib import Path
 
 import pytest
 
 from blastradius.auto_hunt import main as auto_hunt_main
 from blastradius.recon.auto_hunt import AutoHunt, _fp_filter
-from blastradius.hunter.scanner import Finding, CVEHunter
+from blastradius.hunter.scanner import Finding
 
-VULN_APP_PY = '''\
+VULN_APP_PY = """\
 from flask import request
 
 def search():
     name = request.args.get("name")
     query = "SELECT * FROM users WHERE name = '" + name + "'"
     return db.execute(query)
-'''
+"""
 
 
 @pytest.fixture
@@ -30,9 +29,23 @@ def vuln_repo(tmp_path):
 
 def test_fp_filter_drops_vendored(tmp_path):
     findings = [
-        Finding(file=str(tmp_path / "app.py"), line=5, vuln_type="sqli", payload="x", confidence=1.0),
-        Finding(file=str(tmp_path / "vendor" / "lib.js"), line=1, vuln_type="xss", payload="y", confidence=0.95),
-        Finding(file=str(tmp_path / "static" / "js" / "bundle.min.js"), line=1, vuln_type="xss", payload="z", confidence=0.95),
+        Finding(
+            file=str(tmp_path / "app.py"), line=5, vuln_type="sqli", payload="x", confidence=1.0
+        ),
+        Finding(
+            file=str(tmp_path / "vendor" / "lib.js"),
+            line=1,
+            vuln_type="xss",
+            payload="y",
+            confidence=0.95,
+        ),
+        Finding(
+            file=str(tmp_path / "static" / "js" / "bundle.min.js"),
+            line=1,
+            vuln_type="xss",
+            payload="z",
+            confidence=0.95,
+        ),
     ]
     survivors = _fp_filter(findings)
     assert len(survivors) == 1
@@ -43,7 +56,12 @@ def test_auto_hunt_runs_and_saves_reports(vuln_repo, tmp_path, monkeypatch, caps
     monkeypatch.setattr(
         "blastradius.recon.dorker.DorkEngine.find_targets",
         lambda self, strategy, min_stars=0, limit=200: [
-            {"repo": "org/demo", "url": "https://github.com/org/demo", "stars": 500, "source": "github"},
+            {
+                "repo": "org/demo",
+                "url": "https://github.com/org/demo",
+                "stars": 500,
+                "source": "github",
+            },
         ],
     )
     monkeypatch.setattr(
@@ -75,15 +93,30 @@ def test_auto_hunt_cli(vuln_repo, tmp_path, monkeypatch):
     monkeypatch.setattr(
         "blastradius.recon.dorker.DorkEngine.find_targets",
         lambda self, strategy, min_stars=0, limit=200: [
-            {"repo": "org/demo", "url": "https://github.com/org/demo", "stars": 500, "source": "github"},
+            {
+                "repo": "org/demo",
+                "url": "https://github.com/org/demo",
+                "stars": 500,
+                "source": "github",
+            },
         ],
     )
     monkeypatch.setattr(
         "blastradius.hunter.scanner.CVEHunter.clone_repo",
         lambda self, url: str(vuln_repo),
     )
-    rc = auto_hunt_main(["--strategy", "github", "--max", "5", "--min-stars", "0",
-                         "--reports-dir", str(tmp_path / "reports")])
+    rc = auto_hunt_main(
+        [
+            "--strategy",
+            "github",
+            "--max",
+            "5",
+            "--min-stars",
+            "0",
+            "--reports-dir",
+            str(tmp_path / "reports"),
+        ]
+    )
     assert rc == 0
 
 
@@ -91,15 +124,29 @@ def test_auto_hunt_handles_target_errors(vuln_repo, tmp_path, monkeypatch):
     monkeypatch.setattr(
         "blastradius.recon.dorker.DorkEngine.find_targets",
         lambda self, strategy, min_stars=0, limit=200: [
-            {"repo": "org/demo", "url": "https://github.com/org/demo", "stars": 500, "source": "github"},
-            {"repo": "org/bad", "url": "https://github.com/org/bad", "stars": 1, "source": "github"},
+            {
+                "repo": "org/demo",
+                "url": "https://github.com/org/demo",
+                "stars": 500,
+                "source": "github",
+            },
+            {
+                "repo": "org/bad",
+                "url": "https://github.com/org/bad",
+                "stars": 1,
+                "source": "github",
+            },
         ],
     )
     monkeypatch.setattr(
         "blastradius.hunter.scanner.CVEHunter.clone_repo",
-        lambda self, url: str(vuln_repo) if "demo" in url else (_ for _ in ()).throw(RuntimeError("clone failed")),
+        lambda self, url: (
+            str(vuln_repo) if "demo" in url else (_ for _ in ()).throw(RuntimeError("clone failed"))
+        ),
     )
-    results = AutoHunt(reports_dir=str(tmp_path / "reports")).run("github", max_targets=5, min_stars=0)
+    results = AutoHunt(reports_dir=str(tmp_path / "reports")).run(
+        "github", max_targets=5, min_stars=0
+    )
     by_repo = {r["repo"]: r for r in results}
     assert by_repo["org/demo"]["confirmed"] == 1
     assert by_repo["org/bad"]["confirmed"] == 0

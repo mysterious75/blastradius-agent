@@ -38,7 +38,13 @@ class SSTIScanner:
                 return None
             confidence = 0.9 if (has_source(line) or has_source_flag) else 0.75
             return make_finding(
-                path, idx, "ssti", line.strip(), confidence, "CRITICAL", "CWE-1336",
+                path,
+                idx,
+                "ssti",
+                line.strip(),
+                confidence,
+                "CRITICAL",
+                "CWE-1336",
                 "Server-side template injection: user input reaches a template renderer.",
                 "Never render user input as the template source; use template variables only.",
             )

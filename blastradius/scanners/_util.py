@@ -38,8 +38,9 @@ def code_has_source(code: str) -> bool:
     return bool(SOURCE_RE.search(code))
 
 
-def make_finding(path, line, vuln_type, payload, confidence, severity, cwe,
-                 description, remediation) -> Finding:
+def make_finding(
+    path, line, vuln_type, payload, confidence, severity, cwe, description, remediation
+) -> Finding:
     return Finding(
         file=str(path or ""),
         line=line,

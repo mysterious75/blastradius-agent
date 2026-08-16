@@ -18,7 +18,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple
 
 from blastradius.hunter.scanner import SKIP_DIRS
-from blastradius.providers.client import LLMClient, LLMUnavailableError
+from blastradius.providers.client import LLMClient
 from blastradius.security.input_validator import validate_repo_path, validate_target_code
 
 REVIEW_PROMPT = (
@@ -88,9 +88,13 @@ def _iter_files(root: Path, exts: Tuple[str, ...]):
             if any(part in SKIP_DIRS or part.endswith("-test") for part in path.parts):
                 continue
             stem = path.stem
-            if (stem.endswith("_test") or stem.startswith("test_")
-                    or stem.endswith(".test") or stem.endswith(".spec")
-                    or stem.endswith("_spec")):
+            if (
+                stem.endswith("_test")
+                or stem.startswith("test_")
+                or stem.endswith(".test")
+                or stem.endswith(".spec")
+                or stem.endswith("_spec")
+            ):
                 continue
             yield path
 
@@ -154,7 +158,7 @@ def verify_finding(finding: dict, source_text: str, client) -> dict:
     line = int(finding.get("line", 0))
     lines = source_text.splitlines()
     start = max(0, line - 1 - VERIFY_WINDOW)
-    context = "\n".join(lines[start:start + 2 * VERIFY_WINDOW + 1])
+    context = "\n".join(lines[start : start + 2 * VERIFY_WINDOW + 1])
     prompt = VERIFY_PROMPT.format(reason=finding.get("reason", ""), line=line, context=context)
     try:
         reply = client.chat([{"role": "user", "content": prompt}])

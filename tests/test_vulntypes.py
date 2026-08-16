@@ -26,7 +26,9 @@ def _types(hunter, tmp_path):
 
 
 def test_idor_flagged_without_auth(tmp_path, hunter):
-    _write(tmp_path, "app.py",
+    _write(
+        tmp_path,
+        "app.py",
         "from flask import request\n"
         "@app.route('/user/<int:id>')\n"
         "def get_user(id):\n"
@@ -36,7 +38,9 @@ def test_idor_flagged_without_auth(tmp_path, hunter):
 
 
 def test_idor_not_flagged_with_auth(tmp_path, hunter):
-    _write(tmp_path, "app.py",
+    _write(
+        tmp_path,
+        "app.py",
         "from flask import request\n"
         "@app.route('/user/<int:id>')\n"
         "@login_required\n"
@@ -50,7 +54,9 @@ def test_idor_not_flagged_with_auth(tmp_path, hunter):
 
 
 def test_ssti_flagged(tmp_path, hunter):
-    _write(tmp_path, "app.py",
+    _write(
+        tmp_path,
+        "app.py",
         "from flask import request, render_template_string\n"
         "def view():\n"
         "    tmpl = request.args.get('tpl')\n"
@@ -71,16 +77,18 @@ def test_ssti_template_processed_without_crash():
 
 
 def test_xxe_flagged_without_defusedxml(tmp_path, hunter):
-    _write(tmp_path, "parse.py",
-        "import xml.etree.ElementTree as ET\n"
-        "def parse_xml(data):\n"
-        "    return ET.parse(data)\n",
+    _write(
+        tmp_path,
+        "parse.py",
+        "import xml.etree.ElementTree as ET\ndef parse_xml(data):\n    return ET.parse(data)\n",
     )
     assert "xxe" in _types(hunter, tmp_path)
 
 
 def test_xxe_not_flagged_when_defusedxml_used(tmp_path, hunter):
-    _write(tmp_path, "parse.py",
+    _write(
+        tmp_path,
+        "parse.py",
         "from defusedxml import ElementTree as ET\n"
         "def parse_xml(data):\n"
         "    return ET.parse(data)\n",
@@ -92,16 +100,18 @@ def test_xxe_not_flagged_when_defusedxml_used(tmp_path, hunter):
 
 
 def test_jwt_alg_none_flagged(tmp_path, hunter):
-    _write(tmp_path, "auth.py",
-        "import jwt\n"
-        "def decode_token(token):\n"
-        "    return jwt.decode(token, algorithms=['none'])\n",
+    _write(
+        tmp_path,
+        "auth.py",
+        "import jwt\ndef decode_token(token):\n    return jwt.decode(token, algorithms=['none'])\n",
     )
     assert "jwt" in _types(hunter, tmp_path)
 
 
 def test_jwt_verify_disabled_flagged(tmp_path, hunter):
-    _write(tmp_path, "auth.py",
+    _write(
+        tmp_path,
+        "auth.py",
         "import jwt\n"
         "def decode_token(token):\n"
         "    return jwt.decode(token, verify_signature=False)\n",
@@ -110,7 +120,9 @@ def test_jwt_verify_disabled_flagged(tmp_path, hunter):
 
 
 def test_jwt_secure_decode_not_flagged(tmp_path, hunter):
-    _write(tmp_path, "auth.py",
+    _write(
+        tmp_path,
+        "auth.py",
         "import jwt\n"
         "def decode_token(token):\n"
         "    return jwt.decode(token, 'secret', algorithms=['HS256'])\n",
@@ -130,17 +142,21 @@ def test_jwt_template_processed_without_crash():
 
 
 def test_graphql_resolver_concat_flagged(tmp_path, hunter):
-    _write(tmp_path, "schema.py",
+    _write(
+        tmp_path,
+        "schema.py",
         "class Query(graphene.ObjectType):\n"
         "    def resolve_user(self, info, name):\n"
-        "        query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n"
+        '        query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n'
         "        return db.execute(query)\n",
     )
     assert "graphql" in _types(hunter, tmp_path)
 
 
 def test_graphql_resolver_parameterized_not_flagged(tmp_path, hunter):
-    _write(tmp_path, "schema.py",
+    _write(
+        tmp_path,
+        "schema.py",
         "class Query(graphene.ObjectType):\n"
         "    def resolve_user(self, info, name):\n"
         "        return db.execute('SELECT * FROM users WHERE name = %s', (name,))\n",
@@ -172,7 +188,7 @@ def test_reconstruct_idor_and_xxe_templates():
     idor = reconstruct_target_code(
         Finding(file="x.py", line=1, vuln_type="idor", payload="x", confidence=0.9)
     )
-    assert "db.get(request.args.get(\"id\"))" in idor
+    assert 'db.get(request.args.get("id"))' in idor
     xxe = reconstruct_target_code(
         Finding(file="x.py", line=1, vuln_type="xxe", payload="x", confidence=0.9)
     )
@@ -192,7 +208,7 @@ def test_pipeline_handles_graphql_finding_without_crash(tmp_path):
     (tmp_path / "schema.py").write_text(
         "class Query(graphene.ObjectType):\n"
         "    def resolve_user(self, info, name):\n"
-        "        query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n"
+        '        query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n'
         "        return db.execute(query)\n",
         encoding="utf-8",
     )

@@ -46,16 +46,21 @@ class HuntScheduler:
         now = datetime.now()
         if mode == "daily":
             self._jobs["daily_hunt"] = {
-                "interval": timedelta(hours=24), "next": now, "strategy": "github",
+                "interval": timedelta(hours=24),
+                "next": now,
+                "strategy": "github",
                 "targets": self.max_targets,
             }
         elif mode == "weekly":
             self._jobs["weekly_deep"] = {
-                "interval": timedelta(days=7), "next": now, "strategy": "all",
+                "interval": timedelta(days=7),
+                "next": now,
+                "strategy": "all",
                 "targets": 50,
             }
         self._jobs["hourly_check"] = {
-            "interval": timedelta(hours=1), "next": now,
+            "interval": timedelta(hours=1),
+            "next": now,
         }
         return self._jobs
 
@@ -157,8 +162,10 @@ class HuntScheduler:
     def _osv_query(package: str) -> list:
         body = json.dumps({"package": {"name": package, "ecosystem": "PyPI"}}).encode("utf-8")
         req = urllib.request.Request(
-            "https://api.osv.dev/v1/query", data=body,
-            headers={"Content-Type": "application/json"}, method="POST",
+            "https://api.osv.dev/v1/query",
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
         )
         with urllib.request.urlopen(req, timeout=15) as resp:
             return json.loads(resp.read().decode("utf-8")).get("vulns", [])

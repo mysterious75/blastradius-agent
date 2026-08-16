@@ -27,12 +27,14 @@ def clean_env(monkeypatch):
 def _ok_http(content="hello"):
     def http(url, headers, payload, timeout):
         return {"choices": [{"message": {"content": content}}]}
+
     return http
 
 
 def _raise_http(exc=None):
     def http(url, headers, payload, timeout):
         raise exc or RuntimeError("boom")
+
     return http
 
 
@@ -41,9 +43,21 @@ def _raise_http(exc=None):
 
 def test_registry_has_15_providers():
     assert set(PROVIDER_REGISTRY) == {
-        "openai", "anthropic", "deepseek", "opencode_zen", "opencode_go",
-        "openrouter", "qwen", "kimi", "groq", "together", "mistral",
-        "google", "xai", "ollama", "lmstudio",
+        "openai",
+        "anthropic",
+        "deepseek",
+        "opencode_zen",
+        "opencode_go",
+        "openrouter",
+        "qwen",
+        "kimi",
+        "groq",
+        "together",
+        "mistral",
+        "google",
+        "xai",
+        "ollama",
+        "lmstudio",
     }
     for name, cfg in PROVIDER_REGISTRY.items():
         assert cfg["base_url"], name
@@ -135,7 +149,9 @@ def test_chat_unknown_model_forwarded_verbatim():
         captured["payload"] = payload
         return {"choices": [{"message": {"content": "ok"}}]}
 
-    client = LLMClient(provider="deepseek", model="totally-new-model-2027", http=http, verbose=False)
+    client = LLMClient(
+        provider="deepseek", model="totally-new-model-2027", http=http, verbose=False
+    )
     client.chat(["hi"])
     assert captured["payload"]["model"] == "totally-new-model-2027"
 
@@ -177,10 +193,20 @@ def test_patch_generator_uses_provider_config(monkeypatch):
 
     def fake_http(self, payload):
         captured["payload"] = payload
-        return {"choices": [{"message": {"content": json.dumps({
-            "patched_code": "def target(u):\n    return 'x'",
-            "explanation": "e",
-        })}}]}
+        return {
+            "choices": [
+                {
+                    "message": {
+                        "content": json.dumps(
+                            {
+                                "patched_code": "def target(u):\n    return 'x'",
+                                "explanation": "e",
+                            }
+                        )
+                    }
+                }
+            ]
+        }
 
     monkeypatch.setattr("blastradius.patcher.generator.PatchGenerator._http_post", fake_http)
     from blastradius.hunter.scanner import Finding
