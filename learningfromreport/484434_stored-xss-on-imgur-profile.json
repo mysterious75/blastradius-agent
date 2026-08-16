@@ -1,0 +1,129 @@
+{
+  "id": 484434,
+  "global_id": "Z2lkOi8vaGFja2Vyb25lL1JlcG9ydC80ODQ0MzQ=",
+  "url": "https://hackerone.com/reports/484434",
+  "title": "Stored XSS on imgur profile",
+  "state": "Closed",
+  "substate": "resolved",
+  "severity_rating": "medium",
+  "readable_substate": "Resolved",
+  "created_at": "2019-01-23T06:16:47.088Z",
+  "submitted_at": "2019-01-23T06:16:47.088Z",
+  "is_member_of_team?": false,
+  "is_organization_group_member?": false,
+  "is_triager?": false,
+  "reporter": {
+    "disabled": false,
+    "username": "giddsec",
+    "url": "/giddsec",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/a3shn6lec8mhp2cuknl2hyie0v9q/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6"
+    },
+    "is_me?": false,
+    "cleared": false,
+    "verified": false,
+    "hackerone_triager": false,
+    "hacker_mediation": false
+  },
+  "team": {
+    "id": 638,
+    "url": "https://hackerone.com/imgur",
+    "handle": "imgur",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/000/000/638/c66ef01545064639821798ab311aa0063acd8aa7_original.png/b8e19a7691128fca51630d7f5b14644b91b3b45324f6fd488e36244d744fe35b",
+      "medium": "https://profile-photos.hackerone-user-content.com/variants/000/000/638/c66ef01545064639821798ab311aa0063acd8aa7_original.png/89f037b490baf3dcca1b84283f4c85141b64c213252a9c79b56c62bf903ab542"
+    },
+    "permissions": [],
+    "submission_state": "paused",
+    "default_currency": "usd",
+    "awards_miles": false,
+    "offers_bounties": true,
+    "state": "public_mode",
+    "only_cleared_hackers": false,
+    "pentest_feature_enabled?": false,
+    "pentest_retesting_ends_at": null,
+    "profile": {
+      "name": "Imgur",
+      "twitter_handle": "imgur",
+      "website": "http://imgur.com",
+      "about": "The most awesome images on the Internet."
+    }
+  },
+  "has_bounty?": true,
+  "can_view_team": true,
+  "can_view_report": true,
+  "is_external_bug": false,
+  "is_published": false,
+  "is_participant": false,
+  "has_collaborators": false,
+  "submitted_by_team_member": false,
+  "submitted_with_assistant": false,
+  "stage": 4,
+  "public": true,
+  "visibility": "full",
+  "cve_ids": [],
+  "singular_disclosure_disabled": false,
+  "disclosed_at": "2019-03-02T01:45:04.495Z",
+  "bug_reporter_agreed_on_going_public_at": "2019-01-31T01:44:59.427Z",
+  "team_member_agreed_on_going_public_at": null,
+  "comments_closed?": false,
+  "facebook_team?": false,
+  "team_private?": false,
+  "vulnerability_information": "Hello, I submitted a report on imgur, but the staff marked it as duplicate. #482841 I reviewed the report of the first submitted report. #381553 We are on the same situation and his case is already fixed because I tried visiting his site too which is https://12test.imgur.com/ and even redoing his steps to reproduce but no XSS is triggered. And I have a different bypass and my bypass succeed. I can still fire up XSS on the said webpage.\n\nSorry for double posting, but I think his case #381553 is already fixed and mine is different.\n\nThere are still bypasses exists in the imgur create album that can cause an Stored XSS. \nTry to visit my site: https://gidsumaya.imgur.com/ and XSS will trigger. F410962:\n\nIn my case, I bypassed the filtering using HTML entities for the alternation of <>, because I noticed that it's filtering the <>.\n##Payload:\n**\u201d/>&_lt;_script>alert(1)&_lt;/scr_ipt&gt\u201d/>** remove the underscores.\n\nAnd I can still fire up XSS and anyone who visits the link, the XSS will trigger.\n\nI acknowledge that there was another report, for the same issue but that I still have a way to bypass whatever fix they implemented.\n\n## Impact\n\nXSS can use to steal cookies, password or to run arbitrary code on victim's browser",
+  "weakness": {
+    "id": 62,
+    "name": "Cross-site Scripting (XSS) - Stored"
+  },
+  "original_report_id": null,
+  "original_report_url": null,
+  "attachments": [
+    {
+      "id": 410962,
+      "file_name": "poc.PNG",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/000/410/962/719fcbf1b94acb971bf8c8f5754f021c1cb9672f/poc.PNG?response-content-disposition=attachment%3B%20filename%3D%22poc.PNG%22%3B%20filename%2A%3DUTF-8%27%27poc.PNG&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQZBA5LDG3%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T105358Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJIMEYCIQDB%2BPEeiP61XmRs4ha9IPVOUXLIgb5IxR80uE15VHI8egIhANhC9B9LIzLqqXssxyXwTjFMJHFq3hnvOUbVjhc0c8ujKrEFCCwQAxoMMDEzNjE5Mjc0ODQ5IgwFgSf%2BBvxP%2FoOVcGEqjgUMo9CQsxAsqIGL3w1x6eeununUiliDT0JgyzmcnlE7NNMjA9zrBbhhiaII3xtQkk4J7qZZmBaVkEHxV0Uu7WBmmpbYeglEChkQh%2BTttetaP36SKQkqnH7q8aUDMmqN66HGyrOqPAbqi%2FUSIWqhTab0ylRjBYL5peIMKy6RtwxHuXI7JRnHmIe8bSR9ePPVPBdkGX1t1PI%2FiIdVjZLY7uH4G4ZIRO9JWmG9ku97%2Fnq1dqdZlox%2BbwjV8%2BwpXz3i6%2BSD%2FDVDBsE5PFLv1Yt16wY%2BiKo8hRLuwnaMEDYw6MrXjZ73ZJUfmwEHguChOIQnAPTxSTqlrJjRxg%2FESiLTW5Kt%2BCwALt35r3zkPc5MKGfwqwfxB9DW2R1VuVb9g%2FmTY452Q48TAOmYx97yO23tpqu6jLSlcskSdbIRrr7tuBpW1A8RtIce2tUk5eTLnuhP3Oy4u8Yaz5W%2BtL%2BEHSY%2FqpLvkvXODc2BJK29xPiB1nn17a%2B5dAKindcrxDWUZR33StVqgVS5cDNdXZOPSEpPf%2By7vyh845SIwDwEb3%2Bz0plqgg1%2Fpsdh4sV3Eoi4AlQ3ov9uqI%2F8fDWtyFWuX%2F0iZmvm7ReumnNCYwwbXxNhBHFQAIQ3%2FllO9vC3lIs0k919K46YiJq2rqF1oDqR%2BuuGGdjucM%2FEhXakTOPR0cQaDifX08tLXear19CrcCt4Lul0BKF3zN2fo1lbj2C3VyLq6Tc%2FmoGDT8ouuD9knZnqcr8SrFw4DuKKb1WoDa6u4eopRLXoTC05yrDSmRl2o%2FEj46jzX%2BxF21e8%2FoVwicTwA5QJS8V0UxiXwx0e9%2FAjtieaO8V6H3COKvaSVt7fQtawgs8mmGVx2mBMhT9zY%2BKn%2BPswrqqG1AY6sAHz1pKzHkvDy2sYDip%2FnzumfUErmRlVSGdjJSghGIBLXqEAw1qo1f1M14RUgLIwFj67U8xJqw3%2FSQY43oG3sQ7DW%2B1rKxv2yttKKKYr0Y%2BO6XO2a1hGL034ee6qIMhugPr%2Bc5igcP6K8PqrfUbb8miENY7U2zxSameLns2sQLK1P5WxJR1NF4R3x32sWNKYNehlarEy07vYf4%2B%2B2q5%2BRg6J0GSH3YCR%2B54VHIKgFwGT6g%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=f3f6a61bb752ae01f33eb73c8c998841754a132c8f917995c4685e2c2c98eecc",
+      "file_size": 55108,
+      "type": "image/png",
+      "moderated": null
+    }
+  ],
+  "allow_singular_disclosure_at": "2019-03-02T01:44:59.512Z",
+  "allow_singular_disclosure_after": -235386539.28059426,
+  "singular_disclosure_allowed": true,
+  "vote_count": 612,
+  "voters": [
+    "manoelt",
+    "orange303",
+    "dobispr",
+    "rioru",
+    "nihj",
+    "dninjadave",
+    "sw33tlie",
+    "f4d3",
+    "checkm50",
+    "base_64",
+    "and 602 more..."
+  ],
+  "severity": {
+    "rating": "medium",
+    "author_type": "Team"
+  },
+  "structured_scope": null,
+  "abilities": {
+    "assignable_team_members": [],
+    "assignable_team_member_groups": []
+  },
+  "is_exploit_agent_supported?": false,
+  "is_linear_agent_ui_supported?": false,
+  "summaries": [
+    {
+      "category": "team",
+      "can_view?": true,
+      "can_create?": false
+    },
+    {
+      "category": "researcher",
+      "can_view?": true,
+      "can_create?": false
+    }
+  ]
+}

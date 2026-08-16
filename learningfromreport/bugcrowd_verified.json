@@ -1,0 +1,902 @@
+[
+ {
+  "url": "https://bugcrowd.com/disclosures/51f047c6-6cd6-4c96-b064-d74104868d2e/reflected-xss-on-itims-bia-gov",
+  "title": "Reflected XSS on itims.bia.gov",
+  "program": "Bureau of Indian Affairs ",
+  "target": "*.bia.gov",
+  "researcher": "meeterpreeter",
+  "priority": 3,
+  "disclosed_at": "13 Aug 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/4abc50f7-2400-475f-b126-822b9c19cea3/host-header-injection",
+  "title": "Host Header Injection ",
+  "program": "Bureau of Indian Affairs ",
+  "target": "*.bia.gov",
+  "researcher": "ChinmayNangia",
+  "priority": 5,
+  "disclosed_at": "13 Aug 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/e6f7bf2e-9ac3-4f40-8f54-679cb8706c4b/server-side-errors",
+  "title": "Server Side Errors",
+  "program": "The Bureau of Indian Education Vulnerability Disclosure Program",
+  "target": "www.bie.edu",
+  "researcher": "mrnazu01",
+  "priority": 5,
+  "disclosed_at": "13 Aug 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/585d9b4e-c301-4b68-8e55-1e21139d97bc/unauthenticated-mqtt-wildcard-board-leaks-all-pinboard-uuids-to-unauthorized-users",
+  "title": "Unauthenticated MQTT Wildcard (board/#) Leaks All Pinboard UUIDs to Unauthorized Users",
+  "program": "Opera Public Bug Bounty",
+  "target": "*.opera.com",
+  "researcher": "ty5ona",
+  "priority": 2,
+  "disclosed_at": "11 Aug 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/18f49357-f70c-4f60-b2d1-e43a0dcddf2f/data-integrity-risk-pii-exposure-publicly-editable-opag-collaboration-document-google-sheets-via-science-nasa-gov",
+  "title": "Data Integrity Risk & PII Exposure: Publicly Editable OPAG Collaboration Document (Google Sheets) via science.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Vansh_Rathore",
+  "priority": 5,
+  "disclosed_at": "31 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/47e4872e-88bd-4dd2-b943-1b30f4d5b4ad/broken-link-hijacking-impersonation-on-jpl-nasa-gov-via-unregistered-facebook-url",
+  "title": "Broken Link Hijacking (Impersonation) on jpl.nasa.gov via Unregistered Facebook URL",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Vansh_Rathore",
+  "priority": 4,
+  "disclosed_at": "31 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/bd8f2801-752f-45d7-86cf-090471b3bd29/access-to-nasa-slack-channel-vai-live-slack-invitation-link-https-join-slack-com-t-nasa-ammos-shared_invite-zt-1mlgmk5c2-mgqvsykzvruwrxy87fnqpw",
+  "title": "Access To ( nasa slack channel ) Vai  Live Slack Invitation Link  ( https://join.slack.com/t/nasa-ammos/shared_invite/zt-1mlgmk5c2-MgqVSyKzVRUWrXy87FNqPw )",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Kartik_tantubai",
+  "priority": 2,
+  "disclosed_at": "31 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/1b144af2-15cf-4fab-bb05-ff9a768b3a91/data-sculptor-csv-expression-evaluation-leads-to-backend-rce-kubernetes-serviceaccount-token-disclosure-and-authenticated-kubernetes-control-plane-access",
+  "title": "Data-Sculptor CSV expression evaluation leads to backend RCE, Kubernetes serviceaccount token disclosure, and authenticated Kubernetes control-plane access",
+  "program": "Atlassian",
+  "target": "Rovo",
+  "researcher": "MononcleMich",
+  "priority": 2,
+  "disclosed_at": "23 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/7773707b-09b0-46ec-9891-682546e02434/reflected-xss-and-html-injection-on-cce-signin-gsfc-nasa-gov-via-popup_flag-parameter",
+  "title": "Reflected XSS and HTML Injection on cce-signin.gsfc.nasa.gov via 'popup_flag' parameter",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "ItsS4LEH",
+  "priority": 4,
+  "disclosed_at": "23 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/fd00af00-5511-4516-bfe7-c4ae38c52cd4/re-host-header-injection-leads-to-cookie-domain-manipulation-on-sealevel-nasa-gov",
+  "title": "RE : Host Header Injection leads to Cookie Domain Manipulation on sealevel.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "sanjay910",
+  "priority": 5,
+  "disclosed_at": "23 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/98a08457-4f9d-4d27-b7e2-daaa975a1a67/identity-theft-via-broken-link-hijacking-on-nasa-astronaut-news-release-page",
+  "title": "Identity Theft via Broken Link Hijacking on NASA Astronaut News Release Page",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "muhammadabdillah64edc3",
+  "priority": 4,
+  "disclosed_at": "22 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/a1363cea-d7c2-4e36-901d-cc25f0123c26/arbitrary-external-redirect-through-saml-relaystate-after-successful-authentication",
+  "title": "Arbitrary External Redirect Through SAML RelayState After Successful Authentication",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "2yuk",
+  "priority": 4,
+  "disclosed_at": "22 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/4b4a2cd5-2fee-4407-b09f-74c14a8257df/blind-sql-injection-in-search-functionality-leads-to-full-database-extraction",
+  "title": "Blind SQL Injection in  Search Functionality Leads to Full Database Extraction",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "molany",
+  "priority": 1,
+  "disclosed_at": "22 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/a9ba7ee3-bb0e-4945-9834-34171056a680/exposed-credentials-in-public-env-file-on-nasa-git-repository",
+  "title": "Exposed Credentials in Public .env File on NASA Git Repository",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Hunt3rboy",
+  "priority": 3,
+  "disclosed_at": "22 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/c6b4ca39-0432-4180-995d-93ddec8ff614/critical-authentication-bypass-via-path-normalization-double-slash-on-live-nasa-modaps-okapi-production-instance",
+  "title": "Critical Authentication Bypass via Path Normalization (Double Slash) on Live NASA MODAPS OKAPI Production Instance",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "marcelojr",
+  "priority": 1,
+  "disclosed_at": "22 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/88f21ab6-d1e0-453c-992a-1661d1be50a9/public-google-maps-api-key-on-www-globe-gov-allows-geocoding-api-calls-billable-use",
+  "title": "Public Google Maps API key on www.globe.gov allows Geocoding API calls (billable use)",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://globe.gov/",
+  "researcher": "madhu873",
+  "priority": 5,
+  "disclosed_at": "21 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/0ecb51a3-2064-4f9d-aa19-aa7b6ae21812/blind-enumeration-of-private-card-names-via-sort-oracle-and-id-discovery",
+  "title": "Blind Enumeration of Private Card Names via Sort Oracle and ID Discovery",
+  "program": "Trello",
+  "target": "trello.com",
+  "researcher": "BobAshEf",
+  "priority": 4,
+  "disclosed_at": "20 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/058fc473-2bab-4bb8-86c9-22e64ef1d665/clickjacking-vulnerability-cdn-sit-earthdata-nasa-gov",
+  "title": "Clickjacking Vulnerability \u2013 cdn.sit.earthdata.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "SAIJAYANTH",
+  "priority": 5,
+  "disclosed_at": "14 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/bf1922fb-99d0-4d3b-b419-1728720d29ec/one-click-data-exfiltration-via-rovochatprompt-url-parameter-confluence-rovo",
+  "title": "One-Click Data Exfiltration via rovoChatPrompt URL Parameter (Confluence / Rovo)",
+  "program": "Atlassian",
+  "target": "Rovo",
+  "researcher": "loacker",
+  "priority": 2,
+  "disclosed_at": "14 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/e0f7b8d5-b90a-4a50-b531-2da37e802c84/unauthenticated-error-based-sql-injection-in-heasarc-w3browse-w3hdprods-pl",
+  "title": "Unauthenticated Error-Based SQL Injection in HEASARC W3Browse w3hdprods.pl",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Anon0x0",
+  "priority": 1,
+  "disclosed_at": "13 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/6cf12025-6b26-4200-a820-0fa073d9d9f6/atlas-browser-fullscreen-toast-can-be-hidden-by-repeated-constraint-validation-popups",
+  "title": "[Atlas Browser] Fullscreen Toast Can Be Hidden by Repeated Constraint Validation Popups",
+  "program": "OpenAI",
+  "target": "Atlas",
+  "researcher": "jodyritonga",
+  "priority": 4,
+  "disclosed_at": "9 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/08b14f25-72b5-4d36-83a3-5aeb1e3f11cc/unauthenticated-disclosure-of-nasa-organizer-email-addresses-via-the-events-calendar-rest-api-cve-2025-9808",
+  "title": "Unauthenticated Disclosure of NASA Organizer Email Addresses via The Events Calendar REST API (CVE-2025-9808)",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "ARTanvir76",
+  "priority": 5,
+  "disclosed_at": "9 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/c20138e9-28af-423f-a92b-0a2a1f85b3b2/unauthenticated-access-to-mmgis-webhooks",
+  "title": "Unauthenticated Access to MMGIS Webhooks",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "oversudo",
+  "priority": 2,
+  "disclosed_at": "7 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/350eedae-27d6-4d94-a1aa-bec8fc480c69/external-smtp-submission-allows-unauthenticated-email-delivery-to-internal-nasa-domain-recipients-with-potential-for-spoofed-sender-identity-display",
+  "title": "External SMTP submission allows unauthenticated email delivery to internal NASA domain recipients with potential for spoofed sender identity display",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "sardarzabihunter",
+  "priority": 3,
+  "disclosed_at": "7 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/30a99b17-c10c-4afd-86b2-ed2a2c843e3f/broken-youtube-link-on-nasa-citizen-science-page-enables-potential-channel-impersonation-darkenergyexplorers",
+  "title": "Broken YouTube Link on NASA Citizen Science Page Enables Potential Channel Impersonation (@DarkEnergyExplorers)",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "muhsyahrirhamdani",
+  "priority": 4,
+  "disclosed_at": "7 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/8c0c8259-00ab-4b82-a995-e59dd9efa53c/reflected-xss-in-nasa-jpl-solar-system-simulator",
+  "title": "Reflected XSS in NASA JPL Solar System Simulator",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "cyb3rk1d",
+  "priority": 3,
+  "disclosed_at": "7 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/62588ff6-5ae0-444c-9b3b-bd40339c2033/exposed-next-js-build-artifacts-sensitive-configuration-disclosure",
+  "title": "Exposed Next.js Build Artifacts & Sensitive Configuration Disclosure",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "Abuhuzaifa786",
+  "priority": 4,
+  "disclosed_at": "7 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/e73a6c59-737f-48b1-9202-dae9aa49092d/cross-tenant-data-access-idor-and-information-disclosure-in-jira-custom-field-metadata-endpoint",
+  "title": "Cross Tenant Data Access - IDOR and Information Disclosure in Jira Custom Field Metadata Endpoint",
+  "program": "Atlassian",
+  "target": "Jira Software Cloud (bugbounty-test-<bugcrowd-name>.atlassian.net)",
+  "researcher": "iamtarzan",
+  "priority": 3,
+  "disclosed_at": "6 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/940fd364-b42f-4c9a-9597-985cb2d83f2c/unauthorized-access-to-cross-tenant-data-1",
+  "title": "Unauthorized Access to Cross Tenant Data - 1",
+  "program": "Atlassian",
+  "target": "Confluence Cloud (bugbounty-test-<bugcrowd-name>.atlassian.net/wiki)",
+  "researcher": "iamtarzan",
+  "priority": 3,
+  "disclosed_at": "6 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/10cb4a9f-9173-4aca-9429-1b994a6233e6/command-injection-via-unsanitized-filename-in-nasa-ocssw-matchup-tools",
+  "title": "Command Injection via Unsanitized Filename in NASA OCSSW Matchup Tools",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "KaranKurani",
+  "priority": 1,
+  "disclosed_at": "2 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/871d4c4e-ec99-437c-9df3-8f9425a82a44/insecure-direct-object-reference-idor-on-user-teams-management-exposing-internal-user-ids-and-school-organization-ids",
+  "title": "Insecure Direct Object Reference (IDOR) on /user-teams-management exposing internal User IDs and School Organization IDs",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://globe.gov/",
+  "researcher": "Pangeran",
+  "priority": 5,
+  "disclosed_at": "1 Jul 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/c5f5891f-02d8-4889-97aa-dcddd6964cc7/application-level-dos-thread-exhaustion-via-integer-overflow-on-post-users-id-follows",
+  "title": "Application-Level DoS (Thread Exhaustion) via Integer Overflow on POST /users/{id}/follows",
+  "program": "Genius",
+  "target": "Genius.com",
+  "researcher": "ob_vr",
+  "priority": 4,
+  "disclosed_at": "30 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/460e8d40-5bc0-4128-8567-1195a45f550a/session-not-invalidated-after-logout-allowing-session-reuse-server-side-also",
+  "title": "Session Not Invalidated After Logout Allowing Session Reuse (Server-Side also)",
+  "program": "Genius",
+  "target": "Genius.com",
+  "researcher": "ketaxpl0it",
+  "priority": 5,
+  "disclosed_at": "30 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/121d979a-b47e-4b70-b464-eb6d0013a52b/public-exposure-of-nasa-center-staff-contact-information-arc-afrc-grc",
+  "title": "Public Exposure of NASA Center Staff Contact Information (ARC, AFRC, GRC)",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "govindpratapsingh",
+  "priority": 5,
+  "disclosed_at": "24 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/7a58507e-7e62-42f3-bca1-5d04ada4249a/found-cve-2020-14179-information-disclosure-in-jira-sciencecloud-nasa-gov",
+  "title": "Found CVE-2020-14179 information disclosure   in jira.sciencecloud.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "ARTanvir76",
+  "priority": 5,
+  "disclosed_at": "24 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/fdb0f70d-1cb2-4709-ad64-78f078d8e2be/idor-broken-access-control-users-id-exposes-other-users-pii-and-password-hash-password_",
+  "title": "IDOR / Broken Access Control: /users/{id} exposes other users\u2019 PII and password hash (password_)",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://globe.gov/",
+  "researcher": "p3iv2",
+  "priority": 3,
+  "disclosed_at": "23 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/72e039d9-7e6c-4548-b1c3-4e278e573c6e/unauthenticated-restricted-file-read-and-out-of-tree-file-disclosure-via-getvectorfile-php",
+  "title": "Unauthenticated Restricted File Read and Out-of-Tree File Disclosure via GetVectorFile.php",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "freebird",
+  "priority": 1,
+  "disclosed_at": "23 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/00cb5011-6768-4b68-a4a2-6b48a9ae35b3/reflected-dom-xss-in-votable-viewer-leads-to-authenticated-ark-user-pii-exfiltration-via-same-origin-xhr",
+  "title": "Reflected DOM XSS in VOTable Viewer leads to authenticated ARK user PII exfiltration via same-origin XHR",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "sriveros",
+  "priority": 3,
+  "disclosed_at": "17 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/9bb2314b-2408-47df-b6c8-f36529b44fa8/reflected-xss-via-unquoted-html-attribute",
+  "title": "Reflected XSS via Unquoted HTML Attribute",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "sadchili",
+  "priority": 3,
+  "disclosed_at": "17 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/06a4cc5b-ce68-49a7-a262-aca70316ba5b/medium-public-exposure-of-staging-stac-api-test-datasets-keycloak-configuration-on-nasa-veda-platform",
+  "title": "Medium - Public Exposure of Staging STAC API, Test Datasets & Keycloak Configuration on NASA VEDA Platform",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "Gris_h07",
+  "priority": 5,
+  "disclosed_at": "12 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/d854e13a-f8fb-47a1-bd86-93538c60f1c6/blind-boolean-based-sql-injection-in-label-parameter-allows-unauthenticated-database-enumeration",
+  "title": "Blind Boolean-Based SQL Injection in label Parameter Allows Unauthenticated Database Enumeration",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "martindios",
+  "priority": 1,
+  "disclosed_at": "12 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/59c5a5c1-33e1-465b-9b20-6344d614dcbb/password-reset-token-exposed-via-unencrypted-http-edrn-labcas-jpl-nasa-gov",
+  "title": "Password Reset Token Exposed via Unencrypted HTTP - edrn-labcas.jpl.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "0xdk27",
+  "priority": 4,
+  "disclosed_at": "12 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/ff4614f2-3260-4653-ab10-16fccbb6bb58/login-bypass-leads-to-internal-information-disclosure",
+  "title": "LOGIN BYPASS LEADS TO INTERNAL INFORMATION DISCLOSURE",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "LokeshTiwary",
+  "priority": 3,
+  "disclosed_at": "12 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/ab0208c1-df67-47ac-a671-990ce55996d8/mass-pii-disclosure-emails-phones-via-insecure-direct-object-reference-idor-on-headless-api",
+  "title": "Mass PII Disclosure (Emails/Phones) via Insecure Direct Object Reference (IDOR) on Headless API",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://globe.gov/",
+  "researcher": "Nicholas-K70n0s510-Mullenski",
+  "priority": 3,
+  "disclosed_at": "8 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/7e877296-6344-4a91-9f28-8333f3a24e89/arbitrary-file-read-via-path-traversal-in-sdtp-file-download-endpoint",
+  "title": "Arbitrary File Read via Path Traversal in SDTP File Download Endpoint",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "bl4cksku11",
+  "priority": null,
+  "disclosed_at": "8 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/1614d1e0-56a7-4fab-bfc9-c6e1ca37e3ee/path-traversal-in-ait-core-bsc-logger-via-unauthenticated-post-request",
+  "title": "Path Traversal in AIT-Core BSC Logger via Unauthenticated POST Request",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "Excal1bur",
+  "priority": 1,
+  "disclosed_at": "8 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/ab3fd857-030a-417c-9a34-62e2d6aba64b/internal-ip-address-and-verbose-server-version-disclosure-via-404-error-pages",
+  "title": "Internal IP Address and Verbose Server Version Disclosure via 404 Error Pages",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://globe.gov/",
+  "researcher": "Prachit-Regmi",
+  "priority": 5,
+  "disclosed_at": "8 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/22e9ec10-434d-4097-98c2-7f60d6d64052/exposure-of-sensitive-but-unclassified-sbu-nasa-comsec-document-npr-1600-6a",
+  "title": "Exposure of Sensitive But Unclassified (SBU) NASA COMSEC Document (NPR 1600.6A)",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Bharat-bangari",
+  "priority": 5,
+  "disclosed_at": "1 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/413fb994-b051-4aaf-94fc-97eafac1b48e/exposed-wget-log-disclosing-internal-paths",
+  "title": "Exposed wget-log Disclosing Internal Paths",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "NizhamHafiy",
+  "priority": 5,
+  "disclosed_at": "1 Jun 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/d9b460c2-f9b1-4f8d-a0ec-3236f702dacf/remote-code-execution-rce-via-insecure-deserialization-in-nasa-gsfc-hplc-precision-analysis",
+  "title": "Remote Code Execution (RCE) via Insecure Deserialization in NASA GSFC HPLC Precision Analysis",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "kernely",
+  "priority": 1,
+  "disclosed_at": "29 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/e083d54b-793b-4d3f-a50d-7a0d3f13d551/integer-overflow-to-heap-buffer-overflow-in-nasa-ion-dtn-startimportsession-libltpp-c-5781",
+  "title": "Integer Overflow to Heap Buffer Overflow in NASA ION-DTN startImportSession \u2014 libltpP.c:5781",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "Excal1bur",
+  "priority": 3,
+  "disclosed_at": "29 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/4d8f1660-3fb1-4f96-8607-d35b96341d68/nasa-hosted-training-pdf-exposes-hardcoded-credentials-and-insecure-credential-distribution",
+  "title": "NASA-hosted Training PDF Exposes Hardcoded Credentials and Insecure Credential Distribution",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "madhu873",
+  "priority": 5,
+  "disclosed_at": "26 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/ba2df973-58fc-48be-9fb2-8205cca4e7c0/broken-access-control-unauthenticated-mass-data-extraction-and-arbitrary-item-deletion",
+  "title": "Broken Access Control: Unauthenticated Mass Data Extraction and Arbitrary Item Deletion",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Asier",
+  "priority": 2,
+  "disclosed_at": "22 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/e97add76-3838-4d24-a86a-ae850003ad15/critical-csrf-vulnerability-exploiting-account-deletion-on-nasa-subscription-service",
+  "title": "Critical CSRF Vulnerability Exploiting Account Deletion on NASA Subscription Service",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "wbossw",
+  "priority": 4,
+  "disclosed_at": "22 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/5c4a754b-c7b7-441f-b3db-89e1c82c78dc/stored-cross-site-scripting-xss-via-arbitrary-file-upload",
+  "title": "Stored Cross-Site Scripting (XSS) via Arbitrary File Upload",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://globe.gov/",
+  "researcher": "anthonyjsaab",
+  "priority": 2,
+  "disclosed_at": "22 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/2863e2d5-4067-4e2d-9712-6ff3a9bc3495/public-exposure-of-not-for-public-release-nasa-smap-internal-document",
+  "title": "Public Exposure of \u201cNot for Public Release\u201d NASA SMAP Internal Document",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "I_Komang_Dahesa_Gadyanga",
+  "priority": 5,
+  "disclosed_at": "20 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/4f63c6af-68cf-4d58-a1c9-911fb8a202ad/authenticated-bfla-in-dirs-critical-need-of-help-api-allows-unauthorized-access-to-all-submitted-requests-and-pii",
+  "title": "Authenticated BFLA in DIRS \u201cCritical Need of Help\u201d API Allows Unauthorized Access to All Submitted Requests and PII",
+  "program": "Federal Communications Commission: Vulnerability Disclosure Program",
+  "target": "*.fcc.gov",
+  "researcher": "c3L0Mu1d3R",
+  "priority": 1,
+  "disclosed_at": "8 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/479095d0-e0f9-4b8d-bd64-feda95bb6b17/authenticated-idor-in-dirs-users-api-allows-access-to-other-users-profiles-and-pii-production",
+  "title": "Authenticated IDOR in DIRS Users API Allows Access to Other Users\u2019 Profiles and PII (Production)",
+  "program": "Federal Communications Commission: Vulnerability Disclosure Program",
+  "target": "*.fcc.gov",
+  "researcher": "c3L0Mu1d3R",
+  "priority": 1,
+  "disclosed_at": "8 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/6748232d-3c95-4ed1-99b4-2470788558bd/unlisted-nasa-task-book-projects-pdfs-accessible-via-predictable-taskid-idor-style-enumeration-unauthenticated",
+  "title": "Unlisted NASA Task Book Projects & PDFs Accessible via Predictable TASKID (IDOR-style Enumeration, Unauthenticated)",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "madhu873",
+  "priority": 5,
+  "disclosed_at": "7 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/67b12410-5e35-46bb-8b33-f311c84fa794/view-user-voice-activity-status-without-sharing-mutual-server-channel-permission",
+  "title": "View user voice activity status without sharing mutual server / channel permission",
+  "program": "",
+  "target": "Discord owned APIs and services",
+  "researcher": "Kajj",
+  "priority": 3,
+  "disclosed_at": "7 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/757bcc0b-fe6e-4eb0-b914-1bbbf8a3f057/sbn-client-stack-buffer-overflow-recv_msg-and-ingest_app_message",
+  "title": " SBN-Client Stack Buffer Overflow \u2014 recv_msg() and ingest_app_message() ",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "Excal1bur",
+  "priority": 2,
+  "disclosed_at": "5 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/45f480fc-8d68-41e3-8159-e3c32f335f07/reflected-html-injection-in-viewmissionprofile-jsp-allows-injection-of-arbitrary-html-elements",
+  "title": "Reflected HTML Injection in viewMissionProfile.jsp allows injection of arbitrary HTML elements",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "nickzbughunter",
+  "priority": 5,
+  "disclosed_at": "5 May 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/713064c8-35c7-41ac-b6b3-443c1c9daeaa/unauthenticated-idor-on-users-api-leading-to-information-disclosure-of-internal-hostnames-and-pii",
+  "title": "Unauthenticated IDOR on Users API leading to Information Disclosure of Internal Hostnames and PII",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "ghaddarittoo",
+  "priority": 3,
+  "disclosed_at": "29 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/f216bea9-6119-448c-8b8a-ec66b50e0c58/malicious-handlebars-code-snippets-causing-discord-to-crash",
+  "title": "Malicious Handlebars Code Snippets causing Discord to Crash",
+  "program": "",
+  "target": "Platform Access - Web App ",
+  "researcher": "poeck",
+  "priority": 2,
+  "disclosed_at": "28 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/b080842d-1a0c-4eaa-9c91-989a01c48a54/source-code-and-internal-infrastructure-disclosure-via-publicly-exposed-gitlab-repository-on-git-smce-nasa-gov",
+  "title": "Source Code and Internal Infrastructure Disclosure via Publicly Exposed GitLab Repository on git.smce.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Franco_Andino",
+  "priority": 2,
+  "disclosed_at": "28 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/9642be88-6d09-4ed1-83a4-3fb8c880c48c/expired-outdated-ssl-certificate",
+  "title": "Expired / Outdated SSL Certificate",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": null,
+  "researcher": "Daniyal_khan",
+  "priority": 5,
+  "disclosed_at": "24 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/aaf069ae-4bde-4b3e-8647-225b0bff1b92/full-path-disclosure-and-verbose-error-messages-on-webdisks-jpl-nasa-gov",
+  "title": "Full Path Disclosure and Verbose Error Messages on webdisks.jpl.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "NizhamHafiy",
+  "priority": 5,
+  "disclosed_at": "24 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/ba851df1-eb3e-4a82-a710-4e11144586b3/reflected-xss-with-cve-reference-cve-2025-0133",
+  "title": "Reflected XSS with CVE Reference [CVE-2025-0133]",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "MandipGuragai",
+  "priority": 3,
+  "disclosed_at": "24 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/23b25b7b-c81b-4bf9-8466-b1d798b8f517/authentication-bypass-on-nasa-csbf-platform",
+  "title": "Authentication Bypass  on NASA CSBF Platform",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Lippo_R",
+  "priority": 5,
+  "disclosed_at": "16 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/89f78476-619f-4430-acdb-95e3217a403b/cve-2025-0133-reflected-xss",
+  "title": "CVE-2025-0133 - Reflected XSS",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "_SpaRK_",
+  "priority": 3,
+  "disclosed_at": "16 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/1fa25156-f094-40f8-8569-028f9518d4aa/reflected-xss-in-nasa-vpn-portal",
+  "title": "Reflected XSS in NASA VPN Portal",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "A0XTrojan",
+  "priority": 3,
+  "disclosed_at": "16 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/1fd1c5f8-5154-47ed-9e4e-5850b93791a7/cve-2025-0133-reflected-cross-site-scripting-xss-https-lasvpn-jpl-nasa-gov-https-pasvpn-jpl-nasa-gov-https-vpnc-mdscc-nasa-gov",
+  "title": "[CVE-2025-0133] Reflected Cross-Site Scripting (XSS) \u2013 https://lasvpn*.jpl.nasa.gov, https://pasvpn*.jpl.nasa.gov/ & https://vpnc.mdscc.nasa.gov/",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "IceCream_23",
+  "priority": 3,
+  "disclosed_at": "16 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/1570570b-5149-493d-b6e3-1a162794ce78/internal-proprietary-financial-report-aepr-for-internal-use-publicly-accessible",
+  "title": "Internal Proprietary Financial Report (AEPR) for internal use, publicly accessible ",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Wiz-Zero",
+  "priority": 4,
+  "disclosed_at": "16 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/6f9e5cf2-23e8-474c-b402-7bf5ed0a8e52/unauthenticated-arbitrary-file-write-zip-slip-via-shapefile-clj-on-cmr-earthdata-nasa-gov",
+  "title": "Unauthenticated Arbitrary File Write (Zip Slip) via shapefile.clj on cmr.earthdata.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "obaskly",
+  "priority": 2,
+  "disclosed_at": "16 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/7c9313ff-516f-4f8f-820f-eb693843f2b2/public-apache-server-status-endpoint-causes-sensitive-data-exposure-of-internal-system-information",
+  "title": "Public Apache Server Status Endpoint Causes Sensitive Data Exposure of Internal System Information",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Yonatan_Natanael_Tampi",
+  "priority": 4,
+  "disclosed_at": "16 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/efe6dc8e-7364-42c0-8467-2371d610d82a/vulnerability-report-broken-access-control-ongoing-project-publicly-editable-google-sheet-owned-by-senior-nasa-researcher",
+  "title": "Vulnerability Report: Broken Access Control - Ongoing Project Publicly Editable Google Sheet Owned by Senior NASA Researcher ",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Apar-Baral",
+  "priority": 3,
+  "disclosed_at": "16 Apr 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/f5c06fff-f298-49b7-84e1-cb8819cfb82f/public-access-to-ear-controlled-jwst-otis-cryogenic-test-document",
+  "title": "Public Access to EAR-Controlled JWST OTIS Cryogenic Test Document",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "bugmithalchemist",
+  "priority": 4,
+  "disclosed_at": "31 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/9dd67e52-baf8-4ba0-9fd5-40f11b7c858d/stored-xss-via-profile-picture-upload-on-genius-com",
+  "title": "Stored XSS via profile picture upload on Genius.com",
+  "program": "Genius",
+  "target": "Genius.com",
+  "researcher": "BrainR00T",
+  "priority": 3,
+  "disclosed_at": "26 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/b14596f7-3e6a-472b-9c0f-83996e53969a/critical-admin-access-vulnerability-on-nasa-s-satcorps-smce-nasa-gov-subdomain",
+  "title": "Critical Admin Access Vulnerability on NASA\u2019s *.satcorps.smce.nasa.gov Subdomain",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "aashutoshdevkota",
+  "priority": 1,
+  "disclosed_at": "24 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/7beb160b-96e8-4646-8ddb-f46cc0a3e9ec/phone-numbers-highschools-addresses-blanked-out-ssn-numbers-and-pii",
+  "title": "Phone Numbers, Highschools, Addresses, Blanked out SSN numbers, and PII",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Bitrunner",
+  "priority": 5,
+  "disclosed_at": "23 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/ac8d1f0e-c0cf-4784-97b2-ba10e7b49da4/authentication-bypass-session-created-for-nasa-sips-administrator-account-with-any-password",
+  "title": "Authentication Bypass - Session Created for NASA SIPS Administrator Account with Any Password",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "IldevertDakouof7d6f7fd-a136-409f-ab36-3ace66cf8555",
+  "priority": 2,
+  "disclosed_at": "23 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/ef50e1dd-1cc5-4c85-908d-cdc384a89bd3/internal-solr-query-injection-enabling-local-file-inclusion-and-potential-ssrf-on-trek-nasa-gov",
+  "title": "Internal Solr Query Injection enabling Local FIle Inclusion and Potential SSRF on trek.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "YeJunWon",
+  "priority": 1,
+  "disclosed_at": "23 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/5889c7cb-88eb-4641-aa16-80ca787d4e1a/timing-based-email-enumeration-in-forgot-password-endpoint-my-nasa-gov",
+  "title": "Timing-Based Email Enumeration in Forgot Password Endpoint (my.nasa.gov)",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "0xFoundx",
+  "priority": 5,
+  "disclosed_at": "20 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/5e76bccc-1df1-4403-8532-b289f19659b0/insecure-google-drive-permissions-allow-complete-deletion-of-nasa-sepval-2023-event-data",
+  "title": "Insecure Google Drive Permissions Allow Complete Deletion of NASA SEPVAL 2023 Event Data",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "asjadbutt",
+  "priority": 3,
+  "disclosed_at": "20 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/948921ed-6603-4d2b-9022-f25f6552138f/unauthenticated-remote-code-execution-rce-via-unsafe-clojure-deserialization-on-cmr-earthdata-nasa-gov",
+  "title": "Unauthenticated Remote Code Execution (RCE) via Unsafe Clojure Deserialization on cmr.earthdata.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "obaskly",
+  "priority": 1,
+  "disclosed_at": "20 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/eaf683cd-2b9e-48d6-8ee2-5fc21b47682b/broken-access-control-leads-to-information-disclosure",
+  "title": "Broken Access Control leads to information disclosure",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "LokeshTiwary",
+  "priority": 3,
+  "disclosed_at": "20 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/9d2c7b28-7ff7-439c-9149-f74a883815e3/xml-external-entity-xxe-injection-via-regex-bypass-in-cmr-aql-parsing-enables-ssrf-service-enumeration-and-blind-file-reads",
+  "title": "XML External Entity (XXE) Injection via Regex Bypass in CMR AQL Parsing Enables SSRF, Service Enumeration, and Blind File Reads",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "dewankpant",
+  "priority": 1,
+  "disclosed_at": "17 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/6a0a39b7-30b8-466e-919d-f66c3e18d79a/authentication-bypass-via-commented-guest-button-in-csbf-aquila-system",
+  "title": "Authentication Bypass via Commented Guest Button in CSBF Aquila System",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Ghost-2099",
+  "priority": 4,
+  "disclosed_at": "13 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/193a57e6-91cb-480c-850f-1a149419e881/rxss-html-injection-in-cdn-earthdata-nasa-gov-via-docson-viewer-enabling-phishing-attacks",
+  "title": "RXSS & HTML Injection in 'cdn.earthdata.nasa.gov' via Docson viewer Enabling Phishing Attacks",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "jesssuwu",
+  "priority": 3,
+  "disclosed_at": "11 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/abfa03c7-9c7d-46f7-b255-9766199dac4a/saml-authentication-bypass-leading-to-unauthenticated-admin-takeover-on-scijinks-gov-nesdis-noaa-gov",
+  "title": "SAML Authentication Bypass Leading To Unauthenticated Admin Takeover on scijinks.gov / nesdis.noaa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://scijinks.gov/",
+  "researcher": "meeranh",
+  "priority": 1,
+  "disclosed_at": "11 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/280699fc-f44e-4093-8ef8-135acb16ec3b/csrf-xss-post-via-exposed-backup-php-file",
+  "title": "CSRF + XSS (POST) via exposed backup.php File ",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Joukerr",
+  "priority": 3,
+  "disclosed_at": "11 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/7aa47bd3-0d9b-4ff0-bad0-6082c10b7858/open-redirect-via-displayfile-parameter-on-lmse-larc-nasa-gov",
+  "title": "Open Redirect via displayFile parameter on lmse.larc.nasa.gov",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Rootk1d--",
+  "priority": 4,
+  "disclosed_at": "11 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/a2711a51-2e74-4440-80ca-f5d18f13c72e/information-disclosure-of-legacy-administrative-guide",
+  "title": "Information Disclosure of Legacy Administrative Guide",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "andikacahyarahman",
+  "priority": 5,
+  "disclosed_at": "11 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/003aefd2-dd3a-41a2-9e3a-448ba90403d1/broken-function-level-authorization-allows-standard-users-to-access-internal-funding-manager-pii-via-project-funding-api",
+  "title": "Broken Function-Level Authorization Allows Standard Users to Access Internal Funding Manager PII via Project Funding API",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Tr0p",
+  "priority": 3,
+  "disclosed_at": "11 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/4d4defac-03e8-479e-b15e-ceef490cb090/improper-access-control",
+  "title": "Improper Access Control",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "dzakyzak71",
+  "priority": 5,
+  "disclosed_at": "10 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/6cea28c5-b3a9-45a8-8617-826ba0649279/default-credentials-for-teamwork-cloud",
+  "title": "Default credentials for Teamwork Cloud",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "jpablo",
+  "priority": 1,
+  "disclosed_at": "9 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/1233795e-04b0-4f40-b16f-37c6693db733/information-disclosure-microsoft-front-page-misconfiguration",
+  "title": "Information disclosure - Microsoft front page misconfiguration",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://globe.gov/",
+  "researcher": "SilverHatt",
+  "priority": 5,
+  "disclosed_at": "9 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/6831f331-fa98-4deb-945e-ef1fd7713393/chaining-csrf-xss",
+  "title": "Chaining csrf+XSS",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "nakul_mahajan",
+  "priority": 3,
+  "disclosed_at": "5 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/b2c00b8c-2a5e-4d3c-87e6-41f153f3644c/public-api-exposes-internal-nasa-usernames-and-acl-metadata-on-nlsp-sidemenu-endpoint",
+  "title": "Public API exposes internal NASA usernames and ACL metadata on NLSP sidemenu endpoint",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "c3L0Mu1d3R",
+  "priority": 4,
+  "disclosed_at": "5 Mar 2026"
+ },
+ {
+  "url": "https://bugcrowd.com/disclosures/7c919b14-e9df-47a1-bae0-206f77c1379c/pii-exposure-in-nasa-nssc-internal-procedure-pdf",
+  "title": "PII Exposure in NASA NSSC Internal Procedure PDF",
+  "program": "National Aeronautics and Space Administration (NASA) - Vulnerability Disclosure Program",
+  "target": "https://nasa.gov",
+  "researcher": "Daniyal_khan",
+  "priority": 1,
+  "disclosed_at": "5 Mar 2026"
+ }
+]

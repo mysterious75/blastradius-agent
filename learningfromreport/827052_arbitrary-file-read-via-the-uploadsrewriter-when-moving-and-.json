@@ -1,0 +1,134 @@
+{
+  "id": 827052,
+  "global_id": "Z2lkOi8vaGFja2Vyb25lL1JlcG9ydC84MjcwNTI=",
+  "url": "https://hackerone.com/reports/827052",
+  "title": "Arbitrary file read via the UploadsRewriter when moving and issue",
+  "state": "Closed",
+  "substate": "resolved",
+  "severity_rating": "critical",
+  "readable_substate": "Resolved",
+  "created_at": "2020-03-23T10:54:31.839Z",
+  "submitted_at": "2020-03-23T10:54:31.839Z",
+  "is_member_of_team?": false,
+  "is_organization_group_member?": false,
+  "is_triager?": false,
+  "reporter": {
+    "disabled": false,
+    "username": "vakzz",
+    "url": "/vakzz",
+    "profile_picture_urls": {
+      "small": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/variants/6zbovkumst7oljmo9v21pig3yh9j/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6?response-content-disposition=inline%3B%20filename%3D%2294971b5a75a669ea52903c09fc847f3434930258211181557be06162f5a8bac0.jpg%22%3B%20filename%2A%3DUTF-8%27%2794971b5a75a669ea52903c09fc847f3434930258211181557be06162f5a8bac0.jpg&response-content-type=image%2Fjpeg&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQZBA5LDG3%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T105339Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJIMEYCIQDB%2BPEeiP61XmRs4ha9IPVOUXLIgb5IxR80uE15VHI8egIhANhC9B9LIzLqqXssxyXwTjFMJHFq3hnvOUbVjhc0c8ujKrEFCCwQAxoMMDEzNjE5Mjc0ODQ5IgwFgSf%2BBvxP%2FoOVcGEqjgUMo9CQsxAsqIGL3w1x6eeununUiliDT0JgyzmcnlE7NNMjA9zrBbhhiaII3xtQkk4J7qZZmBaVkEHxV0Uu7WBmmpbYeglEChkQh%2BTttetaP36SKQkqnH7q8aUDMmqN66HGyrOqPAbqi%2FUSIWqhTab0ylRjBYL5peIMKy6RtwxHuXI7JRnHmIe8bSR9ePPVPBdkGX1t1PI%2FiIdVjZLY7uH4G4ZIRO9JWmG9ku97%2Fnq1dqdZlox%2BbwjV8%2BwpXz3i6%2BSD%2FDVDBsE5PFLv1Yt16wY%2BiKo8hRLuwnaMEDYw6MrXjZ73ZJUfmwEHguChOIQnAPTxSTqlrJjRxg%2FESiLTW5Kt%2BCwALt35r3zkPc5MKGfwqwfxB9DW2R1VuVb9g%2FmTY452Q48TAOmYx97yO23tpqu6jLSlcskSdbIRrr7tuBpW1A8RtIce2tUk5eTLnuhP3Oy4u8Yaz5W%2BtL%2BEHSY%2FqpLvkvXODc2BJK29xPiB1nn17a%2B5dAKindcrxDWUZR33StVqgVS5cDNdXZOPSEpPf%2By7vyh845SIwDwEb3%2Bz0plqgg1%2Fpsdh4sV3Eoi4AlQ3ov9uqI%2F8fDWtyFWuX%2F0iZmvm7ReumnNCYwwbXxNhBHFQAIQ3%2FllO9vC3lIs0k919K46YiJq2rqF1oDqR%2BuuGGdjucM%2FEhXakTOPR0cQaDifX08tLXear19CrcCt4Lul0BKF3zN2fo1lbj2C3VyLq6Tc%2FmoGDT8ouuD9knZnqcr8SrFw4DuKKb1WoDa6u4eopRLXoTC05yrDSmRl2o%2FEj46jzX%2BxF21e8%2FoVwicTwA5QJS8V0UxiXwx0e9%2FAjtieaO8V6H3COKvaSVt7fQtawgs8mmGVx2mBMhT9zY%2BKn%2BPswrqqG1AY6sAHz1pKzHkvDy2sYDip%2FnzumfUErmRlVSGdjJSghGIBLXqEAw1qo1f1M14RUgLIwFj67U8xJqw3%2FSQY43oG3sQ7DW%2B1rKxv2yttKKKYr0Y%2BO6XO2a1hGL034ee6qIMhugPr%2Bc5igcP6K8PqrfUbb8miENY7U2zxSameLns2sQLK1P5WxJR1NF4R3x32sWNKYNehlarEy07vYf4%2B%2B2q5%2BRg6J0GSH3YCR%2B54VHIKgFwGT6g%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=40406b24d13520255201a7e9a66376f88c2b474140dc92bc9646fbf623541978"
+    },
+    "is_me?": false,
+    "cleared": true,
+    "verified": true,
+    "hackerone_triager": false,
+    "hacker_mediation": false
+  },
+  "team": {
+    "id": 264,
+    "url": "https://hackerone.com/gitlab",
+    "handle": "gitlab",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/f0hovtq73f9ap815a0r1w42bocp4/b8e19a7691128fca51630d7f5b14644b91b3b45324f6fd488e36244d744fe35b",
+      "medium": "https://profile-photos.hackerone-user-content.com/variants/f0hovtq73f9ap815a0r1w42bocp4/89f037b490baf3dcca1b84283f4c85141b64c213252a9c79b56c62bf903ab542"
+    },
+    "permissions": [],
+    "submission_state": "open",
+    "default_currency": "usd",
+    "awards_miles": false,
+    "offers_bounties": true,
+    "state": "public_mode",
+    "only_cleared_hackers": false,
+    "pentest_feature_enabled?": false,
+    "pentest_retesting_ends_at": null,
+    "profile": {
+      "name": "GitLab",
+      "twitter_handle": "gitlab",
+      "website": "https://about.gitlab.com",
+      "about": "A single application for the entire software development lifecycle."
+    }
+  },
+  "has_bounty?": true,
+  "can_view_team": true,
+  "can_view_report": true,
+  "is_external_bug": false,
+  "is_published": false,
+  "is_participant": false,
+  "has_collaborators": false,
+  "submitted_by_team_member": false,
+  "submitted_with_assistant": false,
+  "stage": 4,
+  "public": true,
+  "visibility": "full",
+  "cve_ids": [],
+  "singular_disclosure_disabled": true,
+  "disclosed_at": "2020-04-27T16:15:59.072Z",
+  "bug_reporter_agreed_on_going_public_at": "2020-04-27T16:15:58.969Z",
+  "team_member_agreed_on_going_public_at": "2020-04-27T14:38:18.481Z",
+  "comments_closed?": false,
+  "facebook_team?": false,
+  "team_private?": false,
+  "vulnerability_information": "### Summary\nThe `UploadsRewriter` does not validate the file name, allowing arbitrary files to be copied via directory traversal when moving an issue to a new project.\n\nThe pattern used to look for references is :\n```\n  MARKDOWN_PATTERN = %r{\\!?\\[.*?\\]\\(/uploads/(?<secret>[0-9a-f]{32})/(?<file>.*?)\\)}.freeze\n```\n\nThis is used by the `UploadsRewriter` when copying an issue to also copy across the files:\n\n```ruby\n   @text.gsub(@pattern) do |markdown|\n          file = find_file(@source_project, $~[:secret], $~[:file])\n          break markdown unless file.try(:exists?)\n\n          klass = target_parent.is_a?(Namespace) ? NamespaceFileUploader : FileUploader\n          moved = klass.copy_to(file, target_parent)\n...\n   def find_file(project, secret, file)\n        uploader = FileUploader.new(project, secret: secret)\n        uploader.retrieve_from_store!(file)\n        uploader\n      end\n```\n\nAs there is no restriction on what `file` can be, path traversal can be used to copy any file.\n\nDemo\n{F757226}\n\n### Steps to reproduce\n\n1. Create two projects\n1. Add an issue with the following description:\n\n  ```markdown\n![a](/uploads/11111111111111111111111111111111/../../../../../../../../../../../../../../etc/passwd)\n```\n1. Move the issue to  the second project\n1. The file will have been copied to the project\n\n### Impact\n\nAllows an attacker to read arbitrary files on the server, including tokens, private data, configs, etc\n\n### What is the current *bug* behavior?\n\nThe file name and path are not checked when copying an issue between projects\n\n### What is the expected *correct* behavior?\n\nThe file or path should be validated before copying files.\n\n### Output of checks\n#### Results of GitLab environment info\n\n```\nSystem information\nSystem:\t\tUbuntu 18.04\nProxy:\t\tno\nCurrent User:\tgit\nUsing RVM:\tno\nRuby Version:\t2.6.5p114\nGem Version:\t2.7.10\nBundler Version:1.17.3\nRake Version:\t12.3.3\nRedis Version:\t5.0.7\nGit Version:\t2.24.1\nSidekiq Version:5.2.7\nGo Version:\tunknown\n\nGitLab information\nVersion:\t12.8.7-ee\nRevision:\t2643fd87200\nDirectory:\t/opt/gitlab/embedded/service/gitlab-rails\nDB Adapter:\tPostgreSQL\nDB Version:\t10.12\nURL:\t\thttp://gitlab-vm.local\nHTTP Clone URL:\thttp://gitlab-vm.local/some-group/some-project.git\nSSH Clone URL:\tgit@gitlab-vm.local:some-group/some-project.git\nElasticsearch:\tno\nGeo:\t\tno\nUsing LDAP:\tno\nUsing Omniauth:\tyes\nOmniauth Providers:\n\nGitLab Shell\nVersion:\t11.0.0\nRepository storage paths:\n- default: \t/var/opt/gitlab/git-data/repositories\nGitLab Shell path:\t\t/opt/gitlab/embedded/service/gitlab-shell\nGit:\t\t/opt/gitlab/embedded/bin/git\n```\n\n## Impact\n\nAllows an attacker to read arbitrary files on the server, including tokens, private data, configs, etc",
+  "bounty_amount": "20000.0",
+  "formatted_bounty": "$20,000",
+  "weakness": {
+    "id": 19,
+    "name": "Path Traversal"
+  },
+  "original_report_id": null,
+  "original_report_url": null,
+  "attachments": [
+    {
+      "id": 757226,
+      "file_name": "file-read.mp4",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/L6jvXbp4rTpfGWgnJyHkzZdG?response-content-disposition=attachment%3B%20filename%3D%22file-read.mp4%22%3B%20filename%2A%3DUTF-8%27%27file-read.mp4&response-content-type=video%2Fmp4&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQZBA5LDG3%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T105339Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJIMEYCIQDB%2BPEeiP61XmRs4ha9IPVOUXLIgb5IxR80uE15VHI8egIhANhC9B9LIzLqqXssxyXwTjFMJHFq3hnvOUbVjhc0c8ujKrEFCCwQAxoMMDEzNjE5Mjc0ODQ5IgwFgSf%2BBvxP%2FoOVcGEqjgUMo9CQsxAsqIGL3w1x6eeununUiliDT0JgyzmcnlE7NNMjA9zrBbhhiaII3xtQkk4J7qZZmBaVkEHxV0Uu7WBmmpbYeglEChkQh%2BTttetaP36SKQkqnH7q8aUDMmqN66HGyrOqPAbqi%2FUSIWqhTab0ylRjBYL5peIMKy6RtwxHuXI7JRnHmIe8bSR9ePPVPBdkGX1t1PI%2FiIdVjZLY7uH4G4ZIRO9JWmG9ku97%2Fnq1dqdZlox%2BbwjV8%2BwpXz3i6%2BSD%2FDVDBsE5PFLv1Yt16wY%2BiKo8hRLuwnaMEDYw6MrXjZ73ZJUfmwEHguChOIQnAPTxSTqlrJjRxg%2FESiLTW5Kt%2BCwALt35r3zkPc5MKGfwqwfxB9DW2R1VuVb9g%2FmTY452Q48TAOmYx97yO23tpqu6jLSlcskSdbIRrr7tuBpW1A8RtIce2tUk5eTLnuhP3Oy4u8Yaz5W%2BtL%2BEHSY%2FqpLvkvXODc2BJK29xPiB1nn17a%2B5dAKindcrxDWUZR33StVqgVS5cDNdXZOPSEpPf%2By7vyh845SIwDwEb3%2Bz0plqgg1%2Fpsdh4sV3Eoi4AlQ3ov9uqI%2F8fDWtyFWuX%2F0iZmvm7ReumnNCYwwbXxNhBHFQAIQ3%2FllO9vC3lIs0k919K46YiJq2rqF1oDqR%2BuuGGdjucM%2FEhXakTOPR0cQaDifX08tLXear19CrcCt4Lul0BKF3zN2fo1lbj2C3VyLq6Tc%2FmoGDT8ouuD9knZnqcr8SrFw4DuKKb1WoDa6u4eopRLXoTC05yrDSmRl2o%2FEj46jzX%2BxF21e8%2FoVwicTwA5QJS8V0UxiXwx0e9%2FAjtieaO8V6H3COKvaSVt7fQtawgs8mmGVx2mBMhT9zY%2BKn%2BPswrqqG1AY6sAHz1pKzHkvDy2sYDip%2FnzumfUErmRlVSGdjJSghGIBLXqEAw1qo1f1M14RUgLIwFj67U8xJqw3%2FSQY43oG3sQ7DW%2B1rKxv2yttKKKYr0Y%2BO6XO2a1hGL034ee6qIMhugPr%2Bc5igcP6K8PqrfUbb8miENY7U2zxSameLns2sQLK1P5WxJR1NF4R3x32sWNKYNehlarEy07vYf4%2B%2B2q5%2BRg6J0GSH3YCR%2B54VHIKgFwGT6g%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=558a5b7db48c3eef480eb8a737eafbc1c9d11080739dba0c7ebc1c2fe9515922",
+      "file_size": 2646009,
+      "type": "video/mp4",
+      "moderated": null
+    }
+  ],
+  "allow_singular_disclosure_at": null,
+  "vote_count": 1501,
+  "voters": [
+    "test0x00",
+    "kylinking",
+    "h4rshbothra",
+    "rstuv",
+    "0xdsm",
+    "orange303",
+    "zsirfoka",
+    "godfather",
+    "wqoq",
+    "rickiex",
+    "and 1491 more..."
+  ],
+  "severity": {
+    "rating": "critical",
+    "author_type": "User"
+  },
+  "structured_scope": {
+    "databaseId": 39022,
+    "asset_type": "OTHER",
+    "asset_identifier": "Your Own GitLab Instance",
+    "max_severity": "critical"
+  },
+  "abilities": {
+    "assignable_team_members": [],
+    "assignable_team_member_groups": []
+  },
+  "is_exploit_agent_supported?": false,
+  "is_linear_agent_ui_supported?": false,
+  "summaries": [
+    {
+      "category": "team",
+      "can_view?": true,
+      "can_create?": false
+    },
+    {
+      "category": "researcher",
+      "can_view?": true,
+      "can_create?": false
+    }
+  ]
+}
