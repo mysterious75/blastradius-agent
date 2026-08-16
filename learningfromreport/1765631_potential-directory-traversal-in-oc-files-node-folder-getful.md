@@ -1,0 +1,30 @@
+# HackerOne Report #1765631 — Potential directory traversal in OC\Files\Node\Folder::getFullPath
+
+- **Program:** unknown
+- **Severity:** medium
+- **Weakness:** Path Traversal: 'dir\..\..\filename' (n/a)
+- **State:** Closed
+- **Reporter:** nickvergessen
+- **Reported:** n/a
+- **Disclosed:** 2023-05-04T07:59:49.938Z
+- **Bounty:** n/a
+
+## Full disclosure
+
+https://github.com/nextcloud/server/blob/67551f379f3105d117b9d19095dd381450fe40dd/lib/private/Files/Node/Folder.php#L68-L73
+is validating and normalizing the string in the wrong order.
+
+Validation checks for `/../` kind of situations and `normalizePath` later on replaces `\` with `/`, so it would be possible to get `/../` again.
+
+```php
+	public function getFullPath($path) {
+		if (!$this->isValidPath($path)) {
+			throw new NotPermittedException('Invalid path');
+		}
+		return $this->path . $this->normalizePath($path);
+	}
+```
+
+## Impact
+
+The function seems to be used in newFile() and newFolder() items, allowing to create paths outside of ones own space and overwriting stuff from others.

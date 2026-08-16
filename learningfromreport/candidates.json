@@ -1,0 +1,1602 @@
+[
+[
+"827052",
+"GitLab",
+"Arbitrary file read via the UploadsRewriter when moving and issue",
+"1500",
+"20000.0",
+"Path Traversal"
+],
+[
+"470520",
+"Valve",
+"RCE on Steam Client via buffer overflow in Server Info",
+"1287",
+"0.0",
+"Classic Buffer Overflow"
+],
+[
+"591295",
+"X / xAI",
+"Potential pre-auth RCE on Twitter VPN",
+"1239",
+"20160.0",
+"OS Command Injection"
+],
+[
+"455645",
+"Snapchat",
+"Exposed Kubernetes API - RCE/Exposed Creds",
+"1185",
+"25000.0",
+"OS Command Injection"
+],
+[
+"925585",
+"PayPal",
+"RCE via npm misconfig -- installing internal libraries from the public registry",
+"933",
+"30000.0",
+"Code Injection"
+],
+[
+"622122",
+"PayPal",
+"DoS on PayPal via web cache poisoning",
+"850",
+"9700.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"422944",
+"Shopify",
+"H1514 Remote Code Execution on kitcrm using bulk customer update of Priority Products",
+"830",
+"0.0",
+"Command Injection - Generic"
+],
+[
+"403417",
+"Semrush",
+"Remote Code Execution on www.semrush.com/my_reports on Logo upload",
+"822",
+"0.0",
+"Command Injection - Generic"
+],
+[
+"531051",
+"Starbucks",
+"SQL Injection Extracts Starbucks Enterprise Accounting, Financial, Payroll Database",
+"793",
+"0.0",
+"SQL Injection"
+],
+[
+"873614",
+"PlayStation",
+"Websites Can Run Arbitrary Code on Machines Running the 'PlayStation Now' Application",
+"777",
+"15000.0",
+"Code Injection"
+],
+[
+"658013",
+"GitLab",
+"Git flag injection - local file overwrite to remote code execution",
+"777",
+"12000.0",
+"Command Injection - Generic"
+],
+[
+"826026",
+"PlayStation",
+"Use-After-Free In IPV6_2292PKTOPTIONS leading To Arbitrary Kernel R/W Primitives",
+"741",
+"10000.0",
+"Use After Free"
+],
+[
+"297478",
+"GSA Bounty",
+"SQL injection in https://labs.data.gov/dashboard/datagov/csv_to_json via User-agent ",
+"698",
+"0.0",
+"SQL Injection"
+],
+[
+"506646",
+"Starbucks",
+"Webshell via File Upload on ecjobs.starbucks.com.cn",
+"686",
+"0.0",
+"OS Command Injection"
+],
+[
+"846338",
+"Glassdoor",
+"Reflected XSS on https://www.glassdoor.com/employers/sem-dual-lp/",
+"684",
+"0.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"821962",
+"Razer",
+"\ud83d\udc1e OS Command Injection at https://sea-web.gold.razer.com/lab/ws-lookup via IP parameter",
+"676",
+"2000.0",
+"OS Command Injection"
+],
+[
+"868436",
+"Mail.ru",
+"Time-Based SQL injection at city-mobil.ru",
+"631",
+"15000.0",
+"SQL Injection"
+],
+[
+"526325",
+"GitLab",
+"Stored XSS in Wiki pages",
+"627",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"484434",
+"Imgur",
+"Stored XSS on imgur profile",
+"612",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"141956",
+"Pornhub",
+"[phpobject in cookie] Remote shell/command execution",
+"607",
+"20000.0",
+"Code Injection"
+],
+[
+"819738",
+"Razer",
+"SQL injection at https://sea-web.gold.razer.com/ajax-get-status.php via txid parameter",
+"580",
+"2000.0",
+"SQL Injection"
+],
+[
+"341876",
+"Shopify",
+"SSRF in Exchange leads to ROOT access in all instances",
+"577",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"502758",
+"Starbucks",
+"RCE and Complete Server Takeover of http://www.\u2588\u2588\u2588\u2588\u2588.starbucks.com.sg/",
+"571",
+"0.0",
+"Code Injection"
+],
+[
+"639684",
+"Rockstar Games",
+"The return of the \uff1c",
+"569",
+"1000.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"544928",
+"Ubiquiti Inc.",
+"Privilege Escalation From user to SYSTEM via unauthenticated command execution ",
+"553",
+"0.0",
+"Command Injection - Generic"
+],
+[
+"401793",
+"Grab",
+"[Grab Android/iOS] Insecure deeplink leads to sensitive information disclosure",
+"547",
+"0.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"180074",
+"Paragon Initiative Enterprises",
+"BAD Code ! ",
+"546",
+"0.0",
+"Command Injection - Generic"
+],
+[
+"587854",
+"GitLab",
+"Local files could be overwritten in GitLab, leading to remote command execution",
+"542",
+"12000.0",
+"Command Injection - Generic"
+],
+[
+"811111",
+"Razer",
+"SQL Injection in https://api-my.pay.razer.com/inviteFriend/getInviteHistoryLog",
+"528",
+"2000.0",
+"SQL Injection"
+],
+[
+"2262382",
+"HackerOne",
+"Server Side Request Forgery (SSRF) via Analytics Reports",
+"515",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"783877",
+"Slack",
+"Remote Code Execution in Slack desktop apps + bonus",
+"507",
+"0.0",
+"Code Injection"
+],
+[
+"1154542",
+"GitLab",
+"RCE when removing metadata with ExifTool",
+"504",
+"20000.0",
+"Code Injection"
+],
+[
+"409850",
+"Valve",
+"XSS in steam react chat client",
+"493",
+"7500.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"697099",
+"LY Corporation",
+"Reflected XSS in OAUTH2 login flow ",
+"487",
+"1989.5",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"816254",
+"QIWI",
+"SQL injection on contactws.contact-sys.com in TScenObject action ScenObjects leads to remote code execution",
+"475",
+"0.0",
+"Code Injection"
+],
+[
+"764434",
+"HackerOne",
+"profile-picture name parameter with large value lead to DoS for other users and programs on the platform",
+"475",
+"0.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"968082",
+"TikTok",
+"Cross-Site-Scripting on www.tiktok.com and m.tiktok.com leading to Data Exfiltration",
+"470",
+"0.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"146336",
+"Slack",
+"XSS vulnerable parameter in a location hash",
+"454",
+"0.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"1010466",
+"CS Money",
+"Blind XSS on image upload",
+"445",
+"1000.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"758654",
+"InnoGames",
+"Blind SQL Injection ",
+"432",
+"2000.0",
+"SQL Injection"
+],
+[
+"1125425",
+"GitLab",
+"RCE via unsafe inline Kramdown options when rendering certain Wiki pages",
+"426",
+"20000.0",
+"Code Injection"
+],
+[
+"530974",
+"Snapchat",
+"Server-Side Request Forgery using Javascript allows to exfill data from Google Metadata",
+"417",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"631956",
+"Valve",
+"Panorama UI XSS leads to Remote Code Execution via Kick/Disconnect Message",
+"417",
+"0.0",
+"Code Injection"
+],
+[
+"365271",
+"Basecamp",
+"Remote code execution on Basecamp.com",
+"415",
+"5000.0",
+"Command Injection - Generic"
+],
+[
+"423541",
+"Shopify",
+"H1514 Server Side Template Injection in Return Magic email templates?",
+"408",
+"0.0",
+"Code Injection"
+],
+[
+"591302",
+"Automattic",
+"Denial of service to WP-JSON API by cache poisoning the CORS allow origin header",
+"405",
+"0.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"383127",
+"Valve",
+"SQL Injection in report_xml.php through countryFilter[] parameter",
+"404",
+"25000.0",
+"SQL Injection"
+],
+[
+"854032",
+"Mail.ru",
+"Unrestricted file upload on [ambassador.mail.ru] ",
+"404",
+"3000.0",
+"Code Injection"
+],
+[
+"643908",
+"WordPress",
+"Stored XSS Vulnerability",
+"402",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"1962645",
+"Reddit",
+"[accounts.reddit.com] Redirect parameter allows for XSS",
+"394",
+"5000.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"840759",
+"HackerOne",
+"Reflected XSS on www.hackerone.com and resources.hackerone.com",
+"387",
+"500.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"1679624",
+"GitLab",
+"Remote Command Execution via Github import",
+"384",
+"33510.0",
+"Command Injection - Generic"
+],
+[
+"1609965",
+"GitLab",
+"RCE via the DecompressedArchiveSizeValidator and Project BulkImports (behind feature flag)",
+"377",
+"33510.0",
+"Command Injection - Generic"
+],
+[
+"881901",
+"Mail.ru",
+"SQL injection at fleet.city-mobil.ru",
+"372",
+"10000.0",
+"SQL Injection"
+],
+[
+"923132",
+"Dropbox",
+"Server Side Request Forgery (SSRF) at app.hellosign.com leads to AWS private keys disclosure",
+"360",
+"4913.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"518637",
+"Mail.ru",
+"RCE on shared.mail.ru due to \"widget\" plugin",
+"359",
+"10000.0",
+"Code Injection"
+],
+[
+"982291",
+"Basecamp",
+"HEY.com email stored XSS",
+"359",
+"5000.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"1207040",
+"X / xAI",
+"Blind XSS on Twitter's internal Big Data panel at \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+"357",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"826361",
+"GitLab",
+"SSRF on project import via the remote_attachment_url on a Note",
+"356",
+"10000.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"1350887",
+"TikTok",
+"Reflected XSS in TikTok endpoints",
+"356",
+"0.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"733248",
+"Automattic",
+"Stored XSS in wordpress.com",
+"356",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"632101",
+"GitLab",
+"Server Side Request Forgery mitigation bypass",
+"347",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"691611",
+"Shopify",
+"XSS while logging using Google",
+"341",
+"1750.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"590020",
+"Internet Bug Bounty",
+"CRLF Injection in urllib",
+"341",
+"0.0",
+"CRLF Injection"
+],
+[
+"487008",
+"Flickr",
+"Arbitrary file read via ffmpeg HLS parser at https://www.flickr.com/photos/upload",
+"340",
+"0.0",
+"Code Injection"
+],
+[
+"1960765",
+"Reddit",
+"Blind SSRF to internal services in matrix preview_link API",
+"339",
+"6000.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"487081",
+"WordPress",
+"Stored XSS in Private Message component (BuddyPress)",
+"337",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"786044",
+"Mail.ru",
+"[windows10.hi-tech.mail.ru]  Blind SQL Injection ",
+"330",
+"5000.0",
+"SQL Injection"
+],
+[
+"1439593",
+"GitLab",
+"Arbitrary file read  via the bulk imports UploadsPipeline",
+"326",
+"29000.0",
+"Path Traversal"
+],
+[
+"1007014",
+"Uber",
+"RCE via npm misconfig -- installing internal libraries from the public registry",
+"325",
+"9000.0",
+"Code Injection"
+],
+[
+"946053",
+"Shopify",
+"Stored XSS in my staff name fired in another your internal panel",
+"325",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"403616",
+"Eternal",
+"[www.zomato.com] SQLi - /php/\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588 - item_id",
+"324",
+"4500.0",
+"SQL Injection"
+],
+[
+"210779",
+"X / xAI",
+"[Urgent] Invalidating OAuth2 Bearer token makes TweetDeck unavailable",
+"323",
+"0.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"333419",
+"Slack",
+"TURN server allows TCP and UDP proxying to internal network, localhost and meta-data services",
+"322",
+"3500.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"2010530",
+"Yelp",
+"yelp.com XSS ATO (via login keylogger, link Google account)",
+"321",
+"0.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"761304",
+"MTN Group",
+" SQL Injection on cookie parameter",
+"321",
+"0.0",
+"SQL Injection"
+],
+[
+"397545",
+"Valve",
+"Malformed .BMP file in Counter-Strike 1.6 may cause shellcode injection",
+"321",
+"0.0",
+"Classic Buffer Overflow"
+],
+[
+"500515",
+"Starbucks",
+"XXE at ecjobs.starbucks.com.cn/retail/hxpublic_v6/hxdynamicpage6.aspx",
+"318",
+"0.0",
+"XML External Entities (XXE)"
+],
+[
+"739601",
+"Bumble",
+"Reflected XSS",
+"317",
+"1000.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"851807",
+"Nextcloud",
+"Code injection possible with malformed Nextcloud Talk chat commands",
+"317",
+"0.0",
+"Code Injection"
+],
+[
+"1212067",
+"GitLab",
+"Stored XSS in markdown via the DesignReferenceFilter ",
+"316",
+"16000.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"2306491",
+"TikTok",
+"Stored-XSS-ads.tiktok.com",
+"310",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"1024575",
+"TikTok",
+"RCE on TikTok Ads Portal",
+"310",
+"0.0",
+"Code Injection"
+],
+[
+"630462",
+"PuTTY (European Commission - DIGIT)",
+"Heap overflow happen when receiving short length key from ssh server using ssh protocol 1",
+"309",
+"3645.9",
+"Heap Overflow"
+],
+[
+"1406938",
+"Dropbox",
+"Full Response SSRF via Google Drive",
+"302",
+"17576.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"1731349",
+"GitLab",
+"Stored XSS via Kroki diagram",
+"294",
+"13950.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"534450",
+"Superhuman (formerly Grammarly)",
+"Account takeover through the combination of cookie manipulation and XSS",
+"289",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"1043385",
+"LY Corporation",
+"Arbitrary Code Execution via npm misconfiguration \u2013 installing internal libraries from the public registry",
+"287",
+"11500.0",
+"Code Injection"
+],
+[
+"723060",
+"Razer",
+"Reflected XSS at https://pay.gold.razer.com escalated to account takeover",
+"287",
+"750.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"1930763",
+"Reddit",
+"RichText parser vulnerability in scheduled posts allows XSS",
+"280",
+"5000.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"1340942",
+"PlayStation",
+"size_t-to-int vulnerability in exFAT leads to memory corruption via malformed USB flash drives",
+"279",
+"10000.0",
+"Incorrect Calculation of Buffer Size"
+],
+[
+"549882",
+"Vimeo",
+"SSRF  leaking internal google cloud data through upload function [SSH Keys, etc..]",
+"274",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"748069",
+"Mail.ru",
+"SSRF on fleet.city-mobil.ru leads to local file read",
+"272",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"1312641",
+"Pornhub",
+"Deserialization of untrusted data at https://www.redtube.com/media/hls?s=data",
+"271",
+"10000.0",
+"Deserialization of Untrusted Data"
+],
+[
+"1672388",
+"GitLab",
+"RCE via github import",
+"271",
+"0.0",
+"OS Command Injection"
+],
+[
+"300305",
+"Shopify",
+"Ability to bypass partner email confirmation to take over any store given an employee email",
+"270",
+"15250.0",
+"Time-of-check Time-of-use (TOCTOU) Race Condition"
+],
+[
+"542180",
+"Valve",
+"Malformed NAV file leads to buffer overflow and code execution in Left4Dead2.exe",
+"268",
+"10000.0",
+"Classic Buffer Overflow"
+],
+[
+"245296",
+"Keybase",
+"Persistent XSS on keybase.io via \"payload\" field in `/user/sigchain_signature.toffee` template",
+"266",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"170532",
+"LocalTapiola",
+"Oracle Webcenter Sites administrative and hi-privilege access available directly from the internet (/cs/Satellite)",
+"264",
+"18000.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"505947",
+"Mail.ru",
+"XXE on pulse.mail.ru",
+"264",
+"6000.0",
+"XML External Entities (XXE)"
+],
+[
+"156098",
+"Uber",
+"XSS At \"pages.et.uber.com\"",
+"264",
+"0.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"1189367",
+"Evernote",
+"Full read SSRF in www.evernote.com that can leak aws metadata and local file inclusion",
+"259",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"1864188",
+"EXNESS",
+"SSRF in graphQL query (pwapi.ex2b.com)",
+"258",
+"3000.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"396954",
+"Rootstock Labs",
+"Attacker can add arbitrary data to the blockchain without paying gas",
+"258",
+"0.0",
+"Deserialization of Untrusted Data"
+],
+[
+"248668",
+"X / xAI",
+"XXE on sms-be-vip.twitter.com in SXMP Processor",
+"258",
+"0.0",
+"XML External Entities (XXE)"
+],
+[
+"409370",
+"HackerOne",
+"Denial of service via cache poisoning",
+"253",
+"2500.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"808821",
+"Visma Public",
+"Arbitrary File Upload to Stored XSS",
+"245",
+"250.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"411690",
+"Alliance of American Football ",
+"Stored xss in address field in billing activity at https://shop.aaf.com/Order/step1/index.cfm",
+"244",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"781205",
+"Razer",
+"SQL Injection at https://sea-web.gold.razer.com/lab/cash-card-incomplete-translog-resend via period-hour Parameter",
+"240",
+"2000.0",
+"SQL Injection"
+],
+[
+"1444682",
+"Shopify",
+"XSS at jamfpro.shopifycloud.com",
+"239",
+"9400.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"876295",
+"Starbucks",
+"Misuse of an authentication cookie combined with a path traversal on app.starbucks.com permitted access to restricted data",
+"238",
+"0.0",
+"Path Traversal"
+],
+[
+"398799",
+"GitLab",
+"Unauthenticated blind SSRF in OAuth Jira authorization controller",
+"237",
+"4000.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"962889",
+"Acronis",
+"SQL Injection in agent-manager",
+"237",
+"0.0",
+"SQL Injection"
+],
+[
+"748128",
+"Mail.ru",
+"SSRF & LFR on city-mobil.ru",
+"237",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"429026",
+"HackerOne",
+"Race condition in performing retest allows duplicated payments",
+"237",
+"0.0",
+"Concurrent Execution using Shared Resource with Improper Synchronization ('Race Condition')"
+],
+[
+"986386",
+"HackerOne",
+"Reflected XSS on www.hackerone.com via Wistia embed code",
+"236",
+"500.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"474656",
+"HackerOne",
+"Cross-site Scripting (XSS) on HackerOne careers page",
+"236",
+"500.0",
+"Cross-site Scripting (XSS) - DOM"
+],
+[
+"592400",
+"Starbucks",
+"Blind SQLi leading to RCE, from Unauthenticated access to a test API Webservice",
+"236",
+"0.0",
+"SQL Injection"
+],
+[
+"341908",
+"X / xAI",
+"XSS via Direct Message deeplinks",
+"236",
+"0.0",
+"Cross-site Scripting (XSS) - DOM"
+],
+[
+"2900606",
+"PlayStation",
+"sys_fsc2h_ctrl kernel stack free",
+"235",
+"10000.0",
+"Use After Free"
+],
+[
+"894325",
+"Razer",
+"[api.easy2pay.co]  SQL Injection at fortumo via TransID parameter [Bypassing Signature Validation\ud83d\udd25]",
+"232",
+"4000.0",
+"SQL Injection"
+],
+[
+"485748",
+"X / xAI",
+"Stored XSS on reports.",
+"230",
+"700.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"1044716",
+"Eternal",
+"SQL Injection in www.hyperpure.com",
+"229",
+"2000.0",
+"Code Injection"
+],
+[
+"212696",
+"Imgur",
+"RCE by command line argument injection to `gm convert` in `/edit/process?a=crop`",
+"229",
+"0.0",
+"Command Injection - Generic"
+],
+[
+"1181946",
+"HackerOne",
+"Static files on HackerOne.com can be made inaccessible through Cache Poisoning attack",
+"228",
+"0.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"878779",
+"GitLab",
+"Full Read SSRF on Gitlab's Internal Grafana",
+"228",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"745938",
+"Mail.ru",
+"Boolean-based SQL Injection on relap.io",
+"227",
+"0.0",
+"SQL Injection"
+],
+[
+"708589",
+"New Relic",
+"Unsafe charts embedding implementation leads to cross-account stored XSS and SSRF",
+"225",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"711075",
+"Mail.ru",
+"Blind SQL Injection in city-mobil.ru domain",
+"224",
+"2000.0",
+"SQL Injection"
+],
+[
+"131450",
+"Uber",
+"Stored XSS in developer.uber.com",
+"223",
+"7500.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"724889",
+"Eternal",
+"[www.zomato.com] Blind XSS on one of the Admin Dashboard",
+"221",
+"750.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"713900",
+"QIWI",
+"Unauthenticated SSRF in jira.tochka.com leading to RCE in confluence.bank24.int",
+"221",
+"0.0",
+"Code Injection"
+],
+[
+"1795197",
+"Glassdoor",
+"Cache Poisoning allows redirection on JS files",
+"219",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"746505",
+"Mail.ru",
+"[panel.city-mobil.ru/admin/] Blind XSS into username",
+"219",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"483774",
+"DuckDuckGo",
+"XXE on https://duckduckgo.com",
+"218",
+"0.0",
+"XML External Entities (XXE)"
+],
+[
+"852306",
+"Mail.ru",
+"SQL LIKE clauses wildcard injection",
+"217",
+"8000.0",
+"SQL Injection"
+],
+[
+"1504410",
+"Reddit",
+"XSS via Mod Log Removed Posts",
+"217",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"508459",
+"Omise",
+"SSRF in webhooks leads to AWS private keys disclosure",
+"212",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"317476",
+"X / xAI",
+"Account Takeover in Periscope TV",
+"212",
+"0.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"72243",
+"Pornhub",
+"Publicly exposed SVN repository, ht.pornhub.com",
+"211",
+"10000.0",
+"Code Injection"
+],
+[
+"363815",
+"Pornhub",
+"Blind SQL injection and making any profile comments from any users to disappear using \"like\" function (2 in 1 issues)",
+"211",
+"0.0",
+"SQL Injection"
+],
+[
+"549355",
+"Starbucks",
+"Blind SQL Injection on starbucks.com.gt and WAF Bypass  :*",
+"210",
+"0.0",
+"SQL Injection"
+],
+[
+"887321",
+"HackerOne",
+"Uploading large payload on domain instructions causes server-side DoS",
+"209",
+"2500.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"329689",
+"Mapbox",
+"Test-scripts for postgis in mason-repository using unsafe unzip of content from unclaimed bucket creates potential RCE-issues",
+"209",
+"0.0",
+"Command Injection - Generic"
+],
+[
+"303061",
+"LocalTapiola",
+"RCE using bash command injection on /system/images (toimitilat.lahitapiola.fi)",
+"209",
+"0.0",
+"OS Command Injection"
+],
+[
+"249131",
+"Upserve ",
+"Ability to create own account UUID leads to stored XSS",
+"207",
+"1500.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"398054",
+"HackerOne",
+"DOM Based XSS in www.hackerone.com via PostMessage",
+"206",
+"500.0",
+"Cross-site Scripting (XSS) - DOM"
+],
+[
+"470380",
+"Mail.ru",
+"Cross application scripting via account.mail.ru",
+"205",
+"5000.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"273946",
+"Grab",
+"www.drivegrab.com SQL injection",
+"202",
+"4500.0",
+"SQL Injection"
+],
+[
+"1504202",
+"TikTok",
+"Stored XSS on TikTok Ads",
+"201",
+"0.0",
+"Cross-site Scripting (XSS) - DOM"
+],
+[
+"84601",
+"X / xAI",
+"XSS and cache poisoning via upload.twitter.com on ton.twitter.com",
+"198",
+"0.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"2051931",
+"inDrive",
+"Blind SQL injection on id.indrive.com",
+"196",
+"4134.0",
+"Blind SQL Injection"
+],
+[
+"2177925",
+"PlayStation",
+"Remote vulnerabilities in spp",
+"195",
+"12500.0",
+"Classic Buffer Overflow"
+],
+[
+"1180252",
+"Valve",
+"Buffer overrun in Steam SILK voice decoder",
+"195",
+"7500.0",
+"Classic Buffer Overflow"
+],
+[
+"2352968",
+"TikTok",
+"Reflected XSS on Pangle Endpoint ",
+"195",
+"5000.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"422043",
+"Shopify",
+"H1514 DOMXSS on Embedded SDK via Shopify.API.setWindowLocation abusing cookie Stuffing",
+"195",
+"0.0",
+"Cross-site Scripting (XSS) - DOM"
+],
+[
+"1132378",
+"GitLab",
+"Arbitrary file read during project import",
+"194",
+"16000.0",
+"Path Traversal"
+],
+[
+"220852",
+"Rockstar Games",
+"XSS STORED AT socialclub.rockstargames.com (add friend request from profile attacker)",
+"194",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"816086",
+"QIWI",
+"Remote Code Execution on contactws.contact-sys.com via SQL injection in TCertObject operation \"Delete\"",
+"194",
+"0.0",
+"Code Injection"
+],
+[
+"380103",
+"U.S. Dept Of Defense",
+"Stored Xss Vulnerability on \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+"192",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"865828",
+"Nord Security",
+"Incorrect control of the trial period",
+"188",
+"0.0",
+"Client-Side Enforcement of Server-Side Security"
+],
+[
+"299728",
+"HackerOne",
+"Markdown parsing issue enables insertion of malicious tags and event handlers",
+"184",
+"5000.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"777693",
+"Razer",
+"SQLi at https://sea-web.gold.razer.com/demo-th/purchase-result.php via orderid Parameter",
+"183",
+"2000.0",
+"SQL Injection"
+],
+[
+"438240",
+"Starbucks",
+"Reflected Cross site Scripting (XSS) on www.starbucks.com",
+"181",
+"0.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"295841",
+"Pornhub",
+"Blind SQL injection in Hall of Fap",
+"179",
+"0.0",
+"SQL Injection"
+],
+[
+"892049",
+"Lark Technologies",
+"Stored XSS & SSRF in Lark Docs",
+"178",
+"3000.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"473950",
+"Keybase",
+"XSS on Desktop Client",
+"175",
+"0.0",
+"Cross-site Scripting (XSS) - DOM"
+],
+[
+"1145162",
+"Shopify",
+"XSS  at https://exchangemarketplace.com/blogsearch",
+"174",
+"0.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"727727",
+"LY Corporation",
+"Path traversal in filename in LINE Mac client",
+"174",
+"0.0",
+"Path Traversal"
+],
+[
+"435066",
+"HackerOne",
+"SQL injection in GraphQL endpoint through embedded_submission_form_uuid parameter",
+"174",
+"0.0",
+"SQL Injection"
+],
+[
+"733267",
+"Valve",
+"[Portal 2] Remote Code Execution via voice packets",
+"173",
+"5000.0",
+"Classic Buffer Overflow"
+],
+[
+"1274695",
+"PortSwigger Web Security",
+"RCE of Burp  Scanner / Crawler via Clickjacking ",
+"171",
+"3000.0",
+"Command Injection - Generic"
+],
+[
+"603764",
+"Upserve ",
+"DOM Based XSS via postMessage at https://inventory.upserve.com/login/",
+"171",
+"2500.0",
+"Cross-site Scripting (XSS) - DOM"
+],
+[
+"2995025",
+"Mozilla",
+"Mozilla VPN Clients: RCE via file write and path traversal",
+"170",
+"6000.0",
+"Path Traversal"
+],
+[
+"653125",
+"GitLab",
+"Git flag injection leading to file overwrite and potential remote code execution",
+"169",
+"3500.0",
+"Command Injection - Generic"
+],
+[
+"2035332",
+"HackerOne",
+"RXSS at image.hackerone.live via the `url` parameter",
+"169",
+"500.01",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"1665658",
+"GitLab",
+"Stored-XSS with CSP-bypass via labels' color",
+"169",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"1039315",
+"Automattic",
+"Sql injection on docs.atavist.com",
+"169",
+"0.0",
+"SQL Injection"
+],
+[
+"1086108",
+"Shopify",
+"[h1-2102] FQDN takeover on all Shopify wholesale customer domains by trailing dot (RFC 1034)",
+"166",
+"3100.0",
+"Incorrect Permission Assignment for Critical Resource"
+],
+[
+"1549206",
+"Reddit",
+"Reflected xss in https://sh.reddit.com",
+"164",
+"5000.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"1224660",
+"Acronis",
+"bypass sql injection #1109311",
+"164",
+"0.0",
+"SQL Injection"
+],
+[
+"436928",
+"WordPress",
+"RCE as Admin defeats WordPress hardening and file permissions",
+"164",
+"0.0",
+"Path Traversal"
+],
+[
+"398641",
+"DuckDuckGo",
+"SSRF on duckduckgo.com/iu/",
+"164",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"703910",
+"Mail.ru",
+"JMX RMI command injection on 195.211.131.82(Mail.ru Gaming)",
+"163",
+"2000.0",
+"Command Injection - Generic"
+],
+[
+"402566",
+"Valve",
+"[Half-Life 1] Malformed map name leads to memory corruption and code execution",
+"163",
+"1500.0",
+"Classic Buffer Overflow"
+],
+[
+"644238",
+"Lark Technologies",
+"Server Side Request Forgery",
+"162",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"752073",
+"Nord Security",
+"xmlrpc.php FILE IS enable it will used for Bruteforce attack and Denial of Service(DoS)",
+"162",
+"0.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"723974",
+"Moneybird",
+"Bypass password reset rate limit protection at moneybird.com/passwords",
+"162",
+"0.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"867699",
+"Kubernetes",
+"Node disk DOS by writing to container /etc/hosts",
+"161",
+"1000.0",
+"Uncontrolled Resource Consumption"
+],
+[
+"1481207",
+"GitLab",
+"Stored XSS in Notes (with CSP bypass for gitlab.com)",
+"161",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"1699762",
+"Shopify",
+"XSS in www.shopify.com/markets?utm_source=",
+"159",
+"0.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"507494",
+"Rockstar Games",
+"xss on https://www.rockstargames.com/GTAOnline/jp/screens/ ",
+"159",
+"0.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"486732",
+"DuckDuckGo",
+"Partial bypass of #483774 with Blind XXE on https://duckduckgo.com",
+"159",
+"0.0",
+"XML External Entities (XXE)"
+],
+[
+"3024673",
+"Autodesk",
+"SSRF in Autodesk Rendering leading to account takeover",
+"158",
+"0.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"709883",
+"New Relic",
+"Cross-account stored XSS at embedded charts",
+"158",
+"0.0",
+"Cross-site Scripting (XSS) - Stored"
+],
+[
+"11073",
+"Slack",
+"XSS in gist integration",
+"157",
+"500.0",
+"Cross-site Scripting (XSS) - Generic"
+],
+[
+"1051373",
+"Reddit",
+"XSS Reflected on reddit.com via url path",
+"157",
+"0.0",
+"Cross-site Scripting (XSS) - Reflected"
+],
+[
+"818972",
+"Mail.ru",
+"SQL Injection [unauthenticated] with direct output at https://news.mail.ru/",
+"156",
+"7500.0",
+"SQL Injection"
+],
+[
+"1062888",
+"TikTok",
+"External SSRF and Local File Read via video upload due to vulnerable FFmpeg HLS processing",
+"156",
+"2727.0",
+"Server-Side Request Forgery (SSRF)"
+],
+[
+"449351",
+"HackerOne",
+"IE only: stored Cross-Site Scripting (XSS) vulnerability through Program Asset identifier",
+"156",
+"2500.0",
+"Cross-site Scripting (XSS) - Stored"
+]
+]

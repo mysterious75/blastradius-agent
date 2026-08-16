@@ -1,0 +1,159 @@
+[
+ {
+  "id": "300305",
+  "http": 200,
+  "title": "Ability to bypass partner email confirmation to take over any store given an employee email",
+  "has_info": true,
+  "info_len": 2505
+ },
+ {
+  "id": "542180",
+  "http": 200,
+  "title": "Malformed NAV file leads to buffer overflow and code execution in Left4Dead2.exe",
+  "has_info": true,
+  "info_len": 1808
+ },
+ {
+  "id": "245296",
+  "http": 404
+ },
+ {
+  "id": "170532",
+  "http": 404
+ },
+ {
+  "id": "505947",
+  "http": 404
+ },
+ {
+  "id": "156098",
+  "http": 200,
+  "title": "XSS At \"pages.et.uber.com\"",
+  "has_info": true,
+  "info_len": 663
+ },
+ {
+  "id": "1189367",
+  "http": 200,
+  "title": "Full read SSRF in www.evernote.com that can leak aws metadata and local file inclusion",
+  "has_info": false,
+  "info_len": 0
+ },
+ {
+  "id": "1864188",
+  "http": 200,
+  "title": "SSRF in graphQL query (pwapi.ex2b.com)",
+  "has_info": true,
+  "info_len": 1491
+ },
+ {
+  "id": "396954",
+  "http": 200,
+  "title": "Attacker can add arbitrary data to the blockchain without paying gas",
+  "has_info": true,
+  "info_len": 13788
+ },
+ {
+  "id": "248668",
+  "http": 200,
+  "title": "XXE on sms-be-vip.twitter.com in SXMP Processor",
+  "has_info": true,
+  "info_len": 3758
+ },
+ {
+  "id": "409370",
+  "http": 200,
+  "title": "Denial of service via cache poisoning",
+  "has_info": true,
+  "info_len": 802
+ },
+ {
+  "id": "808821",
+  "http": 404
+ },
+ {
+  "id": "411690",
+  "http": 200,
+  "title": "Stored xss in address field in billing activity at https://shop.aaf.com/Order/step1/index.cfm",
+  "has_info": true,
+  "info_len": 761
+ },
+ {
+  "id": "781205",
+  "http": 404
+ },
+ {
+  "id": "1444682",
+  "http": 200,
+  "title": "XSS at jamfpro.shopifycloud.com",
+  "has_info": true,
+  "info_len": 1843
+ },
+ {
+  "id": "876295",
+  "http": 200,
+  "title": "Misuse of an authentication cookie combined with a path traversal on app.starbucks.com permitted access to restricted data",
+  "has_info": false,
+  "info_len": 0
+ },
+ {
+  "id": "398799",
+  "http": 200,
+  "title": "Unauthenticated blind SSRF in OAuth Jira authorization controller",
+  "has_info": true,
+  "info_len": 2851
+ },
+ {
+  "id": "962889",
+  "http": 200,
+  "title": "SQL Injection in agent-manager",
+  "has_info": true,
+  "info_len": 513
+ },
+ {
+  "id": "748128",
+  "http": 404
+ },
+ {
+  "id": "429026",
+  "http": 200,
+  "title": "Race condition in performing retest allows duplicated payments",
+  "has_info": true,
+  "info_len": 1339
+ },
+ {
+  "id": "986386",
+  "http": 200,
+  "title": "Reflected XSS on www.hackerone.com via Wistia embed code",
+  "has_info": true,
+  "info_len": 4059
+ },
+ {
+  "id": "474656",
+  "http": 200,
+  "title": "Cross-site Scripting (XSS) on HackerOne careers page",
+  "has_info": true,
+  "info_len": 1568
+ },
+ {
+  "id": "592400",
+  "http": 200,
+  "title": "Blind SQLi leading to RCE, from Unauthenticated access to a test API Webservice",
+  "has_info": false,
+  "info_len": 0
+ },
+ {
+  "id": "341908",
+  "http": 200,
+  "title": "XSS via Direct Message deeplinks",
+  "has_info": true,
+  "info_len": 1633
+ },
+ {
+  "id": "2900606",
+  "http": 200,
+  "title": "sys_fsc2h_ctrl kernel stack free",
+  "has_info": false,
+  "info_len": 0
+ }
+]

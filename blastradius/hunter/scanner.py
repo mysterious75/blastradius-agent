@@ -307,6 +307,21 @@ VULN_META = {
             "from environment variables or a secret manager."
         ),
     },
+    "deserialization": {
+        "severity": "HIGH",
+        "cvss": 8.1,
+        "cwe": "CWE-502",
+        "description": (
+            "Insecure deserialization: untrusted input reaches a deserializer "
+            "(pickle/yaml/Marshal/unserialize/readObject), which can execute "
+            "attacker-controlled code (RCE) or corrupt data."
+        ),
+        "remediation": (
+            "Never deserialize untrusted input. Use safe loaders (yaml.safe_load, "
+            "SafeLoader), signed formats (JWT/msgpack), or allowlist-restricted "
+            "unpicklers; treat any user-controlled bytes as code."
+        ),
+    },
 }
 
 VALID_VULN_TYPES = tuple(VULN_META)
@@ -481,6 +496,39 @@ def _score_secret(line: str, has_source: bool) -> float:
     return 0.0
 
 
+# Insecure deserialization: untrusted input reaching a deserializer
+_DESERIALIZATION_SINKS = [
+    r"\b(?:pickle|cPickle|dill|shelve)\s*\.\s*(?:loads|load)\s*\(",
+    r"\bmarshal\s*\.\s*(?:loads|load)\s*\(",
+    r"\byaml\.load\s*\(",
+    r"\bMarshal\.load\s*\(",
+    r"\bYAML\.load\s*\(",
+    r"\bunserialize\s*\(",
+    r"\bphar://",
+    r"ObjectInputStream[^;]*\.readObject\s*\(",
+    r"\bXMLDecoder\s*\(",
+    r"gob\.NewDecoder\s*\([^)]*\)\.Decode\s*\(",
+]
+_DESERIALIZATION_SAFE = [
+    r"safe_load",  # yaml.safe_load / json-compatible safe loaders
+    r"SafeLoader|CSafeLoader|FullLoader",
+    r"yaml\.load\s*\([^,)]*,\s*Loader\s*=",
+    r"restricted_unpickler|find_class\s*=|permitted_classes",
+    r"json\.loads?\s*\(|json\.parse\s*\(|SimpleJSON",
+    r"Marshal\.dump\b|pickle\.dump\b|dill\.dump\b",  # writing, not reading
+]
+
+
+def _score_deserialization(line: str, has_source: bool) -> float:
+    if any(re.search(p, line, re.I) for p in _DESERIALIZATION_SAFE):
+        return 0.0
+    if not any(re.search(p, line, re.I) for p in _DESERIALIZATION_SINKS):
+        return 0.0
+    if not _line_references_variable(line):
+        return 0.0
+    return 0.9 if has_source else 0.75
+
+
 # IDOR: object-id read from user input, no authorization check nearby
 _IDOR_ID_SOURCES = [
     r"request\.(?:args|form|values|get_json)\s*\([^)]*['\"]id['\"]",
@@ -525,6 +573,7 @@ _SCORERS = (
     ("ssti", _score_ssti),
     ("jwt", _score_jwt),
     ("secret", _score_secret),
+    ("deserialization", _score_deserialization),
 )
 
 
@@ -554,6 +603,8 @@ def reconstruct_target_code(finding: Finding) -> str:
         return "# XXE\nimport xml.etree.ElementTree as ET\nET.parse(user_input)\n"
     if finding.vuln_type == "ssti":
         return "# SSTI\nfrom jinja2 import Environment\nenv = Environment()\nenv.from_string(user_input).render()\n"
+    if finding.vuln_type == "deserialization":
+        return 'import pickle\ndef target(user_input):\n    return pickle.loads(user_input)\n'
     return f"# {finding.vuln_type}\nresult = process(user_input)\n"
 
 
@@ -840,4 +891,5 @@ class CVEHunter:
             "xxe": "XML External Entity",
             "jwt": "Weak JWT Verification",
             "graphql": "GraphQL Injection",
+            "deserialization": "Insecure Deserialization",
         }.get(vuln_type, vuln_type)
