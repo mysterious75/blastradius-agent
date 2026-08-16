@@ -364,6 +364,22 @@ VULN_META = {
             "or email fields; validate email addresses and header values."
         ),
     },
+    "auth_bypass": {
+        "severity": "HIGH",
+        "cvss": 8.1,
+        "cwe": "CWE-287",
+        "description": (
+            "Authentication bypass: authorization is decided by client-"
+            "controlled values (role/admin params, spoofable headers like "
+            "X-Forwarded-For, presence-only token checks) or hardcoded "
+            "credentials, letting attackers reach privileged functions."
+        ),
+        "remediation": (
+            "Derive identity and privileges from a server-side session only; "
+            "never trust client-supplied roles/headers; enforce an "
+            "authorization check (login_required + ownership) on every route."
+        ),
+    },
 }
 
 VALID_VULN_TYPES = tuple(VULN_META)
@@ -671,6 +687,47 @@ def _score_crlf(line: str, has_source: bool) -> float:
     return 0.8 if has_source else 0.7
 
 
+# Authentication bypass: client-controlled privilege, spoofable headers,
+# presence-only token checks, hardcoded credential compares (corpus-derived).
+_AUTH_BYPASS_SINKS = [
+    # client-supplied role/admin/privilege assignment or decision
+    r"\b(?:role|is_admin|isadmin|admin|user_type|privilege|is_superuser|group)\s*=\s*"
+    r"(?:request\.|req\.|context\.|body\[|params\[|data\[|json\[)",
+    r"\bif\s+(?:request\.|req\.|context\.|body|params|data)\.?(?:args|form|values|get_json)?"
+    r"\s*\.?get?\(?[^)]*['\"](?:admin|role|is_admin|is_superuser|user_type)['\"]",
+    # presence-only token/auth check ("if token:" without validation)
+    r"\bif\s+(?:token|auth|api_key|key|session_id|passwd)\s*:",
+    # trusting spoofable headers for identity/remote address
+    r"headers?\s*\[[\"'](?:X-Forwarded-For|X-Real-IP|X-Original-URL|X-Rewrite-URL|"
+    r"X-Forwarded-Host|X-Forwarded-Proto)[\"']\]",
+    r"(?:get_remote_addr|client_ip|remote_addr|REMOTE_ADDR)\s*=.*(?:X-Forwarded|X-Real-IP)",
+    r"X-Gitlab-Workhorse-Api-Request|Workhorse\.verify_api_request",
+]
+# Hardcoded credential comparison — the comparison itself is the signal.
+_AUTH_CRED_COMPARE = re.compile(
+    r"(?:password|passwd|pass|pwd)\s*==\s*['\"](?:admin|password|1234|123456|root|test)['\"]",
+    re.I,
+)
+_AUTH_BYPASS_SAFE = [
+    r"login_required|is_authenticated|current_user|@login|@auth|@admin_required|"
+    r"requires_auth|jwt\.require|verify_token|check_permission|has_access|"
+    r"permission_required|roles_required|session\[|secure_session|access_control",
+    r"X-Forwarded-For\s*=\s*None|if\s+X-Forwarded-For",  # documented, not trusted
+]
+
+
+def _score_auth_bypass(line: str, has_source: bool) -> float:
+    if any(re.search(p, line, re.I) for p in _AUTH_BYPASS_SAFE):
+        return 0.0
+    if _AUTH_CRED_COMPARE.search(line):
+        return 0.85 if has_source else 0.8
+    if not any(re.search(p, line, re.I) for p in _AUTH_BYPASS_SINKS):
+        return 0.0
+    if not _line_references_variable(line):
+        return 0.0
+    return 0.85 if has_source else 0.75
+
+
 # IDOR: object-id read from user input, no authorization check nearby
 _IDOR_ID_SOURCES = [
     r"request\.(?:args|form|values|get_json)\s*\([^)]*['\"]id['\"]",
@@ -719,6 +776,7 @@ _SCORERS = (
     ("cmd_injection", _score_cmd_injection),
     ("traversal", _score_traversal),
     ("crlf", _score_crlf),
+    ("auth_bypass", _score_auth_bypass),
 )
 
 
@@ -758,6 +816,8 @@ def reconstruct_target_code(finding: Finding) -> str:
         return (
             'def target(user_input):\n    return "Location: /next" + user_input + "\\r\\n\\r\\n"\n'
         )
+    if finding.vuln_type == "auth_bypass":
+        return 'def target(user_input):\n    role = user_input\n    return "admin_panel" if role == "admin" else "denied"\n'
     return f"# {finding.vuln_type}\nresult = process(user_input)\n"
 
 
@@ -1053,4 +1113,5 @@ class CVEHunter:
             "cmd_injection": "Command Injection",
             "traversal": "Path Traversal",
             "crlf": "CRLF Injection",
+            "auth_bypass": "Authentication Bypass",
         }.get(vuln_type, vuln_type)

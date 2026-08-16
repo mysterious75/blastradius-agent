@@ -20,3 +20,5 @@ reports5000/*.zip
 reports5000/*.log
 reports5000/*.py
 payloads/*.json
+payloads/README.md
+tasks/

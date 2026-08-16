@@ -18,6 +18,7 @@ VALID_VULN_TYPES = {
     "cmd_injection",
     "traversal",
     "crlf",
+    "auth_bypass",
 }
 
 _TEMPLATE_FILES = {
@@ -30,6 +31,7 @@ _TEMPLATE_FILES = {
     "cmd_injection": "cmd_injection_exploit.py.template",
     "traversal": "traversal_exploit.py.template",
     "crlf": "crlf_exploit.py.template",
+    "auth_bypass": "auth_bypass_exploit.py.template",
 }
 
 
