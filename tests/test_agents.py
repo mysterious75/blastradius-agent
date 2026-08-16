@@ -9,12 +9,7 @@ from blastradius.agents.blackboard import Blackboard
 from blastradius.agents.orchestrator import AgentGraph
 from blastradius.agents.roles import ExploitAgent, ReconAgent
 
-CORPUS = (
-    Path(__file__).resolve().parent.parent
-    / "benchmarks"
-    / "corpus"
-    / "flask-sqli"
-)
+CORPUS = Path(__file__).resolve().parent.parent / "benchmarks" / "corpus" / "flask-sqli"
 
 
 def _vuln_copy() -> Path:
