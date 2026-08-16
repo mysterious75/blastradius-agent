@@ -399,9 +399,11 @@ labeled a candidate. Latest run (detection F1 / sandbox-proven):
 
 | Target | Expected | Reported | F1 | Proven (--verify) |
 |---|---|---|---|---|
+| flask-auth-bypass | 1 | 1 | 1.000 | 1/1 |
 | flask-cmd-injection | 1 | 1 | 1.000 | 1/1 |
 | flask-crlf | 1 | 1 | 1.000 | 1/1 |
 | flask-deserialization | 1 | 1 | 1.000 | 1/1 |
+| flask-idor | 1 | 1 | 1.000 | 1/1 |
 | flask-sqli | 1 | 1 | 1.000 | 1/1 |
 | flask-traversal | 1 | 1 | 1.000 | 1/1 |
 | flask-xss | 1 | 1 | 1.000 | 1/1 |
@@ -409,7 +411,7 @@ labeled a candidate. Latest run (detection F1 / sandbox-proven):
 | jinja-ssti | 1 | 1 | 1.000 | 0/1* |
 | lxml-xxe | 1 | 1 | 1.000 | 0/1* |
 | hardcoded-secrets | 1 | 1 | 1.000 | 0/1* |
-| **Total** | **10** | **10** | **1.000** | **7/10** |
+| **Total** | **12** | **12** | **1.000** | **9/12** |
 
 \* no exploit template yet — reported as candidate, never silently "proven".
 

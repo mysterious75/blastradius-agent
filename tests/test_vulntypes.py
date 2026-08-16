@@ -188,7 +188,8 @@ def test_reconstruct_idor_and_xxe_templates():
     idor = reconstruct_target_code(
         Finding(file="x.py", line=1, vuln_type="idor", payload="x", confidence=0.9)
     )
-    assert 'db.get(request.args.get("id"))' in idor
+    assert "def target(user_input):" in idor  # PoC-contract function
+    assert "records.get(user_input" in idor
     xxe = reconstruct_target_code(
         Finding(file="x.py", line=1, vuln_type="xxe", payload="x", confidence=0.9)
     )

@@ -728,28 +728,68 @@ def _score_auth_bypass(line: str, has_source: bool) -> float:
     return 0.85 if has_source else 0.75
 
 
-# IDOR: object-id read from user input, no authorization check nearby
+# IDOR: object-id read from user input, no authorization check nearby.
+# Multi-language sources (py/js/php/rb/java/go) + object-id names beyond "id".
+_IDOR_NAMES = (
+    r"(?:id|user_id|account_id|order_id|document_id|file_id|project_id|task_id|"
+    r"object_id|customer_id|org_id|team_id|payment_id|attachment_id|message_id|"
+    r"post_id|product_id|invoice_id|uuid)"
+)
 _IDOR_ID_SOURCES = [
-    r"request\.(?:args|form|values|get_json)\s*\([^)]*['\"]id['\"]",
-    r"getParameter\(\s*['\"]id['\"]",
+    rf"request\.(?:args|form|values|get_json)\s*\([^)]*['\"]{_IDOR_NAMES}['\"]",
+    rf"getParameter\(\s*['\"]{_IDOR_NAMES}['\"]",
+    r"@PathVariable\s*(?:\([^)]*\)\s*)?\w*(?:Id|ID|Uuid|UUID)\b",
+    rf"req\.(?:params|query|body)\.{_IDOR_NAMES}\b",
+    rf"params\[[:'\"]?{_IDOR_NAMES}[:'\"]?\]",
+    rf"\$_?(?:GET|POST|REQUEST)\s*\[['\"]{_IDOR_NAMES}['\"]\]",
+    rf"r\.URL\.Query\(\)\.Get\(['\"]{_IDOR_NAMES}['\"]\)",
+    rf"chi\.URLParam\([^)]*['\"]{_IDOR_NAMES}['\"]\)|mux\.Vars\([^)]*\)\[['\"]{_IDOR_NAMES}['\"]\]",
     r"['\"][^'\"]*<int:[^'\"]*>['\"]",
     r"request\.view_args",
-    r"\bid\s*=\s*request\.",
+    rf"\b{_IDOR_NAMES}\s*=\s*(?:request\.|req\.|context\.|r\.FormValue)",
 ]
+# Authorization markers: auth decorators + object-level ownership checks.
 _IDOR_AUTH = [
-    r"@login_required",
-    r"login_required",
-    r"current_user",
-    r"is_authenticated",
-    r"require_auth",
-    r"permission",
-    r"has_access",
-    r"request\.auth",
-    r"jwt\.require",
-    r"check_permission",
-    r"\bsession\b",
-    r"roles_required",
+    r"@?login_required|@?authenticated|@?auth\b|requires?_(?:auth|authentication)|"
+    r"is_authenticated|current_user|request\.user|req\.user|session\[|req\.session|"
+    r"\$_SESSION|jwt_required|@?jwt\.require|token_required|oauth2\.require",
+    r"@?permission_required|has_permission|check_permission|permission\b|@?roles_required|"
+    r"require_role|can_access|authorize|authorized|@admin_required|is_admin\b",
+    r"is_owner|ownership|check_owner|assert_owner|verify_owner|belongs_to|"
+    r"filter\([^)]*(?:user|owner|account|org|team)[^)]*\)|\.where\([^)]*(?:user_id|owner_id)",
+    r"user_id\s*==|owner_id\s*==|==\s*current_user|current_user\.(?:id|uuid|uid)\s*==",
 ]
+_FUNC_START = {
+    "py": re.compile(r"^\s*def\s+"),
+    "rb": re.compile(r"^\s*def\s+"),
+    "php": re.compile(r"^\s*function\s+\w+\s*\("),
+    "js": re.compile(
+        r"^\s*(?:function\s*\w*\s*\(|(?:async\s+)?\(\s*[\w\s,$]*\)\s*=>|"
+        r"(?:app|router|server)\.(?:get|post|put|delete|patch|use)\s*\(.*=>)"
+    ),
+    "ts": re.compile(
+        r"^\s*(?:function\s*\w*\s*\(|(?:async\s+)?\(\s*[\w\s,$]*\)\s*=>|"
+        r"(?:app|router|server)\.(?:get|post|put|delete|patch|use)\s*\(.*=>)"
+    ),
+    "tsx": re.compile(
+        r"^\s*(?:function\s*\w*\s*\(|(?:async\s+)?\(\s*[\w\s,$]*\)\s*=>|"
+        r"(?:app|router|server)\.(?:get|post|put|delete|patch|use)\s*\(.*=>)"
+    ),
+    "jsx": re.compile(
+        r"^\s*(?:function\s*\w*\s*\(|(?:async\s+)?\(\s*[\w\s,$]*\)\s*=>|"
+        r"(?:app|router|server)\.(?:get|post|put|delete|patch|use)\s*\(.*=>)"
+    ),
+    "go": re.compile(r"^\s*func\s+"),
+    "java": re.compile(
+        r"^\s*(?:public|private|protected)\s+(?:static\s+)?[\w<>,\[\]\s]+\([^)]*\)\s*\{?"
+    ),
+}
+# Direct route/id signals raise IDOR confidence
+_IDOR_HIGH_CONF = re.compile(
+    r"getParameter|@PathVariable|<int:|view_args|req\.params|mux\.Vars|chi\.URLParam|"
+    r"URL\.Query\(\)|r\.FormValue",
+    re.I,
+)
 
 
 def _score_lang_xss(line: str, lang: str, has_source: bool) -> float:
@@ -799,7 +839,11 @@ def reconstruct_target_code(finding: Finding) -> str:
     if finding.vuln_type == "graphql":
         return '# GraphQL resolver\nresult = db.execute("{}".format(user_input))\n'
     if finding.vuln_type == "idor":
-        return '# IDOR\nobj = db.get(request.args.get("id"))\n'
+        return (
+            "def target(user_input):\n"
+            '    records = {"1": "alice-private-data", "2": "bob-private-data"}\n'
+            '    return records.get(user_input, "not found")\n'
+        )
     if finding.vuln_type == "jwt":
         return '# JWT\nimport jwt\ndata = jwt.decode(token, options={"verify_signature": False})\n'
     if finding.vuln_type == "xxe":
@@ -1055,46 +1099,49 @@ class CVEHunter:
             lang_score = _score_lang_xss(line, lang, has_source)
             if lang_score >= self._learned_threshold("xss"):
                 findings.append(self._make_finding(path, idx, lines, "xss", lang_score))
-        if lang == "py":
-            findings.extend(self._scan_idor_py(lines, path))
+        if lang in _FUNC_START:
+            findings.extend(self._scan_idor(lines, path, lang))
         return findings
 
-    def _scan_idor_py(self, lines: list, path: Path) -> List[Finding]:
-        """Function-level IDOR check: id read from user input without auth markers."""
+    def _scan_idor(self, lines: list, path: Path, lang: str) -> List[Finding]:
+        """Function-level IDOR check: object-id from user input, no auth/ownership
+        check in the function (multi-language)."""
         findings: List[Finding] = []
         n = len(lines)
         i = 0
         while i < n:
-            stripped = lines[i].strip()
-            if not stripped.startswith("def "):
+            if not _FUNC_START[lang].search(lines[i]):
                 i += 1
                 continue
 
-            # collect decorators directly above the def
+            # collect decorators/annotations directly above the function
             j = i
             decorators = []
-            while j > 0 and lines[j - 1].strip().startswith("@"):
+            while j > 0 and lines[j - 1].strip().startswith(("@", "@@")):
                 decorators.insert(0, lines[j - 1])
                 j -= 1
 
-            # collect body until the next def at the same/lower indentation
+            # collect the body until the next function at the same/lower indentation
             base = len(lines[i]) - len(lines[i].lstrip())
             k = i + 1
             while k < n:
                 l2 = lines[k]
-                if (
-                    l2.strip()
-                    and (len(l2) - len(l2.lstrip())) <= base
-                    and not l2.strip().startswith((")", "]", "}"))
-                ):
-                    break
+                if l2.strip() and (len(l2) - len(l2.lstrip())) <= base:
+                    if _FUNC_START[lang].search(l2) or (
+                        lang == "java"
+                        and l2.strip().startswith(("@", "public", "private", "protected"))
+                    ):
+                        break
+                    if not l2.strip().startswith((")", "]", "}")):
+                        break
                 k += 1
 
             func_text = "\n".join(decorators + [lines[i]] + lines[i + 1 : k])
             has_id = any(re.search(p, func_text, re.I) for p in _IDOR_ID_SOURCES)
             has_auth = any(re.search(p, func_text, re.I) for p in _IDOR_AUTH)
             if has_id and not has_auth:
-                findings.append(self._make_finding(path, i + 1, lines, "idor", 0.75))
+                confidence = 0.8 if _IDOR_HIGH_CONF.search(func_text) else 0.75
+                findings.append(self._make_finding(path, i + 1, lines, "idor", confidence))
             i = k
         return findings
 
