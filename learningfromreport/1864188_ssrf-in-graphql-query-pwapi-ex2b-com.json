@@ -1,0 +1,190 @@
+{
+  "id": 1864188,
+  "global_id": "Z2lkOi8vaGFja2Vyb25lL1JlcG9ydC8xODY0MTg4",
+  "url": "https://hackerone.com/reports/1864188",
+  "title": "SSRF in graphQL query (pwapi.ex2b.com)",
+  "state": "Closed",
+  "substate": "resolved",
+  "severity_rating": "medium",
+  "readable_substate": "Resolved",
+  "created_at": "2023-02-06T20:03:33.604Z",
+  "submitted_at": "2023-02-06T20:03:33.719Z",
+  "is_member_of_team?": false,
+  "is_organization_group_member?": false,
+  "is_triager?": false,
+  "reporter": {
+    "disabled": false,
+    "username": "kirtixs",
+    "url": "/kirtixs",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/000/003/538/032d1bb5577195a464c0c446919601207f50ed5a_original.jpg/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6"
+    },
+    "is_me?": false,
+    "cleared": false,
+    "verified": false,
+    "hackerone_triager": false,
+    "hacker_mediation": false
+  },
+  "team": {
+    "id": 12719,
+    "url": "https://hackerone.com/exness",
+    "handle": "exness",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/nqcs1q40b15orz664sixj9ltiejh/b8e19a7691128fca51630d7f5b14644b91b3b45324f6fd488e36244d744fe35b",
+      "medium": "https://profile-photos.hackerone-user-content.com/variants/nqcs1q40b15orz664sixj9ltiejh/89f037b490baf3dcca1b84283f4c85141b64c213252a9c79b56c62bf903ab542"
+    },
+    "permissions": [],
+    "submission_state": "open",
+    "default_currency": "usd",
+    "awards_miles": false,
+    "offers_bounties": true,
+    "state": "public_mode",
+    "only_cleared_hackers": false,
+    "pentest_feature_enabled?": false,
+    "pentest_retesting_ends_at": null,
+    "profile": {
+      "name": "EXNESS",
+      "twitter_handle": "",
+      "website": "https://www.exness.com",
+      "about": "We offer better-than-market conditions on currencies, crypto, stocks, indices, metals, and commodities."
+    }
+  },
+  "has_bounty?": true,
+  "can_view_team": true,
+  "can_view_report": true,
+  "is_external_bug": false,
+  "is_published": false,
+  "is_participant": false,
+  "has_collaborators": false,
+  "submitted_by_team_member": false,
+  "submitted_with_assistant": false,
+  "stage": 4,
+  "public": true,
+  "visibility": "full",
+  "cve_ids": [],
+  "singular_disclosure_disabled": true,
+  "disclosed_at": "2023-07-24T21:12:10.112Z",
+  "bug_reporter_agreed_on_going_public_at": "2023-07-24T21:12:10.037Z",
+  "team_member_agreed_on_going_public_at": "2023-07-22T08:48:08.071Z",
+  "comments_closed?": false,
+  "facebook_team?": false,
+  "team_private?": false,
+  "vulnerability_information": "## Summary:\nThe query for `allTicks` allows setting the parameter `source` that is used to do `GET` requests,  this can be set arbitrarily .\n\n## Steps to Reproduce:\n\n  1. Use a service like burp collaborator to observer incoming requests. \n  2. Replace my domain with your burp collaborator domain and execute the graphQL request.\n\n{F2158013}\n  3. Observer incoming DNS and HTTP requests.\n\n{F2158005}{F2158006}\n\nPlease note that the `source` parameter in the graphQL request can be a full URL so that any `GET` request is possible.\n\n{F2158024}{F2158025}\n\n\n\n## Impact\nThe SSRF vulnerability can be used to potentially compromise internal services that are exposed to internal network requests. Unfortunately, HTTP responses are not returned,  but an attacker can still gather information about open ports and perform blind HTTP `GET` requests against internal services, potentially help in finding more severe vulnerabilities on internal network services.\n\n## Mitigation\nThe application must only accept servers on an explicit allow list. This will mitigate SSRF attacks.\n\n## Impact\n\nThe SSRF vulnerability can be used to potentially compromise internal services that are exposed to internal network requests. Unfortunately, HTTP responses are not returned,  but an attacker can still gather information about open ports and perform blind HTTP get-reqeusts against services that are running on these ports, potentially help in finding more severe vulnerabilities on internal network services.",
+  "bounty_amount": "3000.0",
+  "formatted_bounty": "$3,000",
+  "weakness": {
+    "id": 68,
+    "name": "Server-Side Request Forgery (SSRF)"
+  },
+  "original_report_id": null,
+  "original_report_url": null,
+  "attachments": [
+    {
+      "id": 2158005,
+      "file_name": "http.png",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/ec8t9qj7rm2dcd0ha8qbh60fxyuh?response-content-disposition=attachment%3B%20filename%3D%22http.png%22%3B%20filename%2A%3DUTF-8%27%27http.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQZYMDWD6I%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T115952Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJHMEUCIQD8wlCBwXML07xCZra2gYDcR0rDVRaT3pt2%2FriYTH8K7QIgNtpHTLWHqBrp%2BpUheKOfz64KHOmCNaieEVe5%2B6RfVSQqsQUILBADGgwwMTM2MTkyNzQ4NDkiDKJ8ix0AnPr9y3XU%2FCqOBWPpq5%2FSrVxkUBP8fey8Vkaxy4tvvya4y53XbHWKtcmM6tHSDLM0h6D6mr4amJtEuhpGRvcbY2%2FPd148tTp7QN8%2FCxLWhvxO0Tw5XzwiJk1KFjGtckAQzy5v32RcJgmF96ergplTSTTp%2BNT86KmvZdsRrV4w9Rv%2Bp0ZcRSTT1VQoWi4FpADp%2FFaIGQ8ANSKo2re%2BuOGj3hxvTpVot5Hr%2BO3ruq8EskA%2Bo7mfx60DU13OFlbL9NOXte5AbEnjYIBG44YIG2aC3E3b6XpUd%2FP%2Fs2D8CVZ6kcScajgBA%2F5TvLPpkz4kzrCKdu1BAuEGxGWPBN01M8Mcts2xqHilc6yChT88Vz81hlgnUNAQa9kZ%2FqJoGod3fRlpFeBLuAuMm22%2BBGcZ7CW17JeWTODbIz8f9kEiqYTPqGhLnV3ARyBv0Z3JzqjP7cQkN27xQ4Efh3kDPgUkGqVFZr2%2FVNoEQxF26bf2wxEgnqCWSk3lVgEMNCevgtUS3OXEFGAfpl15kI2qEh%2BZTxGLMdyXsWsD1tspZc6ofan345mRqw9HMy6oAOVwxihLUme%2BSJEZiAXjWuHYj3h1bYj743FmMeqqqaFjNI9fe12TpJVEu6usBB4egrUeULfIPAhwsY%2BKXoibatvtgbLcl4%2B%2FU42fAnb5UsBRI7iGWIsAjssz9LIowZPNUMYH3%2FM9phrfr8n1dF4A4L2%2BEl9llBHw0pfyCciQTWLiKY0zjUDyLK54J%2Bafpm4tP7PacICv1GKZJ4Cb3QEQAVpIXSsmM9p2ekThG9XbzRrZFp7Y2PZrjrpyB7QiYqOkvg%2Fqz5T%2B%2FDkr3c1yHzbHN6MRJzb9qK%2FXkYUEyUz5ncpW1xAP0EzADLHIAY59TrjLUDD7pobUBjqxAbNp%2FMh7tUgbbxUzMPvSV9ehrYMu72zqFuLVatToesw9JyYR%2FFtqk8e%2BGC4MZo%2Bp2g367JLZIRWfHiRqbvNHL6IGqC0GoUYxDMIEhuUow09ceozLmLQfYPpNLCUAJp14GmTwY9tCOao42eNxk9c85a1BfjGMtFBdcoKA8iq95w54S3eu3CCnPIgcgZPazHqxIJi1rS%2FyMUqoRyfvASrpFyIA1%2BrEQsP7R6yWL%2FcWmbuqSg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=f86ad2eee488fff8d966bc9652b1dbf0eacb07ecf413e78e6db68c2eec0afc8d",
+      "file_size": 33914,
+      "type": "image/png",
+      "moderated": null
+    },
+    {
+      "id": 2158006,
+      "file_name": "dns.png",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/yo5tcvzgp0s7069l8tyneox6k5pz?response-content-disposition=attachment%3B%20filename%3D%22dns.png%22%3B%20filename%2A%3DUTF-8%27%27dns.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQZYMDWD6I%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T115952Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJHMEUCIQD8wlCBwXML07xCZra2gYDcR0rDVRaT3pt2%2FriYTH8K7QIgNtpHTLWHqBrp%2BpUheKOfz64KHOmCNaieEVe5%2B6RfVSQqsQUILBADGgwwMTM2MTkyNzQ4NDkiDKJ8ix0AnPr9y3XU%2FCqOBWPpq5%2FSrVxkUBP8fey8Vkaxy4tvvya4y53XbHWKtcmM6tHSDLM0h6D6mr4amJtEuhpGRvcbY2%2FPd148tTp7QN8%2FCxLWhvxO0Tw5XzwiJk1KFjGtckAQzy5v32RcJgmF96ergplTSTTp%2BNT86KmvZdsRrV4w9Rv%2Bp0ZcRSTT1VQoWi4FpADp%2FFaIGQ8ANSKo2re%2BuOGj3hxvTpVot5Hr%2BO3ruq8EskA%2Bo7mfx60DU13OFlbL9NOXte5AbEnjYIBG44YIG2aC3E3b6XpUd%2FP%2Fs2D8CVZ6kcScajgBA%2F5TvLPpkz4kzrCKdu1BAuEGxGWPBN01M8Mcts2xqHilc6yChT88Vz81hlgnUNAQa9kZ%2FqJoGod3fRlpFeBLuAuMm22%2BBGcZ7CW17JeWTODbIz8f9kEiqYTPqGhLnV3ARyBv0Z3JzqjP7cQkN27xQ4Efh3kDPgUkGqVFZr2%2FVNoEQxF26bf2wxEgnqCWSk3lVgEMNCevgtUS3OXEFGAfpl15kI2qEh%2BZTxGLMdyXsWsD1tspZc6ofan345mRqw9HMy6oAOVwxihLUme%2BSJEZiAXjWuHYj3h1bYj743FmMeqqqaFjNI9fe12TpJVEu6usBB4egrUeULfIPAhwsY%2BKXoibatvtgbLcl4%2B%2FU42fAnb5UsBRI7iGWIsAjssz9LIowZPNUMYH3%2FM9phrfr8n1dF4A4L2%2BEl9llBHw0pfyCciQTWLiKY0zjUDyLK54J%2Bafpm4tP7PacICv1GKZJ4Cb3QEQAVpIXSsmM9p2ekThG9XbzRrZFp7Y2PZrjrpyB7QiYqOkvg%2Fqz5T%2B%2FDkr3c1yHzbHN6MRJzb9qK%2FXkYUEyUz5ncpW1xAP0EzADLHIAY59TrjLUDD7pobUBjqxAbNp%2FMh7tUgbbxUzMPvSV9ehrYMu72zqFuLVatToesw9JyYR%2FFtqk8e%2BGC4MZo%2Bp2g367JLZIRWfHiRqbvNHL6IGqC0GoUYxDMIEhuUow09ceozLmLQfYPpNLCUAJp14GmTwY9tCOao42eNxk9c85a1BfjGMtFBdcoKA8iq95w54S3eu3CCnPIgcgZPazHqxIJi1rS%2FyMUqoRyfvASrpFyIA1%2BrEQsP7R6yWL%2FcWmbuqSg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=e0051478ee7b508d0aafa12c419b6b333b404be38aedc4cef641fe04df9d8497",
+      "file_size": 33889,
+      "type": "image/png",
+      "moderated": null
+    },
+    {
+      "id": 2158013,
+      "file_name": "request1.png",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/x52p3bkv3prvf1gr36th9gmrd3eh?response-content-disposition=attachment%3B%20filename%3D%22request1.png%22%3B%20filename%2A%3DUTF-8%27%27request1.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQZYMDWD6I%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T115952Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJHMEUCIQD8wlCBwXML07xCZra2gYDcR0rDVRaT3pt2%2FriYTH8K7QIgNtpHTLWHqBrp%2BpUheKOfz64KHOmCNaieEVe5%2B6RfVSQqsQUILBADGgwwMTM2MTkyNzQ4NDkiDKJ8ix0AnPr9y3XU%2FCqOBWPpq5%2FSrVxkUBP8fey8Vkaxy4tvvya4y53XbHWKtcmM6tHSDLM0h6D6mr4amJtEuhpGRvcbY2%2FPd148tTp7QN8%2FCxLWhvxO0Tw5XzwiJk1KFjGtckAQzy5v32RcJgmF96ergplTSTTp%2BNT86KmvZdsRrV4w9Rv%2Bp0ZcRSTT1VQoWi4FpADp%2FFaIGQ8ANSKo2re%2BuOGj3hxvTpVot5Hr%2BO3ruq8EskA%2Bo7mfx60DU13OFlbL9NOXte5AbEnjYIBG44YIG2aC3E3b6XpUd%2FP%2Fs2D8CVZ6kcScajgBA%2F5TvLPpkz4kzrCKdu1BAuEGxGWPBN01M8Mcts2xqHilc6yChT88Vz81hlgnUNAQa9kZ%2FqJoGod3fRlpFeBLuAuMm22%2BBGcZ7CW17JeWTODbIz8f9kEiqYTPqGhLnV3ARyBv0Z3JzqjP7cQkN27xQ4Efh3kDPgUkGqVFZr2%2FVNoEQxF26bf2wxEgnqCWSk3lVgEMNCevgtUS3OXEFGAfpl15kI2qEh%2BZTxGLMdyXsWsD1tspZc6ofan345mRqw9HMy6oAOVwxihLUme%2BSJEZiAXjWuHYj3h1bYj743FmMeqqqaFjNI9fe12TpJVEu6usBB4egrUeULfIPAhwsY%2BKXoibatvtgbLcl4%2B%2FU42fAnb5UsBRI7iGWIsAjssz9LIowZPNUMYH3%2FM9phrfr8n1dF4A4L2%2BEl9llBHw0pfyCciQTWLiKY0zjUDyLK54J%2Bafpm4tP7PacICv1GKZJ4Cb3QEQAVpIXSsmM9p2ekThG9XbzRrZFp7Y2PZrjrpyB7QiYqOkvg%2Fqz5T%2B%2FDkr3c1yHzbHN6MRJzb9qK%2FXkYUEyUz5ncpW1xAP0EzADLHIAY59TrjLUDD7pobUBjqxAbNp%2FMh7tUgbbxUzMPvSV9ehrYMu72zqFuLVatToesw9JyYR%2FFtqk8e%2BGC4MZo%2Bp2g367JLZIRWfHiRqbvNHL6IGqC0GoUYxDMIEhuUow09ceozLmLQfYPpNLCUAJp14GmTwY9tCOao42eNxk9c85a1BfjGMtFBdcoKA8iq95w54S3eu3CCnPIgcgZPazHqxIJi1rS%2FyMUqoRyfvASrpFyIA1%2BrEQsP7R6yWL%2FcWmbuqSg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=19549cc156197517b04f12edd01c2ffe943f9df27fc2cfc00938621076c01cdc",
+      "file_size": 374113,
+      "type": "image/png",
+      "moderated": null
+    },
+    {
+      "id": 2158024,
+      "file_name": "admin-example-1.png",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/2um8l9fiqnxdl7gnvjpab2kh5ekg?response-content-disposition=attachment%3B%20filename%3D%22admin-example-1.png%22%3B%20filename%2A%3DUTF-8%27%27admin-example-1.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQZYMDWD6I%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T115952Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJHMEUCIQD8wlCBwXML07xCZra2gYDcR0rDVRaT3pt2%2FriYTH8K7QIgNtpHTLWHqBrp%2BpUheKOfz64KHOmCNaieEVe5%2B6RfVSQqsQUILBADGgwwMTM2MTkyNzQ4NDkiDKJ8ix0AnPr9y3XU%2FCqOBWPpq5%2FSrVxkUBP8fey8Vkaxy4tvvya4y53XbHWKtcmM6tHSDLM0h6D6mr4amJtEuhpGRvcbY2%2FPd148tTp7QN8%2FCxLWhvxO0Tw5XzwiJk1KFjGtckAQzy5v32RcJgmF96ergplTSTTp%2BNT86KmvZdsRrV4w9Rv%2Bp0ZcRSTT1VQoWi4FpADp%2FFaIGQ8ANSKo2re%2BuOGj3hxvTpVot5Hr%2BO3ruq8EskA%2Bo7mfx60DU13OFlbL9NOXte5AbEnjYIBG44YIG2aC3E3b6XpUd%2FP%2Fs2D8CVZ6kcScajgBA%2F5TvLPpkz4kzrCKdu1BAuEGxGWPBN01M8Mcts2xqHilc6yChT88Vz81hlgnUNAQa9kZ%2FqJoGod3fRlpFeBLuAuMm22%2BBGcZ7CW17JeWTODbIz8f9kEiqYTPqGhLnV3ARyBv0Z3JzqjP7cQkN27xQ4Efh3kDPgUkGqVFZr2%2FVNoEQxF26bf2wxEgnqCWSk3lVgEMNCevgtUS3OXEFGAfpl15kI2qEh%2BZTxGLMdyXsWsD1tspZc6ofan345mRqw9HMy6oAOVwxihLUme%2BSJEZiAXjWuHYj3h1bYj743FmMeqqqaFjNI9fe12TpJVEu6usBB4egrUeULfIPAhwsY%2BKXoibatvtgbLcl4%2B%2FU42fAnb5UsBRI7iGWIsAjssz9LIowZPNUMYH3%2FM9phrfr8n1dF4A4L2%2BEl9llBHw0pfyCciQTWLiKY0zjUDyLK54J%2Bafpm4tP7PacICv1GKZJ4Cb3QEQAVpIXSsmM9p2ekThG9XbzRrZFp7Y2PZrjrpyB7QiYqOkvg%2Fqz5T%2B%2FDkr3c1yHzbHN6MRJzb9qK%2FXkYUEyUz5ncpW1xAP0EzADLHIAY59TrjLUDD7pobUBjqxAbNp%2FMh7tUgbbxUzMPvSV9ehrYMu72zqFuLVatToesw9JyYR%2FFtqk8e%2BGC4MZo%2Bp2g367JLZIRWfHiRqbvNHL6IGqC0GoUYxDMIEhuUow09ceozLmLQfYPpNLCUAJp14GmTwY9tCOao42eNxk9c85a1BfjGMtFBdcoKA8iq95w54S3eu3CCnPIgcgZPazHqxIJi1rS%2FyMUqoRyfvASrpFyIA1%2BrEQsP7R6yWL%2FcWmbuqSg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=e1e68f0675ed9027f29c25f01b8e1d6065f186a4cf45f3c5660c6053b2ead0d9",
+      "file_size": 38758,
+      "type": "image/png",
+      "moderated": null
+    },
+    {
+      "id": 2158025,
+      "file_name": "admin-example-2.png",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/gvyxvo6vsxkkanbgm5u1gli8cdw6?response-content-disposition=attachment%3B%20filename%3D%22admin-example-2.png%22%3B%20filename%2A%3DUTF-8%27%27admin-example-2.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQZYMDWD6I%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T115952Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJHMEUCIQD8wlCBwXML07xCZra2gYDcR0rDVRaT3pt2%2FriYTH8K7QIgNtpHTLWHqBrp%2BpUheKOfz64KHOmCNaieEVe5%2B6RfVSQqsQUILBADGgwwMTM2MTkyNzQ4NDkiDKJ8ix0AnPr9y3XU%2FCqOBWPpq5%2FSrVxkUBP8fey8Vkaxy4tvvya4y53XbHWKtcmM6tHSDLM0h6D6mr4amJtEuhpGRvcbY2%2FPd148tTp7QN8%2FCxLWhvxO0Tw5XzwiJk1KFjGtckAQzy5v32RcJgmF96ergplTSTTp%2BNT86KmvZdsRrV4w9Rv%2Bp0ZcRSTT1VQoWi4FpADp%2FFaIGQ8ANSKo2re%2BuOGj3hxvTpVot5Hr%2BO3ruq8EskA%2Bo7mfx60DU13OFlbL9NOXte5AbEnjYIBG44YIG2aC3E3b6XpUd%2FP%2Fs2D8CVZ6kcScajgBA%2F5TvLPpkz4kzrCKdu1BAuEGxGWPBN01M8Mcts2xqHilc6yChT88Vz81hlgnUNAQa9kZ%2FqJoGod3fRlpFeBLuAuMm22%2BBGcZ7CW17JeWTODbIz8f9kEiqYTPqGhLnV3ARyBv0Z3JzqjP7cQkN27xQ4Efh3kDPgUkGqVFZr2%2FVNoEQxF26bf2wxEgnqCWSk3lVgEMNCevgtUS3OXEFGAfpl15kI2qEh%2BZTxGLMdyXsWsD1tspZc6ofan345mRqw9HMy6oAOVwxihLUme%2BSJEZiAXjWuHYj3h1bYj743FmMeqqqaFjNI9fe12TpJVEu6usBB4egrUeULfIPAhwsY%2BKXoibatvtgbLcl4%2B%2FU42fAnb5UsBRI7iGWIsAjssz9LIowZPNUMYH3%2FM9phrfr8n1dF4A4L2%2BEl9llBHw0pfyCciQTWLiKY0zjUDyLK54J%2Bafpm4tP7PacICv1GKZJ4Cb3QEQAVpIXSsmM9p2ekThG9XbzRrZFp7Y2PZrjrpyB7QiYqOkvg%2Fqz5T%2B%2FDkr3c1yHzbHN6MRJzb9qK%2FXkYUEyUz5ncpW1xAP0EzADLHIAY59TrjLUDD7pobUBjqxAbNp%2FMh7tUgbbxUzMPvSV9ehrYMu72zqFuLVatToesw9JyYR%2FFtqk8e%2BGC4MZo%2Bp2g367JLZIRWfHiRqbvNHL6IGqC0GoUYxDMIEhuUow09ceozLmLQfYPpNLCUAJp14GmTwY9tCOao42eNxk9c85a1BfjGMtFBdcoKA8iq95w54S3eu3CCnPIgcgZPazHqxIJi1rS%2FyMUqoRyfvASrpFyIA1%2BrEQsP7R6yWL%2FcWmbuqSg%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=174d78737ac5aa197f095712f2d22b7fe9180e80bdd7f0e1573ca64c7a9262de",
+      "file_size": 60567,
+      "type": "image/png",
+      "moderated": null
+    }
+  ],
+  "allow_singular_disclosure_at": null,
+  "vote_count": 259,
+  "voters": [
+    "svlpmk",
+    "g3ksec",
+    "luigivampa10",
+    "loaymorad",
+    "pr4v1n_",
+    "orange303",
+    "defenderwww",
+    "k0ns0l",
+    "m4khn0",
+    "achabi7",
+    "and 249 more..."
+  ],
+  "severity": {
+    "rating": "medium",
+    "author_type": "Team"
+  },
+  "structured_scope": {
+    "databaseId": 440319,
+    "asset_type": "URL",
+    "asset_identifier": "pwapi.ex2b.com",
+    "max_severity": "critical"
+  },
+  "abilities": {
+    "assignable_team_members": [],
+    "assignable_team_member_groups": []
+  },
+  "is_exploit_agent_supported?": false,
+  "is_linear_agent_ui_supported?": false,
+  "summaries": [
+    {
+      "id": 325101,
+      "category": "team",
+      "content": "SSRF in one of the graphQL parameters.",
+      "updated_at": "2023-07-26T07:03:28.194Z",
+      "can_view?": true,
+      "can_create?": false,
+      "attachments": [],
+      "user": {
+        "id": 2693042,
+        "username": "exe_cut3_exness",
+        "name": "Alex ",
+        "bio": "",
+        "cleared": false,
+        "verified": false,
+        "website": null,
+        "location": "",
+        "created_at": "2023-05-12T08:50:50.561Z",
+        "url": "https://hackerone.com/exe_cut3_exness",
+        "hackerone_triager": false,
+        "hackerone_employee": false,
+        "user_type": "company",
+        "profile_picture_urls": {
+          "small": "https://profile-photos.hackerone-user-content.com/variants/p020xmy6spmb9l08r49r40fc7gma/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6",
+          "medium": "https://profile-photos.hackerone-user-content.com/variants/p020xmy6spmb9l08r49r40fc7gma/1d3351b56b27c9bb56ce22821a57514a7210186a77aefb760cd2113272723c1f",
+          "xtralarge": "https://profile-photos.hackerone-user-content.com/variants/p020xmy6spmb9l08r49r40fc7gma/5d27521e1b671a8e8bc4f016cace6a876120e5addf7dcc35ae4a5eac091669a9"
+        }
+      }
+    },
+    {
+      "category": "researcher",
+      "can_view?": true,
+      "can_create?": false
+    }
+  ]
+}

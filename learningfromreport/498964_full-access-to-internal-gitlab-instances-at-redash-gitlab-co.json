@@ -1,0 +1,169 @@
+{
+  "id": 498964,
+  "global_id": "Z2lkOi8vaGFja2Vyb25lL1JlcG9ydC80OTg5NjQ=",
+  "url": "https://hackerone.com/reports/498964",
+  "title": "Full access to internal Gitlab instances at redash.gitlab.com, dashboards.gitlab.com, prometheus.gitlab.com",
+  "state": "Closed",
+  "substate": "resolved",
+  "severity_rating": "critical",
+  "readable_substate": "Resolved",
+  "created_at": "2019-02-21T00:34:23.084Z",
+  "submitted_at": "2019-02-21T00:34:23.084Z",
+  "is_member_of_team?": false,
+  "is_organization_group_member?": false,
+  "is_triager?": false,
+  "reporter": {
+    "disabled": false,
+    "username": "rijalrojan",
+    "url": "/rijalrojan",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/fBoPSSRSdMDTghBJexdu4AwG/b8e19a7691128fca51630d7f5b14644b91b3b45324f6fd488e36244d744fe35b"
+    },
+    "is_me?": false,
+    "cleared": false,
+    "verified": false,
+    "hackerone_triager": false,
+    "hacker_mediation": false
+  },
+  "team": {
+    "id": 264,
+    "url": "https://hackerone.com/gitlab",
+    "handle": "gitlab",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/f0hovtq73f9ap815a0r1w42bocp4/b8e19a7691128fca51630d7f5b14644b91b3b45324f6fd488e36244d744fe35b",
+      "medium": "https://profile-photos.hackerone-user-content.com/variants/f0hovtq73f9ap815a0r1w42bocp4/89f037b490baf3dcca1b84283f4c85141b64c213252a9c79b56c62bf903ab542"
+    },
+    "permissions": [],
+    "submission_state": "open",
+    "default_currency": "usd",
+    "awards_miles": false,
+    "offers_bounties": true,
+    "state": "public_mode",
+    "only_cleared_hackers": false,
+    "pentest_feature_enabled?": false,
+    "pentest_retesting_ends_at": null,
+    "profile": {
+      "name": "GitLab",
+      "twitter_handle": "gitlab",
+      "website": "https://about.gitlab.com",
+      "about": "A single application for the entire software development lifecycle."
+    }
+  },
+  "has_bounty?": true,
+  "can_view_team": true,
+  "can_view_report": true,
+  "is_external_bug": false,
+  "is_published": false,
+  "is_participant": false,
+  "has_collaborators": true,
+  "submitted_by_team_member": false,
+  "submitted_with_assistant": false,
+  "stage": 4,
+  "public": true,
+  "visibility": "full",
+  "cve_ids": [],
+  "singular_disclosure_disabled": true,
+  "disclosed_at": "2019-04-19T09:46:26.556Z",
+  "bug_reporter_agreed_on_going_public_at": "2019-04-16T15:48:53.140Z",
+  "team_member_agreed_on_going_public_at": "2019-04-19T09:46:26.440Z",
+  "comments_closed?": false,
+  "facebook_team?": false,
+  "team_private?": false,
+  "vulnerability_information": "**Summary:**\nLack of proper ticket trick security leads to internal access on Gitlab instances. **I did not use support.gitlab.com instead just using support@gitlab.com email was suffice. \n\n**Description:**\n\n*Getting a support@gitlab.com Google Account*\n\nAfter the Ticket Trick attack that Inti reported and disclosed, many companies including Gitlab added proper security measures to prevent this kind of attack. What companies did not realize is that Zendesk has a feature that can be exploited by attackers other than the CC feature. \n\nIn this case, Gitlab has blocked sending emails to support+*@gitlab.com which prevents Ticket Trick that Inti came up with. However, the CC feature along with the Zendesk's feature can lead to further exploitation. \n\nTo begin with, I sent an email to support@gitlab.com. After this, an automated reply was sent by Gitlab with confirmation that my ticket went through. Next, I went to accounts.google.com and registered support@gitlab.com. For the firstname and last name I copied a special hash for the ticket. Zendesk as a feature has a special hash for each ticket that is generated in the system This hash is like the key in a dictionary and can be used to add more content to the ticket. So by getting that hash and sending the request, Google allegedly sends an email to verify.\n\nWhat happened here was due to Zendesk's own security measures, the first email from Google will be set as private because they are not CCed to my ticket. So then, I replied to the support ticket from Gitlab and in CC put noreply@google.com. Once this was done, I replayed the request in Google and again tried to verify `support@gitlab.com` this time the ticket had the verification code public. \n\n{F427388}\n\nIf you check the image on the top right corner you can see the hash repeated twice because I put that as a first and last name. \n\nOnce this was done, I had a verified support@gitlab.com email. \n\n{F427390}\n\nNext, I went to crt.sh to search for gitlab.com domains and found 3 domains that stood out: \n\n* prometheus.gitlab.com\n{F427391}\n\n* redash.gitlab.com \n{F427393}\n\n* dashboards.gitlab.com\n{F427395}\n\n## Impact\n\nGetting access to internal applications.",
+  "weakness": {
+    "id": 128,
+    "name": "Incorrect Authorization"
+  },
+  "original_report_id": null,
+  "original_report_url": null,
+  "attachments": [
+    {
+      "id": 427395,
+      "file_name": "grafana.PNG",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/000/427/395/076f26b9650ed27dc6cbaec3c2c7d5d40c0aa6ca/grafana.PNG?response-content-disposition=attachment%3B%20filename%3D%22grafana.PNG%22%3B%20filename%2A%3DUTF-8%27%27grafana.PNG&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQ2NN3P4E6%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T115921Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGQaCXVzLXdlc3QtMiJGMEQCIDHaP0VafQSgYaiU9AI6zH93%2FKGGugHoiuNQsWBWiHHhAiBQNtRfh9AqdxLrtMUwAZ03fCIZJ%2B0T83nR3H7q0QRbvCqyBQgtEAMaDDAxMzYxOTI3NDg0OSIMqFjnyrY4cJg7mULMKo8Fzonp8RK%2FgCJMN%2FmJ5q3n5do%2FEJ798Fi2ZAPnopO3kG9ZvksHkDQB%2Bmj793cGLg7QpcevI3jeLFsyN1Vl2ZPxXasdeWtim%2Bd%2BaawjJidoTA8SpieXcppcDpyVegycGCmlGVcvF9iGWHg%2BJ8j7gkHKEDeVfNmsqXbbE6i5wv5o1Z9rlJyrlXvaT%2BokbRtnMW6BXHzgb%2FTL%2B1XQvEgVGrVip5XbXw%2BO%2BUHkAYhHhH2tASJABhc5FAPQtfHV4ZhX0TYvDJepHF5FZeMlz%2FHE7FT7VR4brYBqS03pAFqBCURT8X4LJD9K3ThiUNfsnZPSSxkXjwqQ%2FE3UiXeG17M0HC0w63Um3%2BrOzHOhbmsfgd4rAcXVgygSCxSKRYAxkWF5%2BE7B1tZDTx6BzbCb5H5y5n%2FTMmiwEGNalt1St%2BUfyn%2BaG8clv%2Bcbh43cKT2wo1kxaEWH%2BMCBEqBsf9DNOX5QpfsGpfC3b6sxxWUoGaeKojmfPOHeXPgaUbYK8RwY0nmsfyTVmUmz0VZUerxKvu7iq76lSWN7SaAQ5MwYLiWN4wHITDdcPD3vEChzN1kRb5QAXGN5MCEU%2FHhyBwEfBkvUUY8pxKKFh4nrVI38wbw3jJe2iB%2FzWSWA4V8hpizJo0gDpK%2F7j6bLFl85wtQ35liAUWovTJDj1XNgOffV68xmBv89THnZ06DQT7tlAJ7per3EmkrORyj1KMIM%2FHhUbCORLBj9anSMdWI5OLQgloR2NsZ7mCZI%2B3O9mVSn24qAEsYjZfBdEbqr380tItnKJUpXCQNh1Tx23ijYqXlZM2%2F7%2FMppEAzbswqj4xRfGZ9N6naW7NXj9361N54K%2FIaIAG%2FUnTFqC598HmiIiTDJJtTX8g6ydTDWv4bUBjqyAbmw4dF4SODRqjN7ZhSjfFo8eXA2R99Hvt2JR4Q7k%2BYOADRH9VKb1bmwptic%2FacsJLOuoBKtsnz1UvtMfXJPO1KvDCB8lTsNHpb2sytQayPT6KnzDznefFLY8yR0aTzPYIyw6l5RM47HCAoweLY4nQcQuHR8gJ2iC6bjCPzHrDcKeQhKSJzoHSEF4eeeVt9J4qc9alUe3ka3A%2FQDjc0YJujlF26zfZIsJkVnYXwnFyBJKWU%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=f2744ba442f7c96260eeec68eb560f4cb9d0fdaefd4e56cb589dc8a2edbaf3ce",
+      "file_size": 200954,
+      "type": "image/png",
+      "moderated": null
+    }
+  ],
+  "allow_singular_disclosure_at": "2019-05-16T15:48:53.310Z",
+  "allow_singular_disclosure_after": -228859828.5221906,
+  "singular_disclosure_allowed": true,
+  "vote_count": 306,
+  "voters": [
+    "orange303",
+    "proviesec",
+    "61u36100d",
+    "jellebwns",
+    "sky003",
+    "0x541",
+    "spaceraccoon",
+    "n1m0",
+    "kyy",
+    "spaceboy20",
+    "and 296 more..."
+  ],
+  "severity": {
+    "rating": "critical",
+    "score": 10.0,
+    "author_type": "User",
+    "metrics": {
+      "attack_vector": "network",
+      "attack_complexity": "low",
+      "privileges_required": "none",
+      "user_interaction": "none",
+      "scope": "changed",
+      "confidentiality": "high",
+      "integrity": "high",
+      "availability": "high"
+    }
+  },
+  "structured_scope": {
+    "databaseId": 18138,
+    "asset_type": "URL",
+    "asset_identifier": "gitlab.com",
+    "max_severity": "critical"
+  },
+  "abilities": {
+    "assignable_team_members": [],
+    "assignable_team_member_groups": []
+  },
+  "is_exploit_agent_supported?": false,
+  "is_linear_agent_ui_supported?": false,
+  "summaries": [
+    {
+      "category": "team",
+      "can_view?": true,
+      "can_create?": false
+    },
+    {
+      "id": 18046,
+      "category": "researcher",
+      "content": "Read about the test here: https://sites.google.com/securifyinc.com/secblogs/scary-tickets",
+      "updated_at": "2019-08-28T23:36:20.964Z",
+      "can_view?": true,
+      "can_create?": false,
+      "attachments": [],
+      "user": {
+        "id": 98168,
+        "username": "rijalrojan",
+        "name": "Rojan Rijal ",
+        "bio": "",
+        "cleared": false,
+        "verified": false,
+        "website": null,
+        "location": "Los Angeles, California",
+        "created_at": "2016-08-03T21:02:56.131Z",
+        "url": "https://hackerone.com/rijalrojan",
+        "hackerone_triager": false,
+        "hackerone_employee": false,
+        "user_type": "hacker",
+        "profile_picture_urls": {
+          "small": "https://profile-photos.hackerone-user-content.com/variants/fBoPSSRSdMDTghBJexdu4AwG/b8e19a7691128fca51630d7f5b14644b91b3b45324f6fd488e36244d744fe35b",
+          "medium": "https://profile-photos.hackerone-user-content.com/variants/fBoPSSRSdMDTghBJexdu4AwG/89f037b490baf3dcca1b84283f4c85141b64c213252a9c79b56c62bf903ab542",
+          "xtralarge": "https://profile-photos.hackerone-user-content.com/variants/fBoPSSRSdMDTghBJexdu4AwG/f0e07660005686ec92c43da54c0094c1ac1b490ea8c5eac04a4081d912d6ce36"
+        }
+      }
+    }
+  ]
+}
