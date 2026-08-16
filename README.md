@@ -399,13 +399,14 @@ labeled a candidate. Latest run (detection F1 / sandbox-proven):
 
 | Target | Expected | Reported | F1 | Proven (--verify) |
 |---|---|---|---|---|
+| flask-deserialization | 1 | 1 | 1.000 | 1/1 |
 | flask-sqli | 1 | 1 | 1.000 | 1/1 |
 | flask-xss | 1 | 1 | 1.000 | 1/1 |
 | requests-ssrf | 1 | 1 | 1.000 | 1/1 |
 | jinja-ssti | 1 | 1 | 1.000 | 0/1* |
 | lxml-xxe | 1 | 1 | 1.000 | 0/1* |
 | hardcoded-secrets | 1 | 1 | 1.000 | 0/1* |
-| **Total** | **6** | **6** | **1.000** | **3/6** |
+| **Total** | **7** | **7** | **1.000** | **4/7** |
 
 \* no exploit template yet — reported as candidate, never silently "proven".
 

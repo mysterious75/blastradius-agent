@@ -1,0 +1,7 @@
+{
+  "target": "flask-deserialization",
+  "description": "Flask endpoint deserializing a request parameter with pickle.loads.",
+  "expected": [
+    {"file": "app.py", "vuln_type": "deserialization", "severity": "HIGH", "cwe": "CWE-502"}
+  ]
+}
