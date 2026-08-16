@@ -24,8 +24,10 @@ from dataclasses import dataclass
 from html.parser import HTMLParser
 from typing import Dict, List, Optional
 
+from blastradius.payloads import xss_payloads
 from blastradius.web.browser import BrowserSession
 
+# Fallback defaults when the real HackerOne payload corpus is unavailable.
 XSS_PAYLOADS = ("<script>alert(1)</script>", '"><img src=x onerror=alert(1)>')
 REDIRECT_PARAMS = ("url", "redirect", "next", "return", "dest", "goto", "target")
 REDIRECT_HOST = "https://blastradius-evil.invalid"
@@ -96,6 +98,8 @@ class DynamicWebScanner:
         self.max_urls = max_urls
         self.depth = max(1, depth)
         self.probe_exposed = probe_exposed
+        # Real HackerOne payloads (defaults always included) for reflected XSS.
+        self.xss_payloads = xss_payloads()
 
     # ------------------------------------------------------------------
     # Public API
@@ -139,7 +143,7 @@ class DynamicWebScanner:
         if parsed.query:
             params = urllib.parse.parse_qs(parsed.query)
             for name, values in params.items():
-                for payload in XSS_PAYLOADS:
+                for payload in self.xss_payloads:
                     probe = {**{k: v[0] for k, v in params.items()}, name: payload}
                     reflected = self._probe_browser.get(url.split("?")[0], params=probe)
                     if payload in reflected.text:
@@ -230,7 +234,7 @@ class DynamicWebScanner:
         if not inputs:
             return []
         findings = []
-        for payload in XSS_PAYLOADS:
+        for payload in self.xss_payloads:
             data = {name: payload for name in inputs}
             try:
                 page = self.browser.submit_form(action, data, form.get("method", "POST"))
