@@ -1,0 +1,7 @@
+{
+  "target": "flask-nosqli",
+  "description": "Flask endpoint passing a request JSON field straight into a PyMongo find_one filter.",
+  "expected": [
+    {"file": "app.py", "vuln_type": "nosqli", "severity": "HIGH", "cwe": "CWE-943"}
+  ]
+}

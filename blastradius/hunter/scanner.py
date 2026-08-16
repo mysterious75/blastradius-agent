@@ -38,6 +38,8 @@ FILE_EXTENSIONS = (
     "*.rs",
     "*.erb",
     "*.jsx",
+    "*.yml",
+    "*.yaml",
 )
 
 # Paths/dirs that are never scanned (vendored code, build artifacts, migrations,
@@ -380,6 +382,56 @@ VULN_META = {
             "authorization check (login_required + ownership) on every route."
         ),
     },
+    "nosqli": {
+        "severity": "HIGH",
+        "cvss": 8.1,
+        "cwe": "CWE-943",
+        "description": (
+            "NoSQL injection: user-controlled input is interpolated into a "
+            "MongoDB/PyMongo/Mongoose query (find/findOne filters, $where, "
+            "$regex/$gt/$ne operator injection), allowing authentication "
+            "bypass or unauthorized data access."
+        ),
+        "remediation": (
+            "Never concatenate user input into NoSQL queries. Validate and "
+            "type-check input (e.g. ObjectId wrapping, schema validation) and "
+            "avoid $where and operator-injection filters built from raw input."
+        ),
+    },
+    "proto_pollution": {
+        "severity": "HIGH",
+        "cvss": 7.5,
+        "cwe": "CWE-1321",
+        "description": (
+            "Prototype pollution: user-controlled input reaches a prototype "
+            "assignment (__proto__ / constructor.prototype / Object.prototype) "
+            "or a recursive-merge utility (lodash _.merge), allowing attackers "
+            "to inject properties onto Object.prototype and alter application "
+            "behavior (DoS, XSS, or RCE depending on the sink)."
+        ),
+        "remediation": (
+            "Reject '__proto__', 'constructor', and 'prototype' keys from user "
+            "input, use Object.freeze / structuredClone, and sanitize keys "
+            "inside recursive merge functions."
+        ),
+    },
+    "ci_injection": {
+        "severity": "HIGH",
+        "cvss": 8.8,
+        "cwe": "CWE-94",
+        "description": (
+            "GitHub Actions CI injection: a pull_request_target workflow "
+            "checks out the untrusted PR head and executes it (run step or "
+            "github.event.pull_request.head.sha) with repository secrets — "
+            "the pwn-request / DuckDuckGo RCE pattern."
+        ),
+        "remediation": (
+            "Never check out or execute pull-request code in pull_request_target "
+            "workflows; trigger on pull_request (trusted base) or pin the base "
+            "ref and gate PR code behind an approved reviewer with "
+            "least-privilege tokens."
+        ),
+    },
 }
 
 VALID_VULN_TYPES = tuple(VULN_META)
@@ -628,6 +680,86 @@ def _score_cmd_injection(line: str, has_source: bool) -> float:
     return 0.9 if has_source else 0.75
 
 
+# NoSQL injection: user input interpolated into a MongoDB/PyMongo/Mongoose
+# query. `.find(?:One|_one)?` covers both Mongoose's findOne and PyMongo's
+# find_one; operator injection ($where/$regex/$gt/$ne) and query dicts built
+# straight from request/req/body values are the canonical Rocket.Chat pattern.
+_NOSQLI_SINKS = [
+    r"\.find(?:One|_one)?\s*\([^)]*(?:request\.|req\.|ctx\.|body|params|data)",
+    r"""\.find(?:One|_one)?\s*\([^)]*\+\s*[^\s'\"]""",
+    r"\$where\s*:\s*[^,})]+(?:request|req|body|params|user|token|input)",
+    r"query\s*=\s*\{[^}]*request\.|query\s*=\s*\{[^}]*req\.|filter\s*=\s*\{[^}]*request\.",
+    r"(?:user|username|password|email|token)\s*:\s*(?:request\.|req\.|body\.|ctx\.)",
+    r"\$(?:gt|ne|eq|regex|where)\s*:\s*(?:request\.|req\.|body\.)",
+]
+_NOSQLI_SAFE = [
+    r"escape|sanitize|validate|allowlist|parameterized",
+    r"ObjectId\s*\('\s*[A-Za-z_$][\w$]*",  # ObjectId(...)-wrapped ids are pre-validated
+]
+
+
+def _score_nosqli(line: str, has_source: bool) -> float:
+    if any(re.search(p, line, re.I) for p in _NOSQLI_SAFE):
+        return 0.0
+    if not any(re.search(p, line, re.I) for p in _NOSQLI_SINKS):
+        return 0.0
+    if not _line_references_variable(line):
+        return 0.0
+    return 0.85 if has_source else 0.75
+
+
+# Prototype pollution: user input reaching a prototype assignment or a
+# recursive-merge utility (lodash _.merge with attacker-controlled data).
+_PROTO_POLLUTION_SINKS = [
+    r"__proto__",
+    r"constructor\.prototype",
+    r"Object\.prototype",
+    r"\.merge\s*\([^)]*(?:user|body|params|req|input|data)",
+    r"merge\s*=\s*\(.*\)\s*=>",
+]
+_PROTO_POLLUTION_SAFE = [
+    r"hasOwnProperty\s*\(\s*['\"]__proto__",
+    r"hasOwnProperty\s*\.\s*call\s*\([^)]*['\"]__proto__",
+    r"Object\.freeze",
+    r"structuredClone",
+]
+_JS_LANGS = ("js", "ts", "tsx", "jsx")
+
+
+def _score_proto_pollution(line: str, has_source: bool, lang: str = "") -> float:
+    if lang not in _JS_LANGS:  # JS/TS-family only
+        return 0.0
+    if any(re.search(p, line, re.I) for p in _PROTO_POLLUTION_SAFE):
+        return 0.0
+    if not any(re.search(p, line) for p in _PROTO_POLLUTION_SINKS):
+        return 0.0
+    if not _line_references_variable(line):
+        return 0.0
+    return 0.85 if has_source else 0.75
+
+
+# GitHub Actions CI injection (pwn-request / DuckDuckGo RCE): a
+# pull_request_target workflow checks out the untrusted PR head and executes
+# it with repository secrets. Text-level check over the whole workflow file.
+_CI_CHECKOUT = re.compile(r"uses\s*:\s*actions/checkout", re.I)
+_CI_RUN_STEP = re.compile(r"^\s*-\s+run\s*:", re.M)
+
+
+def _score_ci_yaml(text: str) -> float:
+    """Score a GitHub Actions workflow (pull_request_target + checkout + execute)."""
+    if "pull_request_target" not in text:
+        return 0.0
+    checkout = _CI_CHECKOUT.search(text)
+    if not checkout:
+        return 0.0
+    # dangerous only when the untrusted PR head is checked out or executed
+    head_sha = "github.event.pull_request.head.sha" in text
+    run_after_checkout = any(m.start() > checkout.end() for m in _CI_RUN_STEP.finditer(text))
+    if not (head_sha or run_after_checkout):
+        return 0.0
+    return 0.85
+
+
 # Path traversal / arbitrary file operations with user-controlled paths.
 _TRAVERSAL_SINKS = [
     r"\bopen\s*\(\s*[A-Za-z_$][\w$]*",
@@ -817,6 +949,8 @@ _SCORERS = (
     ("traversal", _score_traversal),
     ("crlf", _score_crlf),
     ("auth_bypass", _score_auth_bypass),
+    ("nosqli", _score_nosqli),
+    ("proto_pollution", _score_proto_pollution),
 )
 
 
@@ -862,6 +996,12 @@ def reconstruct_target_code(finding: Finding) -> str:
         )
     if finding.vuln_type == "auth_bypass":
         return 'def target(user_input):\n    role = user_input\n    return "admin_panel" if role == "admin" else "denied"\n'
+    if finding.vuln_type == "nosqli":
+        return (
+            "def target(user_input):\n"
+            "    q = {'username': user_input}\n"
+            "    return 'matched' if q['username'] else 'denied'\n"
+        )
     return f"# {finding.vuln_type}\nresult = process(user_input)\n"
 
 
@@ -1058,6 +1198,13 @@ class CVEHunter:
             text = path.read_text(encoding="utf-8", errors="replace")
         except OSError:
             return []
+        # GitHub Actions workflow YAML — the CI-injection check is text-level
+        # (whole file), not line-scored like the code scanners below.
+        if path.suffix.lower() in (".yml", ".yaml") and ".github" in path.parts:
+            ci_score = _score_ci_yaml(text)
+            if ci_score >= self._learned_threshold("ci_injection"):
+                return [self._make_finding(path, 1, text.splitlines(), "ci_injection", ci_score)]
+            return []
         lines = text.splitlines()
         has_source = any(re.search(p, text, re.I) for p in SOURCES)
         has_defusedxml = "defusedxml" in text
@@ -1084,6 +1231,8 @@ class CVEHunter:
                     score = _score_ssti(line, has_source, lang)
                 elif vuln_type == "traversal":
                     score = _score_traversal(line, has_source, has_safe_paths)
+                elif vuln_type == "proto_pollution":
+                    score = _score_proto_pollution(line, has_source, lang)
                 else:
                     score = scorer(line, has_source)
                 if score < self._learned_threshold(vuln_type):
@@ -1161,4 +1310,7 @@ class CVEHunter:
             "traversal": "Path Traversal",
             "crlf": "CRLF Injection",
             "auth_bypass": "Authentication Bypass",
+            "nosqli": "NoSQL Injection",
+            "proto_pollution": "Prototype Pollution",
+            "ci_injection": "CI Injection",
         }.get(vuln_type, vuln_type)

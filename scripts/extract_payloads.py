@@ -66,7 +66,9 @@ def extract_payloads(reports_dir: Path) -> dict:
         except Exception:
             continue
         meta = _attr(data)
-        weakness = (meta.get("weakness") or {}).get("name") or meta.get("weakness_identifier") or "unknown"
+        weakness = (
+            (meta.get("weakness") or {}).get("name") or meta.get("weakness_identifier") or "unknown"
+        )
         info = meta.get("vulnerability_information", "") or ""
         for line in info.splitlines():
             line = line.strip()
@@ -93,9 +95,7 @@ def main(argv=None) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     result = extract_payloads(reports_dir)
-    (out_dir / "payload_corpus.json").write_text(
-        json.dumps(result, indent=2), encoding="utf-8"
-    )
+    (out_dir / "payload_corpus.json").write_text(json.dumps(result, indent=2), encoding="utf-8")
 
     lines = [
         "# Payload Corpus (extracted from real HackerOne reports)",
@@ -115,8 +115,10 @@ def main(argv=None) -> int:
         lines.append("")
     (out_dir / "README.md").write_text("\n".join(lines), encoding="utf-8")
 
-    print(f"[*] {result['total_lines']} payload lines, "
-          f"{len(result['corpus'])} weakness types -> {out_dir}")
+    print(
+        f"[*] {result['total_lines']} payload lines, "
+        f"{len(result['corpus'])} weakness types -> {out_dir}"
+    )
     for weakness, payloads in sorted(result["corpus"].items(), key=lambda kv: -len(kv[1]))[:8]:
         print(f"    {weakness}: {len(payloads)} payloads")
     return 0
