@@ -61,7 +61,7 @@ jobs:
         run: pytest tests/ -v --tb=short --cov=blastradius --cov-report=xml --cov-fail-under=60
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: coverage-report-${{ matrix.python-version }}
           path: coverage.xml
@@ -81,7 +81,7 @@ jobs:
       - name: "Run verified benchmark (CI gate: F1 >= 0.5)"
         run: python benchmarks/run.py --verify --min-f1 0.5
       - name: Upload benchmark report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: benchmark-report
           path: benchmarks/results/**
@@ -106,7 +106,7 @@ jobs:
         with:
           sarif_file: report.sarif
       - name: Upload hunt reports
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: hunt-reports
           path: reports/**
