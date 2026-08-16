@@ -17,4 +17,6 @@ reports5000/*.txt
 reports5000/*.json
 reports5000/*.csv
 reports5000/*.zip
+reports5000/*.log
+reports5000/*.py
 payloads/*.json
