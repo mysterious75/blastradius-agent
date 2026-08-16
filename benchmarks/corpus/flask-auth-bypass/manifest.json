@@ -1,0 +1,7 @@
+{
+  "target": "flask-auth-bypass",
+  "description": "Flask admin panel gated only by a client-supplied role parameter.",
+  "expected": [
+    {"file": "app.py", "vuln_type": "auth_bypass", "severity": "HIGH", "cwe": "CWE-287"}
+  ]
+}

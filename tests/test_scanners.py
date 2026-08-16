@@ -16,6 +16,7 @@ def test_registry_discovers_all_scanners():
         "cmd_injection",
         "traversal",
         "crlf",
+        "auth_bypass",
     }
 
 
