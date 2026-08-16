@@ -6,7 +6,16 @@ from blastradius.scanners import get_scanner, get_scanners, scan_file
 def test_registry_discovers_all_scanners():
     scanners = get_scanners()
     assert set(scanners) == {
-        "sqli", "xss", "ssrf", "ssti", "xxe", "secret", "deserialization",
+        "sqli",
+        "xss",
+        "ssrf",
+        "ssti",
+        "xxe",
+        "secret",
+        "deserialization",
+        "cmd_injection",
+        "traversal",
+        "crlf",
     }
 
 

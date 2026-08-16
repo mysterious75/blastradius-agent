@@ -322,6 +322,48 @@ VULN_META = {
             "unpicklers; treat any user-controlled bytes as code."
         ),
     },
+    "cmd_injection": {
+        "severity": "CRITICAL",
+        "cvss": 9.8,
+        "cwe": "CWE-78",
+        "description": (
+            "Command/code injection: user-controlled input reaches an OS command "
+            "or eval sink (os.system, subprocess shell=True, exec/eval, "
+            "shell_exec, Runtime.exec), allowing attacker code execution."
+        ),
+        "remediation": (
+            "Never pass user input to a shell. Use list-form subprocess calls "
+            "without shell=True, strict allowlists, and treat eval/exec as sinks."
+        ),
+    },
+    "traversal": {
+        "severity": "HIGH",
+        "cvss": 7.5,
+        "cwe": "CWE-22",
+        "description": (
+            "Path traversal: user-controlled input flows into a file path "
+            "operation (open/read/join/unlink), allowing arbitrary file "
+            "read/write/delete outside the intended directory."
+        ),
+        "remediation": (
+            "Resolve paths with os.path.abspath and verify the result stays "
+            "inside a known root (or use a framework's safe file APIs)."
+        ),
+    },
+    "crlf": {
+        "severity": "MEDIUM",
+        "cvss": 5.0,
+        "cwe": "CWE-93",
+        "description": (
+            "CRLF injection: user-controlled input with newline characters "
+            "reaches an HTTP header or email field, allowing header "
+            "injection / response splitting / SMTP command injection."
+        ),
+        "remediation": (
+            "Strip or encode CR/LF from user input before it reaches headers "
+            "or email fields; validate email addresses and header values."
+        ),
+    },
 }
 
 VALID_VULN_TYPES = tuple(VULN_META)
@@ -529,6 +571,106 @@ def _score_deserialization(line: str, has_source: bool) -> float:
     return 0.9 if has_source else 0.75
 
 
+# Command / code injection: user input reaching an OS command or eval sink.
+# `exec(`/`eval(` are excluded after a dot so JS regex `.exec(` and object
+# methods are not false positives; `window.eval(` stays flagged via \beval\b.
+_CMD_INJECTION_SINKS = [
+    r"\bos\.system\s*\(",
+    r"\bos\.popen\s*\(",
+    r"\bos\.spawn\s*\(",
+    r"subprocess\.(?:run|call|Popen|check_call|check_output)\s*\([^)]*shell\s*=\s*True",
+    r"(?<![.\w])exec\s*\(",
+    r"\beval\s*\(",
+    r"\bexecfile\s*\(",
+    r"\bexecSync\s*\(",
+    r"child_process\.(?:exec|execSync|spawn)\s*\(",
+    r"\bshell_exec\s*\(",
+    r"\bpassthru\s*\(",
+    r"\bsystem\s*\(",
+    r"\bpopen\s*\(",
+    r"Runtime\.getRuntime\(\).*\.exec\s*\(",
+    r"\bProcessBuilder\s*\(",
+    r"\bjava\.lang\.Runtime\b.*\bexec\b",
+]
+_CMD_INJECTION_SAFE = [
+    r"shlex\.quote",
+    r"shell\s*=\s*False",
+    r"escapeShellArg|escapeshellarg|escapeshellcmd",
+    r"shellescape|shell-escape",
+    r"validate_command|allowlist",
+    r"subprocess\.(?:run|call|Popen)\s*\(\s*\[",  # list-form, no shell
+]
+
+
+def _score_cmd_injection(line: str, has_source: bool) -> float:
+    if any(re.search(p, line, re.I) for p in _CMD_INJECTION_SAFE):
+        return 0.0
+    if not any(re.search(p, line, re.I) for p in _CMD_INJECTION_SINKS):
+        return 0.0
+    if not _line_references_variable(line):
+        return 0.0
+    return 0.9 if has_source else 0.75
+
+
+# Path traversal / arbitrary file operations with user-controlled paths.
+_TRAVERSAL_SINKS = [
+    r"\bopen\s*\(\s*[A-Za-z_$][\w$]*",
+    r"\bopen\s*\([^)]*\b(?:file|path|filename|name)\b\s*,",
+    r"\bfile_get_contents\s*\(",
+    r"\bfread\s*\([^)]*,?\s*[A-Za-z_$]",
+    r"\bfs\.(?:readFile|readFileSync|createReadStream)\s*\(",
+    r"\breadFileSync\s*\(",
+    r"\b(?:send_file|FileResponse|static_file|sendfile)\s*\(",
+    r"\bnew\s+File\s*\(",
+    r"\bgetResourceAsStream\s*\(",
+    r"\bPath\.join\s*\([^)]*[A-Za-z_$]",
+    r"\bos\.path\.join\s*\([^)]*[A-Za-z_$]",
+    r"\b(?:unlink|os\.remove|os\.unlink|os\.rmdir|shutil\.rmtree)\s*\(",
+    r"\bPath\s*\(\s*[A-Za-z_$][\w$]*",
+]
+_TRAVERSAL_SAFE = [
+    r"abspath|realpath|normpath|resolve\s*\(|secure_filename",
+    r"secureJoin|safe_join|normalize_path",
+    r"os\.path\.(?:basename|dirname)",  # path decomposition, not resolution
+    r"user\.file|file_storage",  # upload objects already validated by framework
+]
+
+
+def _score_traversal(line: str, has_source: bool, has_safe_paths: bool) -> float:
+    if has_safe_paths:
+        return 0.0
+    if any(re.search(p, line, re.I) for p in _TRAVERSAL_SAFE):
+        return 0.0
+    if not any(re.search(p, line, re.I) for p in _TRAVERSAL_SINKS):
+        return 0.0
+    if not _line_references_variable(line):
+        return 0.0
+    return 0.85 if has_source else 0.7
+
+
+# CRLF / header injection: newline-capable user input reaching headers/email.
+_CRLF_SINKS = [
+    r"\b(?:set_header|add_header|send_header|append_header|setHeader|addHeader)\s*\(",
+    r"\bHeader\s*\([^)]*[A-Za-z_$][\w$]*,",
+    r"\bLocation\s*:\s*[^\"'\n]*[A-Za-z_$]",
+    r"sendmail\s*\([^)]*[A-Za-z_$]",
+    r"\bmsg\[\s*['\"][^'\"]*['\"]\s*\]\s*=\s*[A-Za-z_$]",
+    r"\bheaders?\s*\[[^]]*\]\s*=[^=]",
+    r"\.headers?\s*\.\s*set\s*\(",
+]
+_CRLF_SAFE = [r"quote|escape|sanitize|strip|validate|encode"]
+
+
+def _score_crlf(line: str, has_source: bool) -> float:
+    if any(re.search(p, line, re.I) for p in _CRLF_SAFE):
+        return 0.0
+    if not any(re.search(p, line, re.I) for p in _CRLF_SINKS):
+        return 0.0
+    if not _line_references_variable(line):
+        return 0.0
+    return 0.8 if has_source else 0.7
+
+
 # IDOR: object-id read from user input, no authorization check nearby
 _IDOR_ID_SOURCES = [
     r"request\.(?:args|form|values|get_json)\s*\([^)]*['\"]id['\"]",
@@ -574,6 +716,9 @@ _SCORERS = (
     ("jwt", _score_jwt),
     ("secret", _score_secret),
     ("deserialization", _score_deserialization),
+    ("cmd_injection", _score_cmd_injection),
+    ("traversal", _score_traversal),
+    ("crlf", _score_crlf),
 )
 
 
@@ -604,7 +749,15 @@ def reconstruct_target_code(finding: Finding) -> str:
     if finding.vuln_type == "ssti":
         return "# SSTI\nfrom jinja2 import Environment\nenv = Environment()\nenv.from_string(user_input).render()\n"
     if finding.vuln_type == "deserialization":
-        return 'import pickle\ndef target(user_input):\n    return pickle.loads(user_input)\n'
+        return "import pickle\ndef target(user_input):\n    return pickle.loads(user_input)\n"
+    if finding.vuln_type == "cmd_injection":
+        return "import os\ndef target(user_input):\n    os.system(user_input)\n"
+    if finding.vuln_type == "traversal":
+        return "def target(user_input):\n    return open(user_input).read()\n"
+    if finding.vuln_type == "crlf":
+        return (
+            'def target(user_input):\n    return "Location: /next" + user_input + "\\r\\n\\r\\n"\n'
+        )
     return f"# {finding.vuln_type}\nresult = process(user_input)\n"
 
 
@@ -811,6 +964,9 @@ class CVEHunter:
             for line in lines
         )
         lang = _LANG_OF.get(path.suffix.lower(), "py")
+        has_safe_paths = any(
+            re.search(p, text, re.I) for p in _TRAVERSAL_SAFE
+        )  # file-level path hardening (abspath + root check) suppresses traversal
         state = {"in_docstring": False, "in_block": False}
 
         findings: List[Finding] = []
@@ -822,6 +978,8 @@ class CVEHunter:
                     score = _score_xss(line, has_source, lang)
                 elif vuln_type == "ssti":
                     score = _score_ssti(line, has_source, lang)
+                elif vuln_type == "traversal":
+                    score = _score_traversal(line, has_source, has_safe_paths)
                 else:
                     score = scorer(line, has_source)
                 if score < self._learned_threshold(vuln_type):
@@ -892,4 +1050,7 @@ class CVEHunter:
             "jwt": "Weak JWT Verification",
             "graphql": "GraphQL Injection",
             "deserialization": "Insecure Deserialization",
+            "cmd_injection": "Command Injection",
+            "traversal": "Path Traversal",
+            "crlf": "CRLF Injection",
         }.get(vuln_type, vuln_type)

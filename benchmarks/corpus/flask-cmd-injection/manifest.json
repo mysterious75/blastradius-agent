@@ -1,0 +1,7 @@
+{
+  "target": "flask-cmd-injection",
+  "description": "Flask endpoint concatenating a request parameter into os.system().",
+  "expected": [
+    {"file": "app.py", "vuln_type": "cmd_injection", "severity": "CRITICAL", "cwe": "CWE-78"}
+  ]
+}

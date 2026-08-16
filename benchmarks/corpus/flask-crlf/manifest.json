@@ -1,0 +1,7 @@
+{
+  "target": "flask-crlf",
+  "description": "Flask endpoint placing a request parameter into a Location header.",
+  "expected": [
+    {"file": "app.py", "vuln_type": "crlf", "severity": "MEDIUM", "cwe": "CWE-93"}
+  ]
+}
