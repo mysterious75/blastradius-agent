@@ -309,6 +309,19 @@ VULN_META = {
             "from environment variables or a secret manager."
         ),
     },
+    "secret_history": {
+        "severity": "HIGH",
+        "cvss": 8.0,
+        "cwe": "CWE-798",
+        "description": (
+            "Hard-coded credential present in git HISTORY (rotated or not, it "
+            "is recoverable from the commit log and must be treated as leaked)."
+        ),
+        "remediation": (
+            "Rotate the secret AND scrub it from history (filter-repo) or "
+            "treat the repository as compromised."
+        ),
+    },
     "deserialization": {
         "severity": "HIGH",
         "cvss": 8.1,
@@ -465,6 +478,59 @@ def _line_references_variable(line: str) -> bool:
         # . $var concat (PHP) — but NOT a method call like .html("literal")
         or re.search(r"\.[ \t]*\$?[A-Za-z_]\w*(?![\w(])", stripped)
     )
+
+
+# Identifiers that can carry user-controlled data. `(?<![.\w])` at the start
+# (instead of bare `\b`) excludes attribute access (os.name, cfg.url) and
+# identifiers glued into longer names (hs6_url, api_url, next_url) — those are
+# constants, not taint.
+_SOURCE_LIKE_ARG_NAMES = re.compile(
+    r"(?<![.\w])(?:request|req|ctx|context|params|body|data|input|user|token|"
+    r"query|args|form|header|getParameter|FormValue|payload|host|url|path|file|"
+    r"name|filename|id)\b"
+)
+
+# Taint-type scorers whose sink ARGUMENT must reference user-controlled data.
+# (sqli/xss already require concat/reflection; ssti/xxe/proto_pollution/jwt/
+# secret are excluded by design.)
+_TAINT_CAP_TYPES = frozenset(
+    {"cmd_injection", "ssrf", "crlf", "deserialization", "nosqli", "auth_bypass", "traversal"}
+)
+
+
+def _sink_arg_tainted(line: str, has_source: bool) -> bool:
+    """Whether a sink's first argument references user-controlled data.
+
+    A file with any user-input source (``has_source``) is tainted outright.
+    Otherwise the text inside the first '(' ... ')' of the line is inspected
+    after string literals are stripped: any remaining source-like identifier
+    (host, url, request, body, id...) means the argument is a variable that can
+    carry input. Pure constants (os.system("cls"), os.system(api_url),
+    requests.get("https://static.example/data.json")) return False so
+    constant-sink findings stay below the candidate threshold.
+    """
+    if has_source:
+        return True
+    start = line.find("(")
+    if start == -1:
+        return False
+    depth = 0
+    end = -1
+    for i in range(start, len(line)):
+        ch = line[i]
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                end = i
+                break
+    if end == -1:
+        return False
+    arg_text = line[start + 1 : end]
+    # Strip string literals (single/double-quoted, escaped chars handled).
+    stripped = re.sub(r"(['\"])(?:\\.|(?!\1)[^\\])*?\1", " ", arg_text)
+    return bool(_SOURCE_LIKE_ARG_NAMES.search(stripped))
 
 
 def _is_skippable_line(line: str, lang: str, state: dict) -> bool:
@@ -1113,6 +1179,85 @@ class CVEHunter:
         findings.sort(key=lambda f: (f.file, f.line, f.vuln_type))
         return findings
 
+    def scan_git_history(self, repo_path: str) -> List[Finding]:
+        """truffleHog-style scan: secrets committed anywhere in git history.
+
+        Runs ``git log --all --patch`` and applies the working-tree secret
+        regexes to every diff line of every commit, so secrets that were
+        committed and later deleted are still reported. Findings are
+        candidates — there is no sandbox PoC for a history-only secret.
+        Returns [] when the repo has no git history or git is unavailable.
+        """
+        try:
+            result = subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    repo_path,
+                    "log",
+                    "--all",
+                    "--patch",
+                    "--format=commit %H %s",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+        except (OSError, subprocess.SubprocessError):
+            return []
+        if result.returncode != 0:
+            return []
+
+        # Split output into per-commit blocks, keeping the sha + diff lines
+        commits: List[dict] = []
+        current: Optional[dict] = None
+        for line in result.stdout.splitlines():
+            if line.startswith("commit "):
+                parts = line.split()
+                current = {"sha": parts[1] if len(parts) > 1 else "?", "lines": []}
+                commits.append(current)
+            elif current is not None:
+                current["lines"].append(line)
+
+        findings: List[Finding] = []
+        meta = VULN_META["secret_history"]
+        seen: set = set()
+        for commit in commits:
+            sha = commit["sha"]
+            sha7 = sha[:7]
+            path = "git-history"
+            for line in commit["lines"]:
+                # nearest diff path within this commit's block
+                if line.startswith("+++ b/") or line.startswith("--- a/"):
+                    path = line[6:].strip() or "git-history"
+                elif line.startswith(("+++ /dev/null", "--- /dev/null")):
+                    path = "git-history"
+                if _SECRET_PLACEHOLDER.search(line):
+                    continue
+                if not any(re.search(p, line) for p in _SECRET_PATTERNS):
+                    continue
+                payload = line.strip()
+                key = (path, payload)
+                if key in seen:
+                    continue
+                seen.add(key)
+                findings.append(
+                    Finding(
+                        file=f"{repo_path}/{path} (commit {sha7})",
+                        line=0,
+                        vuln_type="secret_history",
+                        payload=payload,
+                        confidence=0.95,
+                        severity=meta["severity"],
+                        cwe=meta["cwe"],
+                        remediation=meta["remediation"],
+                        description=meta["description"],
+                        evidence=f"secret in commit {sha7}",
+                        context=payload,
+                    )
+                )
+        return findings
+
     def validate(self, finding: Finding) -> str:
         """Adversarial false-positive verdict (Prometheus when available)."""
         validator = self.validator
@@ -1235,6 +1380,19 @@ class CVEHunter:
                     score = _score_proto_pollution(line, has_source, lang)
                 else:
                     score = scorer(line, has_source)
+                # Constant-sink taint refinement: a sink whose argument does
+                # NOT reference user-controlled data is capped below the
+                # default min_confidence (0.7), so hardened codebases with
+                # os.system("cls") / requests.get("https://...") stop producing
+                # candidate findings. (auth_bypass hardcoded-credential
+                # compares — `password == "admin"` — are constant BY DESIGN and
+                # are exempt: the constant comparison is the detection.)
+                if (
+                    vuln_type in _TAINT_CAP_TYPES
+                    and not (vuln_type == "auth_bypass" and _AUTH_CRED_COMPARE.search(line))
+                    and not _sink_arg_tainted(line, has_source)
+                ):
+                    score = min(score, 0.5)
                 if score < self._learned_threshold(vuln_type):
                     continue
                 findings.append(self._make_finding(path, idx, lines, vuln_type, score))
@@ -1313,4 +1471,5 @@ class CVEHunter:
             "nosqli": "NoSQL Injection",
             "proto_pollution": "Prototype Pollution",
             "ci_injection": "CI Injection",
+            "secret_history": "Secret in Git History",
         }.get(vuln_type, vuln_type)

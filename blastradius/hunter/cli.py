@@ -38,6 +38,11 @@ def main(argv=None) -> int:
     parser.add_argument("--min-confidence", type=float, default=0.7)
     parser.add_argument("--reports-dir", default="reports")
     parser.add_argument(
+        "--git-history",
+        action="store_true",
+        help="also scan git history (truffleHog-style) for secrets committed in any commit",
+    )
+    parser.add_argument(
         "--scope",
         default=None,
         help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
@@ -71,6 +76,16 @@ def main(argv=None) -> int:
     print(f"[*] {len(findings)} candidate finding(s) with confidence >= {args.min_confidence}")
     if findings:
         display.print_findings_table(findings)
+
+    # truffleHog-style git-history scan: candidates only, no sandbox PoC
+    if args.git_history:
+        history = hunter.scan_git_history(repo_path)
+        print(
+            f"[*] {len(history)} secret(s) found in git history "
+            "(candidates — rotated or not, they are recoverable; no sandbox PoC)"
+        )
+        if history:
+            display.print_findings_table(history)
 
     reports = DisclosureReport()
     saved = 0
