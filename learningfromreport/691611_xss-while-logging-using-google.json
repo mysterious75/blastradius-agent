@@ -1,0 +1,145 @@
+{
+  "id": 691611,
+  "global_id": "Z2lkOi8vaGFja2Vyb25lL1JlcG9ydC82OTE2MTE=",
+  "url": "https://hackerone.com/reports/691611",
+  "title": "XSS while logging using Google",
+  "state": "Closed",
+  "substate": "resolved",
+  "readable_substate": "Resolved",
+  "created_at": "2019-09-10T10:02:40.557Z",
+  "submitted_at": "2019-09-10T10:02:40.557Z",
+  "is_member_of_team?": false,
+  "is_organization_group_member?": false,
+  "is_triager?": false,
+  "reporter": {
+    "disabled": false,
+    "username": "ashketchum",
+    "url": "/ashketchum",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/ll96706yq5u2w1biitkrr2uidqzd/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6"
+    },
+    "is_me?": false,
+    "cleared": false,
+    "verified": true,
+    "hackerone_triager": false,
+    "hacker_mediation": false
+  },
+  "team": {
+    "id": 1382,
+    "url": "https://hackerone.com/shopify",
+    "handle": "shopify",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/fjjiC5585s8WoDGHv2M5okbJ/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6",
+      "medium": "https://profile-photos.hackerone-user-content.com/variants/fjjiC5585s8WoDGHv2M5okbJ/1d3351b56b27c9bb56ce22821a57514a7210186a77aefb760cd2113272723c1f"
+    },
+    "permissions": [],
+    "submission_state": "open",
+    "default_currency": "usd",
+    "awards_miles": false,
+    "offers_bounties": true,
+    "state": "public_mode",
+    "only_cleared_hackers": false,
+    "pentest_feature_enabled?": false,
+    "pentest_retesting_ends_at": null,
+    "profile": {
+      "name": "Shopify",
+      "twitter_handle": "",
+      "website": "https://www.shopify.com",
+      "about": "Shopify is a multi-channel commerce platform that helps people sell online, in-store, and everywhere in between."
+    }
+  },
+  "has_bounty?": true,
+  "can_view_team": true,
+  "can_view_report": true,
+  "is_external_bug": false,
+  "is_published": false,
+  "is_participant": false,
+  "has_collaborators": false,
+  "submitted_by_team_member": false,
+  "submitted_with_assistant": false,
+  "stage": 4,
+  "public": true,
+  "visibility": "full",
+  "cve_ids": [],
+  "singular_disclosure_disabled": true,
+  "disclosed_at": "2019-09-11T17:22:32.229Z",
+  "bug_reporter_agreed_on_going_public_at": "2019-09-11T17:22:32.073Z",
+  "team_member_agreed_on_going_public_at": "2019-09-11T17:21:48.800Z",
+  "comments_closed?": false,
+  "facebook_team?": false,
+  "team_private?": false,
+  "vulnerability_information": "Hello Security Team,\nI have found xss when we enable login services as, \nAllow staff to use external services to log in to Shopify and we enable Google Apps for login\nwe get the \" Log in with Google \" option enable \n\n{F579219}\n\n### Steps to Reproduce:\n\nStep1: Go to https://YOURSHOP.myshopify.com/admin/settings/account\nStep2: Login Services: Staff can use Google Apps to log in -->> Enable Google Apps for login\nStep3: Now staff can log in using Google\nStep4:  Log out from your account\nStep5: Now go to following Url and try to log in using Google \n\n#### NOTE: I have made changes in the URL at google_apps_uri\n\n### POC URL 1: \nhttps://app.shopify.com/services/login/identity?destination_uuid=79b5c315-b5ac-4b19-bd33-13554433fa31&google_apps_uri=javascript:prompt(document.domain)&return_to=https%3A%2F%2Fapp.shopify.com%2Fservices%2Flogin%2Fidentity_callback%3Fshop_name%3D123ashketchum%26state%3D6a_2K0iBEBMG3sv07qFMrtzfrBFY4gZ9JsN0EJAW2Xck07xlkghl0tmZwGIvYEZ1KZw2mG4d4Omhl_h5oB_7t4dcXoS37UUOMG6f9sOr7BCKyR23PWbLpVlh4A0lMXmNuxOEUeEA55eapNpVZqT6AyfnJkQhn4K89-I5O6TVqcamtHaXWRH7b1EI6U8LvQFddrBPYniYGpggAwsFLvb5UeTvRw-fbvRditQ20YWYTK8%253D&ui_locales=en&upgradeable=true&ux=shop\n\n### POC URL 2:\nhttps://app.shopify.com/services/login/identity?destination_uuid=79b5c315-b5ac-4b19-bd33-13554433fa31&google_apps_uri=javascript:prompt(document.cookie)&return_to=https%3A%2F%2Fapp.shopify.com%2Fservices%2Flogin%2Fidentity_callback%3Fshop_name%3D123ashketchum%26state%3D6a_2K0iBEBMG3sv07qFMrtzfrBFY4gZ9JsN0EJAW2Xck07xlkghl0tmZwGIvYEZ1KZw2mG4d4Omhl_h5oB_7t4dcXoS37UUOMG6f9sOr7BCKyR23PWbLpVlh4A0lMXmNuxOEUeEA55eapNpVZqT6AyfnJkQhn4K89-I5O6TVqcamtHaXWRH7b1EI6U8LvQFddrBPYniYGpggAwsFLvb5UeTvRw-fbvRditQ20YWYTK8%253D&ui_locales=en&upgradeable=true&ux=shop\n\n### XSS will be triggered!!\n\n{F579220}\n\n### I have attached POC Video, Please take a look!!\n\nRegards,\n@ashketchum\n\n## Impact\n\nThe attacker can steal data from whoever who try to login using Google!!",
+  "bounty_amount": "1750.0",
+  "formatted_bounty": "$1,750",
+  "weakness": {
+    "id": 61,
+    "name": "Cross-site Scripting (XSS) - Reflected"
+  },
+  "original_report_id": null,
+  "original_report_url": null,
+  "attachments": [
+    {
+      "id": 579219,
+      "file_name": "google_login.png",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/qzFNND4kHVwCEV6YHEFQXKit?response-content-disposition=attachment%3B%20filename%3D%22google_login.png%22%3B%20filename%2A%3DUTF-8%27%27google_login.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQ5TKIPXKL%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T105439Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJGMEQCIHBJpblAq1QlUvW89J45HEahOfvni%2FxxuIl6FCFERrPaAiBgBB1uO8IACzb785ezETUESgkRO3OVeVCp9x%2F7r2CIUyqxBQgsEAMaDDAxMzYxOTI3NDg0OSIMR3KBTb57QE1pE7W3Ko4FhuNisWAPauAJ%2FnQXpsmGZzMdo7QcUAEGAwJ3n6CueUTxGqvkEOxrw1GJjNLleBf2iAu2BHrNa2K%2Fodt9lVmN3dIh1FCnwT3uDkxOzZffCO%2FF2aAMrwUff3WaUEIwUd1eewKkHDyC6AZUn8d7WKNeQgTR9jWLa%2FBnItSqXaUnmgeIVFBPKGyimIslXn%2Fui5tVzbhLPg04dKQJ8np9EAG7oRRiObcobxU%2FMBSHkRq2vJK7Ff9LhEPPj%2FdS73toHLF%2BPR7iy7nVUiH8%2FgJDo7NKou%2FjO36T0Lwdoi%2BUuVqu0x7nhYi0CmmSIAw8rEs3ZT%2F4WGUtPrRTAbPSFbOGa5uByxyYaP1FuJFsEPwqmKGog6fViHXYBaOx0Axpq2T5Ml513d3dxDmutSzMKj4AtIMs8oPQXq4m2fyqrc7VlmTXqYWuCjQy6xtkHazyD%2FYHzrnWWyGKkW3iYucD7%2Bo5E%2FQPBxOoM2jepnK7Er4f01lbkJHpy8wC3kTUskE5ehxZBKIdgOsQ6oDGK5Zcn%2BlsoOVspDxOTINOzywP2A3DrC5yel4qAQGG0Z%2FPRHPsFj8l%2F1VoaTM2Yb%2B%2FMSl3EkJfHPXOqfJMMvpWu9r%2FSYJIgg6Y%2FOTLUb1jpVU0HJrzTy4aYJQHf%2FAOI5NVtxJodyOZRp3njF6D2gbsKtaMoMhVMsv6AP%2B2OuPlkNF40aVkUhYXRURQ5aIqRo3U2xSVaRnkdA16vo1VH78kGeZpzOCTYlGsVmBnjXMg7R49KDAKtRPjVXQ36%2BqKp66f7KqmhRQ%2FKSIUiGPZzl5QruMIG6hmpFb%2FoTJuWUZi%2FTbaa%2B9%2Fa8FbhOmb0U0yBquAAf95WiaOIxIBcqnx%2Frl7sRaqqlL21LSlMNCihtQGOrIBNH6X0%2Fr27O7s4UvW%2FdiT6doGNFlDGgQPWe%2FhBUJDwvGd0mdfDNz%2F37Lbz1n14vSzrsQwA%2FTCehp6Jgf3spgIYt%2FEKkHT2h4ayQSraqkM6OWMke%2BA8guDP5I0BqkrbujvocOijdMgynYK%2BdWgH1ROWrOA%2BJcu528WwTSIYiFoOubIP2wAIvKRBmRgBADndZ4sqVbXZaZI%2B6ZEHTxcTGZzNoce%2FjUfltsqyOUpx%2B%2FIVk560w%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=0fe29bb168cfba00762c8f9ed9eb42000f59a2802beac5241715713aa8176f0a",
+      "file_size": 21384,
+      "type": "image/png",
+      "moderated": null
+    },
+    {
+      "id": 579220,
+      "file_name": "xss.png",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/VR1dohhyPEwsSb4jr4EeyJnw?response-content-disposition=attachment%3B%20filename%3D%22xss.png%22%3B%20filename%2A%3DUTF-8%27%27xss.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQ5TKIPXKL%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T105439Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJGMEQCIHBJpblAq1QlUvW89J45HEahOfvni%2FxxuIl6FCFERrPaAiBgBB1uO8IACzb785ezETUESgkRO3OVeVCp9x%2F7r2CIUyqxBQgsEAMaDDAxMzYxOTI3NDg0OSIMR3KBTb57QE1pE7W3Ko4FhuNisWAPauAJ%2FnQXpsmGZzMdo7QcUAEGAwJ3n6CueUTxGqvkEOxrw1GJjNLleBf2iAu2BHrNa2K%2Fodt9lVmN3dIh1FCnwT3uDkxOzZffCO%2FF2aAMrwUff3WaUEIwUd1eewKkHDyC6AZUn8d7WKNeQgTR9jWLa%2FBnItSqXaUnmgeIVFBPKGyimIslXn%2Fui5tVzbhLPg04dKQJ8np9EAG7oRRiObcobxU%2FMBSHkRq2vJK7Ff9LhEPPj%2FdS73toHLF%2BPR7iy7nVUiH8%2FgJDo7NKou%2FjO36T0Lwdoi%2BUuVqu0x7nhYi0CmmSIAw8rEs3ZT%2F4WGUtPrRTAbPSFbOGa5uByxyYaP1FuJFsEPwqmKGog6fViHXYBaOx0Axpq2T5Ml513d3dxDmutSzMKj4AtIMs8oPQXq4m2fyqrc7VlmTXqYWuCjQy6xtkHazyD%2FYHzrnWWyGKkW3iYucD7%2Bo5E%2FQPBxOoM2jepnK7Er4f01lbkJHpy8wC3kTUskE5ehxZBKIdgOsQ6oDGK5Zcn%2BlsoOVspDxOTINOzywP2A3DrC5yel4qAQGG0Z%2FPRHPsFj8l%2F1VoaTM2Yb%2B%2FMSl3EkJfHPXOqfJMMvpWu9r%2FSYJIgg6Y%2FOTLUb1jpVU0HJrzTy4aYJQHf%2FAOI5NVtxJodyOZRp3njF6D2gbsKtaMoMhVMsv6AP%2B2OuPlkNF40aVkUhYXRURQ5aIqRo3U2xSVaRnkdA16vo1VH78kGeZpzOCTYlGsVmBnjXMg7R49KDAKtRPjVXQ36%2BqKp66f7KqmhRQ%2FKSIUiGPZzl5QruMIG6hmpFb%2FoTJuWUZi%2FTbaa%2B9%2Fa8FbhOmb0U0yBquAAf95WiaOIxIBcqnx%2Frl7sRaqqlL21LSlMNCihtQGOrIBNH6X0%2Fr27O7s4UvW%2FdiT6doGNFlDGgQPWe%2FhBUJDwvGd0mdfDNz%2F37Lbz1n14vSzrsQwA%2FTCehp6Jgf3spgIYt%2FEKkHT2h4ayQSraqkM6OWMke%2BA8guDP5I0BqkrbujvocOijdMgynYK%2BdWgH1ROWrOA%2BJcu528WwTSIYiFoOubIP2wAIvKRBmRgBADndZ4sqVbXZaZI%2B6ZEHTxcTGZzNoce%2FjUfltsqyOUpx%2B%2FIVk560w%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=331b54e662a324be7888febc8de7a48fab2e28d9cb687c58656194c07d848b0a",
+      "file_size": 71931,
+      "type": "image/png",
+      "moderated": null
+    },
+    {
+      "id": 579221,
+      "file_name": "POC.mkv",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/amcsqN8nuKrcnQUsuYKCXWwh?response-content-disposition=attachment%3B%20filename%3D%22POC.mkv%22%3B%20filename%2A%3DUTF-8%27%27POC.mkv&response-content-type=video%2Fx-matroska&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQ5TKIPXKL%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T105439Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJGMEQCIHBJpblAq1QlUvW89J45HEahOfvni%2FxxuIl6FCFERrPaAiBgBB1uO8IACzb785ezETUESgkRO3OVeVCp9x%2F7r2CIUyqxBQgsEAMaDDAxMzYxOTI3NDg0OSIMR3KBTb57QE1pE7W3Ko4FhuNisWAPauAJ%2FnQXpsmGZzMdo7QcUAEGAwJ3n6CueUTxGqvkEOxrw1GJjNLleBf2iAu2BHrNa2K%2Fodt9lVmN3dIh1FCnwT3uDkxOzZffCO%2FF2aAMrwUff3WaUEIwUd1eewKkHDyC6AZUn8d7WKNeQgTR9jWLa%2FBnItSqXaUnmgeIVFBPKGyimIslXn%2Fui5tVzbhLPg04dKQJ8np9EAG7oRRiObcobxU%2FMBSHkRq2vJK7Ff9LhEPPj%2FdS73toHLF%2BPR7iy7nVUiH8%2FgJDo7NKou%2FjO36T0Lwdoi%2BUuVqu0x7nhYi0CmmSIAw8rEs3ZT%2F4WGUtPrRTAbPSFbOGa5uByxyYaP1FuJFsEPwqmKGog6fViHXYBaOx0Axpq2T5Ml513d3dxDmutSzMKj4AtIMs8oPQXq4m2fyqrc7VlmTXqYWuCjQy6xtkHazyD%2FYHzrnWWyGKkW3iYucD7%2Bo5E%2FQPBxOoM2jepnK7Er4f01lbkJHpy8wC3kTUskE5ehxZBKIdgOsQ6oDGK5Zcn%2BlsoOVspDxOTINOzywP2A3DrC5yel4qAQGG0Z%2FPRHPsFj8l%2F1VoaTM2Yb%2B%2FMSl3EkJfHPXOqfJMMvpWu9r%2FSYJIgg6Y%2FOTLUb1jpVU0HJrzTy4aYJQHf%2FAOI5NVtxJodyOZRp3njF6D2gbsKtaMoMhVMsv6AP%2B2OuPlkNF40aVkUhYXRURQ5aIqRo3U2xSVaRnkdA16vo1VH78kGeZpzOCTYlGsVmBnjXMg7R49KDAKtRPjVXQ36%2BqKp66f7KqmhRQ%2FKSIUiGPZzl5QruMIG6hmpFb%2FoTJuWUZi%2FTbaa%2B9%2Fa8FbhOmb0U0yBquAAf95WiaOIxIBcqnx%2Frl7sRaqqlL21LSlMNCihtQGOrIBNH6X0%2Fr27O7s4UvW%2FdiT6doGNFlDGgQPWe%2FhBUJDwvGd0mdfDNz%2F37Lbz1n14vSzrsQwA%2FTCehp6Jgf3spgIYt%2FEKkHT2h4ayQSraqkM6OWMke%2BA8guDP5I0BqkrbujvocOijdMgynYK%2BdWgH1ROWrOA%2BJcu528WwTSIYiFoOubIP2wAIvKRBmRgBADndZ4sqVbXZaZI%2B6ZEHTxcTGZzNoce%2FjUfltsqyOUpx%2B%2FIVk560w%3D%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=3304098873d1777d9ffe6ffb4a23e376144a74289c5a723caf7021dc25405878",
+      "file_size": 5386295,
+      "type": "video/x-matroska",
+      "moderated": null
+    }
+  ],
+  "allow_singular_disclosure_at": null,
+  "vote_count": 341,
+  "voters": [
+    "xypex",
+    "voiddy",
+    "kxddah",
+    "th3hidd3nmist",
+    "404_hackers",
+    "flashy911",
+    "pr4v1n_",
+    "h3xr4y",
+    "orange303",
+    "hacktus",
+    "and 331 more..."
+  ],
+  "structured_scope": {
+    "databaseId": 423,
+    "asset_type": "URL",
+    "asset_identifier": "accounts.shopify.com",
+    "max_severity": "critical"
+  },
+  "abilities": {
+    "assignable_team_members": [],
+    "assignable_team_member_groups": []
+  },
+  "is_exploit_agent_supported?": false,
+  "is_linear_agent_ui_supported?": false,
+  "summaries": [
+    {
+      "category": "team",
+      "can_view?": true,
+      "can_create?": false
+    },
+    {
+      "category": "researcher",
+      "can_view?": true,
+      "can_create?": false
+    }
+  ]
+}

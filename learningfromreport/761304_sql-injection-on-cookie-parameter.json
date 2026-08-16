@@ -1,0 +1,134 @@
+{
+  "id": 761304,
+  "global_id": "Z2lkOi8vaGFja2Vyb25lL1JlcG9ydC83NjEzMDQ=",
+  "url": "https://hackerone.com/reports/761304",
+  "title": " SQL Injection on cookie parameter",
+  "state": "Closed",
+  "substate": "resolved",
+  "severity_rating": "high",
+  "readable_substate": "Resolved",
+  "created_at": "2019-12-18T21:54:24.783Z",
+  "submitted_at": "2019-12-18T21:54:24.783Z",
+  "is_member_of_team?": false,
+  "is_organization_group_member?": false,
+  "is_triager?": false,
+  "reporter": {
+    "disabled": false,
+    "username": "w31rd0",
+    "url": "/w31rd0",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/i8kewby1q7y4xn6lw0sxhrd1ib8u/72249f83db42955adfcb43c5cad84162ec49002aa21a79c3606f682c8e48f4e6"
+    },
+    "is_me?": false,
+    "cleared": true,
+    "verified": true,
+    "hackerone_triager": false,
+    "hacker_mediation": false
+  },
+  "team": {
+    "id": 41919,
+    "url": "https://hackerone.com/mtn_group",
+    "handle": "mtn_group",
+    "profile_picture_urls": {
+      "small": "https://profile-photos.hackerone-user-content.com/variants/4e6ikuxrt34g8b14w2bk53c6vyry/b8e19a7691128fca51630d7f5b14644b91b3b45324f6fd488e36244d744fe35b",
+      "medium": "https://profile-photos.hackerone-user-content.com/variants/4e6ikuxrt34g8b14w2bk53c6vyry/89f037b490baf3dcca1b84283f4c85141b64c213252a9c79b56c62bf903ab542"
+    },
+    "permissions": [],
+    "submission_state": "open",
+    "default_currency": "usd",
+    "awards_miles": false,
+    "offers_bounties": false,
+    "state": "public_mode",
+    "only_cleared_hackers": false,
+    "pentest_feature_enabled?": false,
+    "pentest_retesting_ends_at": null,
+    "profile": {
+      "name": "MTN Group",
+      "twitter_handle": "",
+      "website": "https://www.mtn.com/",
+      "about": ""
+    }
+  },
+  "has_bounty?": false,
+  "can_view_team": true,
+  "can_view_report": true,
+  "is_external_bug": false,
+  "is_published": false,
+  "is_participant": false,
+  "has_collaborators": false,
+  "submitted_by_team_member": false,
+  "submitted_with_assistant": false,
+  "stage": 4,
+  "public": true,
+  "visibility": "full",
+  "cve_ids": [],
+  "singular_disclosure_disabled": false,
+  "disclosed_at": "2020-05-03T08:58:13.945Z",
+  "bug_reporter_agreed_on_going_public_at": "2020-04-03T08:58:12.565Z",
+  "team_member_agreed_on_going_public_at": null,
+  "comments_closed?": false,
+  "facebook_team?": false,
+  "team_private?": false,
+  "vulnerability_information": "## Summary:\nHello team. It seams one of the parameters in the cookies is vulnerable to SQL injection. Below requests has the lang parameter in cookies. If you inject one quote mark like '. You get SQL error with the syntax. By injecting a second you have the error removed.\nI did not attempt to exfiltrate data as this is obvious indication of SQLi.\n\n```\nGET /index.php/search/default?t=1&x=0&y=0 HTTP/1.1\nHost: mtn.com.ye\nUser-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:68.0) Gecko/20100101 Firefox/68.0\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\nAccept-Language: en-GB,en;q=0.5\nAccept-Encoding: gzip, deflate\nConnection: close\nCookie: PHPSESSID=86ce3d04baa357ffcacf5d013679b696; lang=en'; _ga=GA1.3.1859249834.1576704214; _gid=GA1.3.1031541111.1576704214; _gat=1; _gat_UA-44336198-10=1\nUpgrade-Insecure-Requests: 1\n```\n\nI would like to ask for permission for further exploiting this issue.\n\n## Impact\n\nWeb application is vulnerable to SQL injection, allowing access to data",
+  "weakness": {
+    "id": 67,
+    "name": "SQL Injection"
+  },
+  "original_report_id": null,
+  "original_report_url": null,
+  "attachments": [
+    {
+      "id": 663243,
+      "file_name": "SQLi.png",
+      "expiring_url": "https://hackerone-us-west-2-production-attachments.s3.us-west-2.amazonaws.com/xznLYfsTfX2tvWiiQomc7C25?response-content-disposition=attachment%3B%20filename%3D%22SQLi.png%22%3B%20filename%2A%3DUTF-8%27%27SQLi.png&response-content-type=image%2Fpng&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=ASIAQGK6FURQ45CXNDNY%2F20260816%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260816T105500Z&X-Amz-Expires=3600&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEGMaCXVzLXdlc3QtMiJIMEYCIQCVQ529ioREGQLYv0HOQvOmSz%2Bdso%2Bg6u6j72Y746givgIhAKbwIl9UzjwZIWTG9%2F5NRW%2FpA%2FYObfPtxDFlK3JPJ%2FLgKrIFCCwQAxoMMDEzNjE5Mjc0ODQ5Igxdwae4yWO0kSAzAi4qjwWlmWpsCvvGqdwyFBQuALVV26dJrYbr%2Bfux0bUyIJNZZT7zHbmEMAuwD1os4aB7XFHIySypvViX2RggK3PGn%2BOztVdXoLZ27VN%2BXaKa2WGvVpMwKJVB28nedaLJFlpxhOOsz6ezZ0H4cmXgoPxvc%2BhoWSSB94uLLD0MMTtVbLn6oXzm79%2BLmlAPjRVPvrVoHq7hcBMGb2mrnGkonbyhnbVFc3lLEldjmJmYY%2BxMcVe8nvrxPoc%2BnV4jFxUxrbXVpkO17PKTiFRX7EnNgI%2FmIjKrlpB%2FmIGvjVcSNOkBaUi9jqVRyE2P%2B8XSX2ljCLq0xScizlWJrsvpb8wiTApQWs6eiKMp6teigCZLYkvj5vR2BCcZGcYpXWPkY23lVH5lalc1m%2FVly%2Fh4lXj64Q72glTwAPreS2O4FuoSAdUMt8ZoWxbV4P%2FWN%2BRFGsthIBy51YrraJD3oZn4tNgBHUIuuDGcDFmGVtovp9Erd5deCKs6B4sIk1GfV43oPc%2FkBSzRy3zFYF6dYQ0GDl5l4T0gs3yaXUczczOyGBd1VmbWGgHYfeWwXClvjSQfWMsNmiZZ%2FkRZHhe7vTFsxxZjI6NOzQ6%2FlefNtWjW5cN155AlqB7wfXy0Nh7VRdMARCfDK7yH9HWSnNfD6pNihuCOzLQYaubZR7mU%2Fy51rbXYUXGfsd6bdyk9Q9rRp2F1TdRdLG8p4BJtb%2B%2FLhgLJkfW2JPIo29FGcUhd0g1srRD%2FoWPmEI438PAyxOVNG4DJrd2k0wQ0u07IPoy71IhHGduXS6WEfid0Cl%2BhMoUtLtK3Ho501forBRP4C9JnzVl%2FtpLrTkERXOLdAFEn0C1qwooqikbHbp%2FnPeFX9Q9QL2z1UTjzZBjTMMKghtQGOrABbPm4TBNX6LDlcgbut6mu1X6QP%2BKA%2Byu2vC9YgXSMMnCLOMZOrlJ%2FTmMyG9PQePySKtvDONu6XgzSmAJHGOQFoApj4S257lpoDlkQ1cRhrvcy%2BtboLEKw0tmNj9dvChBR3o5DuSicBjtW6qLBJ8JktuOnvVXvV90mHNciDfuXr2C9373n2SbarYhkta1AvbRT%2FRkA1d9IsGPjABO3YR35R0C4CraFjjoDLuzFD8mts94%3D&X-Amz-SignedHeaders=host&X-Amz-Signature=263db3338d7ae669f81e20f7b483b145ec034860aaa15f23c5df4021033f1456",
+      "file_size": 74716,
+      "type": "image/png",
+      "moderated": null
+    }
+  ],
+  "allow_singular_disclosure_at": "2020-05-03T08:58:12.607Z",
+  "allow_singular_disclosure_after": -198381407.95005077,
+  "singular_disclosure_allowed": true,
+  "vote_count": 323,
+  "voters": [
+    "qf5252",
+    "al-madjus",
+    "agrippathemagus",
+    "k0ns0l",
+    "defenderwww",
+    "orange303",
+    "m4khn0",
+    "prathap_ilango",
+    "loaymorad",
+    "abudman",
+    "and 313 more..."
+  ],
+  "severity": {
+    "rating": "high",
+    "author_type": "User"
+  },
+  "structured_scope": {
+    "databaseId": 34325,
+    "asset_type": "URL",
+    "asset_identifier": "mtn.com.ye",
+    "max_severity": "none"
+  },
+  "abilities": {
+    "assignable_team_members": [],
+    "assignable_team_member_groups": []
+  },
+  "is_exploit_agent_supported?": false,
+  "is_linear_agent_ui_supported?": false,
+  "summaries": [
+    {
+      "category": "team",
+      "can_view?": true,
+      "can_create?": false
+    },
+    {
+      "category": "researcher",
+      "can_view?": true,
+      "can_create?": false
+    }
+  ]
+}
