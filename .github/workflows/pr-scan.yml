@@ -5,7 +5,7 @@ on:
     types: [opened, synchronize, reopened]
 
 permissions:
-  contents: read
+  contents: write # autofix bot pushes a fix branch
   pull-requests: write
   security-events: write
 
@@ -58,3 +58,17 @@ jobs:
               issue_number: context.issue.number,
               body: body.slice(0, 65000)
             });
+
+      - name: Open autofix PRs (bot)
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -f pr-scan/pr-results.json ]; then
+            python scripts/autofix_pr.py \
+              --results pr-scan/pr-results.json \
+              --repo "$GITHUB_WORKSPACE" \
+              --base "${{ github.event.pull_request.base.ref }}" \
+              --pr "${{ github.event.pull_request.number }}"
+          fi

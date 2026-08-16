@@ -107,7 +107,12 @@ def main(argv=None) -> int:
                 if not result.needs_human and result.patch and result.patch.diff:
                     patch = {
                         "diff": result.patch.diff,
-                        "confidence": result.verification.confidence,
+                        "original_code": result.patch.original_code,
+                        "patched_code": result.patch.patched_code,
+                        "source": result.patch.source,
+                        "confidence": (
+                            result.verification.confidence if result.verification else 0.0
+                        ),
                     }
             except Exception:
                 patch = {}
@@ -125,6 +130,11 @@ def main(argv=None) -> int:
         "candidates": len(findings),
         "confirmed": len(confirmed),
         "findings": [_finding_dict(f) for f in findings],
+        "patches": [
+            {**patch, "file": f.file, "line": f.line, "vuln_type": f.vuln_type}
+            for f, _, patch in confirmed
+            if patch
+        ],
     }
     (out_dir / "pr-results.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
