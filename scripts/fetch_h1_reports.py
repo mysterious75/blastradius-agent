@@ -92,9 +92,7 @@ def build_markdown(meta: Dict[str, Any]) -> str:
 def save_report(out_dir: Path, report_id: int, data: Dict[str, Any]) -> Dict[str, Any]:
     meta = extract_meta(data)
     base = f"{report_id}_{_slug(meta.get('title', ''))}"
-    (out_dir / f"{base}.json").write_text(
-        json.dumps(data, indent=2), encoding="utf-8"
-    )
+    (out_dir / f"{base}.json").write_text(json.dumps(data, indent=2), encoding="utf-8")
     (out_dir / f"{base}.md").write_text(build_markdown(meta), encoding="utf-8")
     return meta
 
@@ -132,8 +130,7 @@ def main(argv=None) -> int:
             meta = save_report(out_dir, report_id, data)
             has_info = bool((meta.get("info") or "").strip())
             index.append(meta)
-            print(f"[+] {report_id}: {meta.get('title', '?')} "
-                  f"(info={'yes' if has_info else 'NO'})")
+            print(f"[+] {report_id}: {meta.get('title', '?')} (info={'yes' if has_info else 'NO'})")
             ok += 1
         except Exception as exc:
             print(f"[-] {report_id}: {exc}")

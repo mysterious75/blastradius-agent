@@ -17,6 +17,8 @@ def test_registry_discovers_all_scanners():
         "traversal",
         "crlf",
         "auth_bypass",
+        "nosqli",
+        "proto_pollution",
     }
 
 

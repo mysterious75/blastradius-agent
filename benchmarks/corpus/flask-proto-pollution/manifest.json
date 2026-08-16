@@ -1,0 +1,7 @@
+{
+  "target": "flask-proto-pollution",
+  "description": "Express endpoint merging the user-controlled request body into an object with lodash _.merge (prototype pollution sink).",
+  "expected": [
+    {"file": "app.js", "vuln_type": "proto_pollution", "severity": "HIGH", "cwe": "CWE-1321"}
+  ]
+}

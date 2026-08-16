@@ -1,0 +1,7 @@
+{
+  "target": "ci-supply-chain",
+  "description": "GitHub Actions workflow that checks out untrusted pull-request code and executes it with repository secrets.",
+  "expected": [
+    {"file": "ci.yml", "vuln_type": "ci_injection", "severity": "HIGH", "cwe": "CWE-94"}
+  ]
+}
