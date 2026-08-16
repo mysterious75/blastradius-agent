@@ -78,6 +78,7 @@ def test_console_scripts_declared_and_importable():
         "blastradius-server",
         "blastradius-hunt",
         "blastradius-web",
+        "blastradius-graph",
     }
 
     for name, target in scripts.items():

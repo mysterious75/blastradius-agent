@@ -20,6 +20,8 @@ scan (static, 8+ vuln types / 11 languages)
 
 ```bash
 python -m blastradius.hunter --target <url|path>        # scan + sandbox-validate + report
+python -m blastradius.agents --target <url|path>        # multi-agent graph (recon->exploit->patch)
+python -m blastradius.web --target <url>                # dynamic web testing
 python -m blastradius.pipeline_cli --target <url|path>  # full end-to-end pipeline
 python -m blastradius.review --target <path>            # LLM review gate (CONFIRMED/REJECTED, fail-closed)
 python -m blastradius.recon --strategy all              # target discovery
@@ -28,11 +30,13 @@ python -m blastradius.dashboard                         # local dashboard :8080
 python -m blastradius.cli.wizard                        # provider/notification setup
 scripts/pr_scan.py --repo . --base origin/main          # PR diff-scoped scan (GitHub Action)
 python benchmarks/run.py --verify                       # reproducible benchmark
-python -m pytest tests/ -q                              # 428 tests, offline
+python -m pytest tests/ -q                              # 442 tests, offline
 ```
 
 ## Architecture map
 
+- `blastradius/agents/` — multi-agent graph: ReconAgent → ExploitAgent
+  (parallel, sandbox-proven) → PatchAgent over a shared thread-safe blackboard
 - `blastradius/hunter/` — CVEHunter: repo clone, static scan, findings
 - `blastradius/scanners/` — 6 self-contained regex scanners + cache + parallel
 - `blastradius/sandbox/` — SandboxRunner: docker `--network none --read-only`
