@@ -314,7 +314,9 @@ models are passed through as-is.
 |---|---|
 | `python -m blastradius.cli.wizard` | Interactive setup (providers, keys, notifications, schedule) |
 | `python -m blastradius.hunter --target <url\|path>` | Scan a repo, sandbox-validate, save disclosure reports |
+| `python -m blastradius.agents --target <url\|path>` | Multi-agent graph: recon → exploit (parallel) → patch, shared blackboard + chains |
 | `python -m blastradius.web --target <url>` | Dynamic web testing: reflected XSS, open redirect, security headers, CORS, exposed files, directory listing |
+| `python -m blastradius.scope add\|check\|list\|rm` | Program scope registry (default-deny for URL targets) |
 | `scripts/pr_scan.py --repo . --base origin/main` | PR diff-scoped scan (sandbox-verified, merge gate; auto-opens fix PRs — see `.github/workflows/pr-scan.yml`) |
 | `python -m blastradius.pipeline_cli --target <url\|path>` | Full end-to-end pipeline |
 | `python -m blastradius.auto_hunt --strategy github --max 20` | Autonomous hunt over discovered targets |
@@ -333,8 +335,30 @@ models are passed through as-is.
 
 ```bash
 docker-compose up
-# dashboard http://localhost:8080 · webhook :8000 · Neo4j :7474/:7687
+# dashboard http://localhost:8080 · REST API :8001 · sandbox (isolated)
 ```
+
+## Multi-Agent Graph
+
+Beyond the linear pipeline, BlastRadius can run as a **graph of specialized
+agents** (`blastradius.agents`) that cooperate through a shared, thread-safe
+blackboard:
+
+```
+ReconAgent (discover candidates)
+  └─> ExploitAgent xN (prove in parallel in the sandbox, link chains)
+        └─> PatchAgent (generate + verify fixes)
+```
+
+```bash
+python -m blastradius.agents --target ./path-or-url
+```
+
+Every event (candidate → confirmed → patch → chain) is posted to the
+blackboard and auditable; findings sharing a file are linked into chains so
+related fixes are reviewed together. The graph is deterministic and
+LLM-independent — the tools prove, nothing is asserted — and each role
+carries a persona prompt ready for an LLM reasoning layer.
 
 ## Dynamic Web Testing
 

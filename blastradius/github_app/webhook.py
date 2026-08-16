@@ -11,6 +11,7 @@ import hashlib
 import hmac
 import json
 import os
+from pathlib import Path
 from typing import List, Optional
 
 from fastapi import FastAPI, Header, HTTPException, Request
@@ -53,13 +54,34 @@ def get_webhook_secret() -> str:
 
 
 def changed_files_from_payload(payload: dict) -> Optional[List[str]]:
-    """Best-effort changed-file list from the webhook payload.
+    """Best-effort changed-file list for the PR.
 
-    GitHub's pull_request payload does not include the file list; this returns
-    None unless the payload was enriched with one (e.g. by an API call).
+    GitHub's pull_request payload does not include the file list. When
+    ``GITHUB_TOKEN`` is set we ask the compare API; otherwise this returns
+    None (full-repo scan). Returns a list only when it can be determined.
     """
     files = payload.get("_changed_files")
-    return files if isinstance(files, list) else None
+    if isinstance(files, list) and files:
+        return files
+    token = os.getenv("GITHUB_TOKEN", "")
+    repo = (payload.get("repository") or {}).get("full_name")
+    pr = payload.get("pull_request") or {}
+    base = (pr.get("base") or {}).get("sha")
+    head = (pr.get("head") or {}).get("sha")
+    if not (token and repo and base and head):
+        return None
+    try:
+        import urllib.request
+
+        req = urllib.request.Request(f"https://api.github.com/repos/{repo}/compare/{base}...{head}")
+        req.add_header("Authorization", f"Bearer {token}")
+        req.add_header("Accept", "application/vnd.github+json")
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        names = [f["filename"] for f in data.get("files", [])]
+        return names or None
+    except Exception:
+        return None
 
 
 def scan_and_report(
@@ -82,7 +104,13 @@ def scan_and_report(
     repo_path = hunter.clone_repo(clone_url)
     findings = hunter.scan_repo(repo_path)
     if changed_files:
-        findings = [f for f in findings if any(changed in f.file for changed in changed_files)]
+        changed_set = {c.replace("\\", "/") for c in changed_files}
+        findings = [
+            f
+            for f in findings
+            if f.file.replace("\\", "/") in changed_set
+            or Path(f.file).name in {Path(c).name for c in changed_files}
+        ]
 
     for finding in findings:
         try:

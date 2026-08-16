@@ -78,6 +78,13 @@ class FullPipeline:
             self.plugins = plugins if plugins is not None else PluginLoader()
         except Exception:
             self.plugins = None
+        # Multi-channel alerts for confirmed findings (no-op when unconfigured).
+        try:
+            from blastradius.notify.notifier import Notifier
+
+            self.notifier = Notifier()
+        except Exception:
+            self.notifier = None
         # Tamper-evident audit log.
         try:
             from blastradius.security.audit_log import AuditLogger
@@ -169,6 +176,11 @@ class FullPipeline:
                     path = report.save_report(finding, repo_name, self.reports_dir, sandbox_result)
                     result.reports.append(path)
                     self._db("save_report", finding_ids.get(finding.line), str(path))
+                    if self.notifier is not None:
+                        try:
+                            self.notifier.notify_finding(finding, patch_result, str(path))
+                        except Exception:
+                            pass
                 if self.improver is not None:
                     try:
                         self.improver.record_outcome(

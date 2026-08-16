@@ -1,7 +1,7 @@
 # BlastRadius Agent — full stack.
 #
 #   docker compose up --build
-#   → dashboard at http://localhost:8080, webhook at :8000, Neo4j at :7474/:7687
+#   → dashboard at http://localhost:8080, REST API at :8001
 #
 # The sandbox service uses the gVisor runtime (runsc) when installed on the
 # host; remove the `runtime:` line to fall back to runc.
@@ -11,12 +11,9 @@ services:
     build: .
     ports:
       - "8080:8080"   # dashboard
-      - "8000:8000"   # GitHub App webhook
     volumes:
       - ~/.blastradius:/root/.blastradius   # SQLite DB + learned rules
     env_file: .env
-    depends_on:
-      - neo4j
 
   api:
     build: .
@@ -26,16 +23,6 @@ services:
       - ~/.blastradius:/root/.blastradius
     env_file: .env
     command: ["python", "-m", "blastradius.api", "--port", "8001"]
-    depends_on:
-      - neo4j
-
-  neo4j:
-    image: neo4j:5-community
-    ports:
-      - "7474:7474"   # browser
-      - "7687:7687"   # bolt
-    environment:
-      - NEO4J_AUTH=neo4j/blastradius
 
   sandbox:
     build: sandbox/

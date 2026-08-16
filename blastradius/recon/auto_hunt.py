@@ -6,6 +6,7 @@ reports for confirmed findings, and print the summary table.
 """
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -70,6 +71,13 @@ class AutoHunt:
     ) -> List[Dict]:
         """Hunt over up to ``max_targets`` discovered targets; returns result rows."""
         targets = self.dork.find_targets(strategy, min_stars=min_stars)[:max_targets]
+        if not targets:
+            print(
+                "[!] no targets discovered — set GITHUB_TOKEN (github strategy) / "
+                "SHODAN_API_KEY (shodan) before hunting",
+                file=sys.stderr,
+            )
+            return []
 
         results: List[Dict] = []
         with ThreadPoolExecutor(max_workers=self.workers) as pool:

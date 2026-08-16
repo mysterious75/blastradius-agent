@@ -10,9 +10,8 @@ import time
 from datetime import datetime
 from typing import Dict, List, Optional
 
-from blastradius.blast_radius.graph import BlastRadiusGraph, parse_dependencies
-from blastradius.hunter.scanner import CVEHunter, Finding
-from blastradius.security.input_validator import validate_github_url, validate_repo_path
+from blastradius.blast_radius.graph import BlastRadiusGraph
+from blastradius.hunter.scanner import Finding
 
 
 class ScanStore:
@@ -96,10 +95,6 @@ class ScanStore:
         with self._lock:
             return self.findings.get(finding_id)
 
-    def mark_confirmed(self, finding_id: int) -> None:
-        with self._lock:
-            self.confirmed_cves += 1
-
     # ------------------------------------------------------------------
     # Reports
     # ------------------------------------------------------------------
@@ -164,40 +159,40 @@ class ScanStore:
 
 
 def run_scan_job(store: ScanStore, job_id: str, target: str) -> None:
-    """Background scan executor (runs in a thread)."""
+    """Background scan executor (runs in a thread) — uses the full pipeline so
+    the dashboard counters reflect sandbox-verified findings, not raw scans."""
+    from blastradius.pipeline import FullPipeline
+
     store.update_job(
         job_id, status="running", started_at=datetime.now().isoformat(timespec="seconds")
     )
-    hunter = CVEHunter()
     try:
-        if target.startswith(("http://", "https://")):
-            url = validate_github_url(target)
-            store.add_message(job_id, f"Cloning {url}")
-            repo_path = hunter.clone_repo(url)
-            repo_name = url.rstrip("/").split("/")[-1]
-        else:
-            repo_path = validate_repo_path(target)
-            repo_name = target.rstrip("/\\").split("/")[-1].split("\\")[-1]
-        store.add_message(job_id, "Scanning repository…")
-        findings = hunter.scan_repo(repo_path)
-        store.update_job(job_id, files_scanned=hunter.files_scanned)
+        store.add_message(job_id, f"Running full pipeline on {target}")
+        result = FullPipeline(reports_dir=store.reports_dir).run(target)
         with store._lock:
-            store.repos_monitored.add(repo_name)
-        for finding in findings:
-            store.add_finding(job_id, finding, repo_name)
-        store.add_message(job_id, f"Found {len(findings)} candidate finding(s).")
-
-        try:
-            for name, version in parse_dependencies(repo_path):
-                store.graph.add_package(name, version)
-                store.graph.link_package_to_repo(name, repo_name)
-        except Exception:
-            pass
-
+            store.repos_monitored.add(result.target)
+            store.confirmed_cves = len(result.confirmed)
+            store.patches_generated = len(result.patches)
+            try:  # sync the dashboard graph with the pipeline's dependency map
+                for pkg, repos in result.blast_radius.backend.links.items():
+                    store.graph.add_package(pkg, "")
+                    for repo in repos:
+                        store.graph.link_package_to_repo(pkg, repo)
+            except Exception:
+                pass
+        for finding in result.findings:
+            store.add_finding(job_id, finding, result.target)
         store.update_job(
-            job_id, status="done", finished_at=datetime.now().isoformat(timespec="seconds")
+            job_id,
+            files_scanned=result.files_scanned,
+            status="done",
+            finished_at=datetime.now().isoformat(timespec="seconds"),
         )
-        store.add_message(job_id, "Scan complete.")
+        store.add_message(
+            job_id,
+            f"Found {len(result.findings)} candidate(s), "
+            f"{len(result.confirmed)} confirmed exploitable.",
+        )
     except Exception as exc:
         store.add_message(job_id, f"ERROR: {exc}")
         store.update_job(

@@ -79,16 +79,49 @@ def cmd_blast(args) -> int:
 def cmd_providers(args) -> int:
     from blastradius.providers.cli import main as providers_main
 
-    argv = [args.action]
-    if args.action == "test":
-        argv = ["test"]
-    return providers_main(argv)
+    return providers_main([args.action] + list(args.rest))
 
 
 def cmd_cve(args) -> int:
     from blastradius.cli.cve_tracker import main as cve_main
 
-    return cve_main([args.action])
+    return cve_main([args.action] + list(args.rest))
+
+
+def cmd_scope(args) -> int:
+    from blastradius.scope import _main as scope_main
+
+    return scope_main(list(args.arguments))
+
+
+def cmd_graph(args) -> int:
+    from blastradius.agents.cli import main as graph_main
+
+    return graph_main(
+        [
+            "--target",
+            args.target,
+            "--exploit-workers",
+            str(args.exploit_workers),
+            "--reports-dir",
+            args.reports_dir,
+        ]
+    )
+
+
+def cmd_web(args) -> int:
+    from blastradius.web.cli import main as web_main
+
+    return web_main(
+        [
+            "--target",
+            args.target,
+            "--max-urls",
+            str(args.max_urls),
+            "--reports-dir",
+            args.reports_dir,
+        ]
+    )
 
 
 def cmd_export(args) -> int:
@@ -127,11 +160,26 @@ def main(argv=None) -> int:
     blast_p = sub.add_parser("blast", help="map dependency blast radius")
     blast_p.add_argument("--repo", required=True)
 
-    providers_p = sub.add_parser("providers", help="provider status (list|test)")
-    providers_p.add_argument("action", choices=["list", "test"])
+    providers_p = sub.add_parser("providers", help="provider status (list|test|set|cost)")
+    providers_p.add_argument("action", choices=["list", "test", "set", "cost"])
+    providers_p.add_argument("rest", nargs=argparse.REMAINDER)
 
-    cve_p = sub.add_parser("cve", help="CVE tracking (list)")
-    cve_p.add_argument("action", choices=["list"])
+    cve_p = sub.add_parser("cve", help="CVE tracking (list|update|stats)")
+    cve_p.add_argument("action", choices=["list", "update", "stats"])
+    cve_p.add_argument("rest", nargs=argparse.REMAINDER)
+
+    scope_p = sub.add_parser("scope", help="scope registry (default-deny for URL targets)")
+    scope_p.add_argument("arguments", nargs=argparse.REMAINDER)
+
+    graph_p = sub.add_parser("graph", help="multi-agent graph scan")
+    graph_p.add_argument("--target", required=True)
+    graph_p.add_argument("--exploit-workers", type=int, default=4)
+    graph_p.add_argument("--reports-dir", default="reports")
+
+    web_p = sub.add_parser("web", help="dynamic web testing (XSS/redirect/headers/CORS)")
+    web_p.add_argument("--target", required=True)
+    web_p.add_argument("--max-urls", type=int, default=20)
+    web_p.add_argument("--reports-dir", default="reports")
 
     export_p = sub.add_parser("export", help="export findings")
     export_p.add_argument(
@@ -158,6 +206,12 @@ def main(argv=None) -> int:
         return cmd_providers(args)
     if args.command == "cve":
         return cmd_cve(args)
+    if args.command == "scope":
+        return cmd_scope(args)
+    if args.command == "graph":
+        return cmd_graph(args)
+    if args.command == "web":
+        return cmd_web(args)
     if args.command == "export":
         return cmd_export(args)
     return 1

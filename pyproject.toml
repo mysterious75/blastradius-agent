@@ -69,6 +69,7 @@ blastradius-blast = "blastradius.blast_radius.cli:main"
 blastradius-server = "blastradius.github_app.webhook:start"
 blastradius-hunt = "scripts.cve_hunt:main"
 blastradius-web = "blastradius.web.cli:main"
+blastradius-graph = "blastradius.agents.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/mysterious75/blastradius-agent"
