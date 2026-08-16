@@ -1,8 +1,6 @@
 """Parallel scanner + scan cache tests — no network."""
 
-import os
 import time
-from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
@@ -17,7 +15,7 @@ def repo(tmp_path):
     for i in range(10):
         (tmp_path / f"f{i}.py").write_text(
             "name = request.args.get('name')\n"
-            "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n",
+            'query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n',
             encoding="utf-8",
         )
     (tmp_path / "safe.py").write_text(
@@ -44,8 +42,11 @@ def test_parallel_progress_callback(repo):
     findings = hunter.scan_repo(str(repo), progress=lambda f, n: seen.append(str(f)))
     assert len(seen) == 11  # callback fires for every file (incl. safe.py with 0 findings)
     assert len({f.file for f in findings}) == 10
-    assert all(seen_path in {f.file for f in findings} for seen_path in seen
-               if any(f.file == seen_path for f in findings))
+    assert all(
+        seen_path in {f.file for f in findings}
+        for seen_path in seen
+        if any(f.file == seen_path for f in findings)
+    )
 
 
 def test_workers_auto_detected():
@@ -104,9 +105,17 @@ def test_cache_roundtrip(cache, tmp_path):
 
     path = tmp_path / "app.py"
     path.write_text("x = 1\n", encoding="utf-8")
-    finding = Finding(file=str(path), line=1, vuln_type="sqli", payload="q",
-                      confidence=0.9, severity="HIGH", cwe="CWE-89",
-                      description="d", remediation="r")
+    finding = Finding(
+        file=str(path),
+        line=1,
+        vuln_type="sqli",
+        payload="q",
+        confidence=0.9,
+        severity="HIGH",
+        cwe="CWE-89",
+        description="d",
+        remediation="r",
+    )
     assert cache.get_cached(path) is None
     cache.put(path, [finding])
     cached = cache.get_cached(path)
@@ -119,9 +128,22 @@ def test_cache_misses_on_change(cache, tmp_path):
 
     path = tmp_path / "app.py"
     path.write_text("a = 1\n", encoding="utf-8")
-    cache.put(path, [Finding(file=str(path), line=1, vuln_type="xss", payload="x",
-                             confidence=0.8, severity="HIGH", cwe="CWE-79",
-                             description="d", remediation="r")])
+    cache.put(
+        path,
+        [
+            Finding(
+                file=str(path),
+                line=1,
+                vuln_type="xss",
+                payload="x",
+                confidence=0.8,
+                severity="HIGH",
+                cwe="CWE-79",
+                description="d",
+                remediation="r",
+            )
+        ],
+    )
     path.write_text("a = 2\n", encoding="utf-8")  # content changed
     assert cache.get_cached(path) is None
 
@@ -132,9 +154,22 @@ def test_cache_ttl_expiry(tmp_path):
 
     path = tmp_path / "app.py"
     path.write_text("x\n", encoding="utf-8")
-    cache.put(path, [Finding(file=str(path), line=1, vuln_type="sqli", payload="p",
-                             confidence=0.9, severity="HIGH", cwe="CWE-89",
-                             description="d", remediation="r")])
+    cache.put(
+        path,
+        [
+            Finding(
+                file=str(path),
+                line=1,
+                vuln_type="sqli",
+                payload="p",
+                confidence=0.9,
+                severity="HIGH",
+                cwe="CWE-89",
+                description="d",
+                remediation="r",
+            )
+        ],
+    )
     assert cache.get_cached(path) is None  # expired immediately
 
 
@@ -148,9 +183,19 @@ def test_cache_used_by_parallel_scanner(tmp_path):
 
     def scan_file(p):
         calls["n"] += 1
-        return [Finding(file=str(p), line=1, vuln_type="sqli", payload="p",
-                        confidence=0.9, severity="HIGH", cwe="CWE-89",
-                        description="d", remediation="r")]
+        return [
+            Finding(
+                file=str(p),
+                line=1,
+                vuln_type="sqli",
+                payload="p",
+                confidence=0.9,
+                severity="HIGH",
+                cwe="CWE-89",
+                description="d",
+                remediation="r",
+            )
+        ]
 
     scanner = ParallelScanner(cache=cache)
     scanner.scan_repo_parallel(str(tmp_path), scan_file, [path])
@@ -163,17 +208,31 @@ def test_cache_stats_and_clear(cache, tmp_path):
 
     path = tmp_path / "app.py"
     path.write_text("x\n", encoding="utf-8")
-    cache.put(path, [Finding(file=str(path), line=1, vuln_type="sqli", payload="p",
-                             confidence=0.9, severity="HIGH", cwe="CWE-89",
-                             description="d", remediation="r")])
+    cache.put(
+        path,
+        [
+            Finding(
+                file=str(path),
+                line=1,
+                vuln_type="sqli",
+                payload="p",
+                confidence=0.9,
+                severity="HIGH",
+                cwe="CWE-89",
+                description="d",
+                remediation="r",
+            )
+        ],
+    )
     assert cache.stats()["cached_files"] == 1
     cache.clear()
     assert cache.stats()["cached_files"] == 0
 
 
 def test_cache_cli(tmp_path, monkeypatch, capsys):
-    monkeypatch.setattr("blastradius.scanners.__main__.ScanCache",
-                        lambda: ScanCache(path=str(tmp_path / "c.db")))
+    monkeypatch.setattr(
+        "blastradius.scanners.__main__.ScanCache", lambda: ScanCache(path=str(tmp_path / "c.db"))
+    )
     rc = scanners_main(["cache", "stats"])
     assert rc == 0
     assert "Cached files" in capsys.readouterr().out

@@ -121,16 +121,23 @@ class SQLiteDB:
             )
             return cur.lastrowid
 
-    def update_scan(self, scan_id: int, status: Optional[str] = None,
-                    files_scanned: Optional[int] = None,
-                    finished_at: Optional[str] = None) -> None:
+    def update_scan(
+        self,
+        scan_id: int,
+        status: Optional[str] = None,
+        files_scanned: Optional[int] = None,
+        finished_at: Optional[str] = None,
+    ) -> None:
         sets, vals = [], []
         if status is not None:
-            sets.append("status = ?"); vals.append(status)
+            sets.append("status = ?")
+            vals.append(status)
         if files_scanned is not None:
-            sets.append("files_scanned = ?"); vals.append(files_scanned)
+            sets.append("files_scanned = ?")
+            vals.append(files_scanned)
         if finished_at is not None:
-            sets.append("finished_at = ?"); vals.append(finished_at)
+            sets.append("finished_at = ?")
+            vals.append(finished_at)
         if not sets:
             return
         vals.append(scan_id)
@@ -139,7 +146,9 @@ class SQLiteDB:
 
     def get_scan(self, scan_id: int) -> Optional[Dict]:
         with self._connect() as conn:
-            return self._row(conn.execute("SELECT * FROM scans WHERE id = ?", (scan_id,)).fetchone())
+            return self._row(
+                conn.execute("SELECT * FROM scans WHERE id = ?", (scan_id,)).fetchone()
+            )
 
     def get_scans(self, limit: int = 50) -> List[Dict]:
         with self._connect() as conn:
@@ -155,9 +164,18 @@ class SQLiteDB:
             cur = conn.execute(
                 "INSERT INTO findings (scan_id, file, line, vuln_type, confidence, payload, "
                 "severity, description, remediation, cwe) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                (scan_id, finding.file, finding.line, finding.vuln_type, finding.confidence,
-                 finding.payload, finding.severity, finding.description,
-                 finding.remediation, finding.cwe),
+                (
+                    scan_id,
+                    finding.file,
+                    finding.line,
+                    finding.vuln_type,
+                    finding.confidence,
+                    finding.payload,
+                    finding.severity,
+                    finding.description,
+                    finding.remediation,
+                    finding.cwe,
+                ),
             )
             return cur.lastrowid
 
@@ -177,23 +195,33 @@ class SQLiteDB:
     # Patches
     # ------------------------------------------------------------------
 
-    def save_patch(self, finding_id: int, patch, attempts: int, needs_human: bool,
-                   confidence: float = 0.0) -> int:
+    def save_patch(
+        self, finding_id: int, patch, attempts: int, needs_human: bool, confidence: float = 0.0
+    ) -> int:
         with self._connect() as conn:
             cur = conn.execute(
                 "INSERT INTO patches (finding_id, original, patched, diff, confidence, "
                 "attempts, needs_human) VALUES (?,?,?,?,?,?,?)",
-                (finding_id, patch.original_code, patch.patched_code, patch.diff,
-                 confidence, attempts, int(needs_human)),
+                (
+                    finding_id,
+                    patch.original_code,
+                    patch.patched_code,
+                    patch.diff,
+                    confidence,
+                    attempts,
+                    int(needs_human),
+                ),
             )
             return cur.lastrowid
 
     def get_patch(self, finding_id: int) -> Optional[Dict]:
         with self._connect() as conn:
-            return self._row(conn.execute(
-                "SELECT * FROM patches WHERE finding_id = ? ORDER BY id DESC LIMIT 1",
-                (finding_id,),
-            ).fetchone())
+            return self._row(
+                conn.execute(
+                    "SELECT * FROM patches WHERE finding_id = ? ORDER BY id DESC LIMIT 1",
+                    (finding_id,),
+                ).fetchone()
+            )
 
     # ------------------------------------------------------------------
     # Reports
@@ -216,14 +244,20 @@ class SQLiteDB:
     # Provider usage
     # ------------------------------------------------------------------
 
-    def log_provider_usage(self, provider: str, model: str,
-                           tokens: int = 0, cost: float = 0.0) -> int:
+    def log_provider_usage(
+        self, provider: str, model: str, tokens: int = 0, cost: float = 0.0
+    ) -> int:
         with self._connect() as conn:
             cur = conn.execute(
                 "INSERT INTO providers_log (provider, model, tokens_used, cost_est, timestamp) "
                 "VALUES (?,?,?,?,?)",
-                (provider, model, int(tokens), float(cost),
-                 datetime.now().isoformat(timespec="seconds")),
+                (
+                    provider,
+                    model,
+                    int(tokens),
+                    float(cost),
+                    datetime.now().isoformat(timespec="seconds"),
+                ),
             )
             return cur.lastrowid
 
@@ -234,7 +268,9 @@ class SQLiteDB:
     def get_stats(self) -> Dict:
         with self._connect() as conn:
             total = conn.execute("SELECT COUNT(*) c FROM scans").fetchone()["c"]
-            done = conn.execute("SELECT COUNT(*) c FROM scans WHERE status = 'done'").fetchone()["c"]
+            done = conn.execute("SELECT COUNT(*) c FROM scans WHERE status = 'done'").fetchone()[
+                "c"
+            ]
             confirmed = conn.execute("SELECT COUNT(*) c FROM patches").fetchone()["c"]
             patches = confirmed
             findings = conn.execute("SELECT COUNT(*) c FROM findings").fetchone()["c"]

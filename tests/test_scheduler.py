@@ -74,8 +74,11 @@ def test_hourly_check_counts_vulns(monkeypatch):
         ],
     )
     monkeypatch.setattr(
-        HuntScheduler, "_osv_query",
-        lambda self, package: [{"id": "GHSA-1"}, {"id": "GHSA-2"}] if package == "flask-awesome" else [],
+        HuntScheduler,
+        "_osv_query",
+        lambda self, package: (
+            [{"id": "GHSA-1"}, {"id": "GHSA-2"}] if package == "flask-awesome" else []
+        ),
     )
     assert s.run_hourly_check() == 2
 

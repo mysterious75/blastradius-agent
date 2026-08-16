@@ -22,8 +22,10 @@ _store = ScanStore()
 
 _API_KEY = os.getenv("BLASTRADIUS_API_KEY", "")
 if not _API_KEY:
-    print("WARNING: BLASTRADIUS_API_KEY not set — API running in dev mode without auth.",
-          file=sys.stderr)
+    print(
+        "WARNING: BLASTRADIUS_API_KEY not set — API running in dev mode without auth.",
+        file=sys.stderr,
+    )
 
 
 def _require_auth(credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer)):
@@ -82,7 +84,7 @@ async def list_findings(severity: str = "", type: str = "", limit: int = 50, off
         rows = [r for r in rows if str(r.get("vuln_type", "")).lower() == type.lower()]
     limit = max(1, min(limit, 500))
     total = len(rows)
-    page = rows[offset:offset + limit]
+    page = rows[offset : offset + limit]
     return {"findings": page, "total": total, "page": offset // limit + 1}
 
 
@@ -117,9 +119,15 @@ async def create_patch(payload: dict):
         raise HTTPException(status_code=404, detail="finding not found")
 
     finding = Finding(
-        file=row["file"], line=row["line"], vuln_type=row["vuln_type"],
-        payload=row["payload"], confidence=row["confidence"], severity=row["severity"],
-        cwe=row["cwe"], description=row["description"], remediation=row["remediation"],
+        file=row["file"],
+        line=row["line"],
+        vuln_type=row["vuln_type"],
+        payload=row["payload"],
+        confidence=row["confidence"],
+        severity=row["severity"],
+        cwe=row["cwe"],
+        description=row["description"],
+        remediation=row["remediation"],
         original_code=row["payload"],
     )
     result = PatchLoop().run(finding)
@@ -151,16 +159,16 @@ async def providers():
 
     sel = auto_select(verbose=False)
     rows = [
-        {"provider": name, "key_set": provider_key_set(name),
-         "model": (cfg["models"] or ["-"])[0]}
+        {"provider": name, "key_set": provider_key_set(name), "model": (cfg["models"] or ["-"])[0]}
         for name, cfg in PROVIDER_REGISTRY.items()
     ]
     return {"active": sel, "providers": rows, "cost": cost_tracker.get_session_cost()}
 
 
 @app.post("/api/v1/webhook/github")
-async def github_webhook(request: Request,
-                         x_hub_signature_256: Optional[str] = Header(default=None)):
+async def github_webhook(
+    request: Request, x_hub_signature_256: Optional[str] = Header(default=None)
+):
     from blastradius.github_app.webhook import get_webhook_secret, scan_and_report, verify_signature
 
     body = await request.body()

@@ -32,12 +32,17 @@ def validate_sandbox(finding):
 class ParallelScanner:
     """Scan files in parallel with an optional findings cache."""
 
-    def __init__(self, max_workers: Optional[int] = None, timeout: int = DEFAULT_TIMEOUT,
-                 progress: Optional[Callable] = None, cache=None):
+    def __init__(
+        self,
+        max_workers: Optional[int] = None,
+        timeout: int = DEFAULT_TIMEOUT,
+        progress: Optional[Callable] = None,
+        cache=None,
+    ):
         self.max_workers = _default_workers(max_workers)
         self.timeout = timeout
         self.progress = progress  # on_file_scanned(file, findings_count)
-        self.cache = cache        # optional ScanCache
+        self.cache = cache  # optional ScanCache
         self.file_count = 0
 
     # ------------------------------------------------------------------
@@ -76,8 +81,9 @@ class ParallelScanner:
     # Sandbox validation (processes)
     # ------------------------------------------------------------------
 
-    def validate_parallel(self, findings, validate: Callable,
-                          max_workers: Optional[int] = None) -> List:
+    def validate_parallel(
+        self, findings, validate: Callable, max_workers: Optional[int] = None
+    ) -> List:
         """Run validate(finding) in a process pool; returns list of results."""
         if not findings:
             return []

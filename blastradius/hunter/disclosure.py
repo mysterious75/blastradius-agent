@@ -39,7 +39,7 @@ class DisclosureReport:
         return f"""# Vulnerability Disclosure: {f.vuln_type.upper()} in {repo_name}
 
 - **Date:** {date}
-- **Severity:** {f.severity} | **CVSS estimate:** {VULN_META[f.vuln_type]['cvss']} | **CWE:** {f.cwe}
+- **Severity:** {f.severity} | **CVSS estimate:** {VULN_META[f.vuln_type]["cvss"]} | **CWE:** {f.cwe}
 - **Affected file:** `{f.file}` line {f.line}
 - **Confidence:** {f.confidence}
 
@@ -96,7 +96,9 @@ and wait for the fix before public disclosure.
         content = self.generate_report(finding, repo_name, sandbox_result)
         date = datetime.date.today().isoformat()
         stem = Path(finding.file).stem
-        path = Path(reports_dir) / f"{date}_{finding.vuln_type}_{repo_name}_{stem}-{finding.line}.md"
+        path = (
+            Path(reports_dir) / f"{date}_{finding.vuln_type}_{repo_name}_{stem}-{finding.line}.md"
+        )
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
         return path

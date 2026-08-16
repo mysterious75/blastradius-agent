@@ -18,7 +18,7 @@ GITHUB_PATTERNS = [
     ("render_template_string request", "python"),
     ("innerHTML req.body", "javascript"),
     ("xml.etree.ElementTree.parse", "python"),
-    ('.decode(algorithms=[\'none\'])', "python"),
+    (".decode(algorithms=['none'])", "python"),
 ]
 
 PYPI_FILTERS = ("flask", "django", "fastapi", "starlette", "aiohttp")
@@ -78,13 +78,16 @@ class DorkEngine:
         repos: Dict[str, Dict] = {}
         for item in data.get("items", []):
             full = item["repository"]["full_name"]
-            repos.setdefault(full, {
-                "repo": full,
-                "file": item.get("path"),
-                "url": f"https://github.com/{full}",
-                "stars": 0,
-                "source": "github",
-            })
+            repos.setdefault(
+                full,
+                {
+                    "repo": full,
+                    "file": item.get("path"),
+                    "url": f"https://github.com/{full}",
+                    "stars": 0,
+                    "source": "github",
+                },
+            )
 
         results: List[Dict] = []
         for full, rec in repos.items():
@@ -142,7 +145,9 @@ class DorkEngine:
     # Shodan
     # ------------------------------------------------------------------
 
-    def shodan_search(self, query: str, api_key: Optional[str] = None, limit: int = 20) -> List[Dict]:
+    def shodan_search(
+        self, query: str, api_key: Optional[str] = None, limit: int = 20
+    ) -> List[Dict]:
         """Search Shodan for exposed services (requires SHODAN_API_KEY).
 
         Returns [{ip, port, hostname, org}] or [] when no key is configured.
@@ -169,7 +174,9 @@ class DorkEngine:
     # Aggregation
     # ------------------------------------------------------------------
 
-    def find_targets(self, strategy: str = "all", min_stars: int = 0, limit: int = 200) -> List[Dict]:
+    def find_targets(
+        self, strategy: str = "all", min_stars: int = 0, limit: int = 200
+    ) -> List[Dict]:
         """Combine all sources, dedupe by URL, prioritize by stars, and cache."""
         found: List[Dict] = []
         if strategy in ("github", "all"):
@@ -183,11 +190,16 @@ class DorkEngine:
                 found.append({"repo": repo, "file": None, "url": u, "stars": 0, "source": "pypi"})
         if strategy in ("shodan", "all"):
             for match in self.shodan_search("flask port:5000"):
-                found.append({
-                    "repo": None, "file": None,
-                    "url": f"http://{match['ip']}:{match['port']}",
-                    "stars": 0, "source": "shodan", **match,
-                })
+                found.append(
+                    {
+                        "repo": None,
+                        "file": None,
+                        "url": f"http://{match['ip']}:{match['port']}",
+                        "stars": 0,
+                        "source": "shodan",
+                        **match,
+                    }
+                )
 
         seen, deduped = set(), []
         for target in found:

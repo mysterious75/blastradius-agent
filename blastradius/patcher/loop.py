@@ -18,6 +18,7 @@ from blastradius.patcher.verifier import PatchVerifier, VerificationResult
 @dataclass
 class PatchResult:
     """Final outcome of the patch loop."""
+
     patch: Optional[Patch]
     verification: Optional[VerificationResult]
     attempts: int

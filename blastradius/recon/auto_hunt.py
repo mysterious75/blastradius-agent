@@ -16,8 +16,18 @@ from blastradius.tools.sandbox_tool import run_exploit_sandbox
 
 # Vendored/noise path parts excluded from findings before sandbox validation
 FP_PATH_PARTS = {
-    "node_modules", "vendor", "dist", "libs", "assets", "tests", "docs",
-    "examples", "migrations", "__pycache__", "static", "public",
+    "node_modules",
+    "vendor",
+    "dist",
+    "libs",
+    "assets",
+    "tests",
+    "docs",
+    "examples",
+    "migrations",
+    "__pycache__",
+    "static",
+    "public",
 }
 
 _SEVERITY_RANK = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 1, "INFO": 0}
@@ -55,7 +65,9 @@ class AutoHunt:
     # Public API
     # ------------------------------------------------------------------
 
-    def run(self, strategy: str = "github", max_targets: int = 20, min_stars: int = 100) -> List[Dict]:
+    def run(
+        self, strategy: str = "github", max_targets: int = 20, min_stars: int = 100
+    ) -> List[Dict]:
         """Hunt over up to ``max_targets`` discovered targets; returns result rows."""
         targets = self.dork.find_targets(strategy, min_stars=min_stars)[:max_targets]
 

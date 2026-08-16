@@ -50,10 +50,7 @@ def _host_is_private(host: str) -> bool:
         ip = ipaddress.ip_address(host.split("%")[0])
     except ValueError:
         return False
-    return (
-        ip.is_private or ip.is_loopback or ip.is_link_local
-        or ip.is_reserved or ip.is_multicast
-    )
+    return ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast
 
 
 def validate_github_url(url: str) -> str:

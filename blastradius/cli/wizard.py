@@ -38,6 +38,7 @@ CHANNEL_PROMPTS = {
 # Prompt helpers (questionary first, input() fallback)
 # ---------------------------------------------------------------------------
 
+
 def _use_interactive() -> bool:
     """questionary only in a real terminal — plain input() otherwise (tests, pipes)."""
     try:
@@ -128,6 +129,7 @@ def _int(message: str, default: int) -> int:
 # .env helpers
 # ---------------------------------------------------------------------------
 
+
 def _env_path() -> Path:
     return Path(os.getenv("BLASTRADIUS_ENV_FILE", ".env"))
 
@@ -152,6 +154,7 @@ def _write_env(path: Path, env: dict) -> None:
 # ---------------------------------------------------------------------------
 # Wizard
 # ---------------------------------------------------------------------------
+
 
 def main(argv=None) -> int:
     display = RichDisplay()
@@ -183,17 +186,24 @@ def main(argv=None) -> int:
     _write_env(env_path, env)
     print(f"[+] wrote {env_path}")
 
-    display.print_stats_panel({
-        "total_scans": len(selected),
-        "confirmed_cves": len(channels),
-        "patches_generated": 0,
-        "success_rate": 0.0,
-    })
+    display.print_stats_panel(
+        {
+            "total_scans": len(selected),
+            "confirmed_cves": len(channels),
+            "patches_generated": 0,
+            "success_rate": 0.0,
+        }
+    )
 
     if _confirm("Run a test scan now? (WebGoat)", default=False):
         subprocess.run(
-            [sys.executable, "-m", "blastradius.hunter", "--target",
-             "https://github.com/WebGoat/WebGoat"],
+            [
+                sys.executable,
+                "-m",
+                "blastradius.hunter",
+                "--target",
+                "https://github.com/WebGoat/WebGoat",
+            ],
         )
     return 0
 

@@ -59,8 +59,13 @@ def _agent(content="CONFIRMED_EXPLOITABLE: the pattern is exploitable"):
 
 def _finding(file="app.py", line=5, vuln_type="sqli", confidence=0.9, severity="CRITICAL"):
     return Finding(
-        file=file, line=line, vuln_type=vuln_type, payload="q = '...' + x",
-        confidence=confidence, severity=severity, description="SQL injection",
+        file=file,
+        line=line,
+        vuln_type=vuln_type,
+        payload="q = '...' + x",
+        confidence=confidence,
+        severity=severity,
+        description="SQL injection",
     )
 
 
@@ -78,9 +83,7 @@ async def test_run_focused_task_returns_verdict():
 @pytest.mark.anyio
 async def test_run_focused_task_not_exploitable():
     # jwt reconstruction has no target() function -> sandbox NOT_EXPLOITABLE
-    task = await run_focused_task(
-        _finding(vuln_type="jwt"), agent=_agent()
-    )
+    task = await run_focused_task(_finding(vuln_type="jwt"), agent=_agent())
     assert task["verdict"] == "not_exploitable"
     assert task["sandbox_verdict"] == "not_exploitable"
 
@@ -92,9 +95,7 @@ async def test_run_focused_task_uses_llm_when_sandbox_inconclusive(monkeypatch):
         "blastradius.agent_tasks.run_exploit_sandbox",
         lambda vuln_type, code: "sandbox could not decide",
     )
-    task = await run_focused_task(
-        _finding(), agent=_agent("NOT_EXPLOITABLE: escaped output")
-    )
+    task = await run_focused_task(_finding(), agent=_agent("NOT_EXPLOITABLE: escaped output"))
     assert task["sandbox_verdict"] == "needs_manual_review"
     assert task["verdict"] == "not_exploitable"  # from the LLM output
     assert task["llm_output"] != ""
@@ -107,6 +108,7 @@ async def test_run_focused_hunt_scan_rank_tasks_rerank(monkeypatch):
         _finding("b.py", 2, "xss", 0.95, "HIGH"),
         _finding("c.py", 3, "ssrf", 0.8, "MEDIUM"),
     ]
+
     async def fake_task(f, agent=None, max_iterations=8):
         return {
             "finding": (f.file, f.line, f.vuln_type),

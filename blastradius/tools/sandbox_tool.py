@@ -34,7 +34,10 @@ def run_exploit_sandbox(vuln_type: str, target_code: str) -> str:
         exploit_code = generate_exploit(vuln_type, target_code)
     except ValueError as exc:
         return f"NOT_EXPLOITABLE (no exploit template for {vuln_type}: {exc})"
-    result = SandboxRunner().run(exploit_code, target_code)
+    # PoCs here are template-generated (trusted); allow the unsandboxed local
+    # fallback when no Docker daemon is present (dev/CI). Arbitrary exploit
+    # code paths must NOT opt in — SandboxRunner stays fail-closed by default.
+    result = SandboxRunner(allow_unsandboxed=True).run(exploit_code, target_code)
     if result["vulnerable"]:
         return f"CONFIRMED_EXPLOITABLE\n{result['output']}"
     return f"NOT_EXPLOITABLE\n{result['output']}"

@@ -4,4 +4,11 @@ from .generator import Patch, PatchGenerator
 from .loop import PatchLoop, PatchResult
 from .verifier import PatchVerifier, VerificationResult
 
-__all__ = ["Patch", "PatchGenerator", "PatchVerifier", "VerificationResult", "PatchLoop", "PatchResult"]
+__all__ = [
+    "Patch",
+    "PatchGenerator",
+    "PatchVerifier",
+    "VerificationResult",
+    "PatchLoop",
+    "PatchResult",
+]

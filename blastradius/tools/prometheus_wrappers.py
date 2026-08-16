@@ -17,7 +17,6 @@ Each scan tool returns a JSON string of findings. CAI registration is lazy:
 from __future__ import annotations
 
 import json
-import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -86,8 +85,10 @@ def _scan_target(target: str, vuln_type: str) -> List:
     findings = []
     for ext in FILE_EXTENSIONS:
         for path in Path(repo_path).rglob(ext):
-            if "min." in path.name or any(part in path.parts for part in
-                                          (".git", "node_modules", "vendor", "dist", "__pycache__")):
+            if "min." in path.name or any(
+                part in path.parts
+                for part in (".git", "node_modules", "vendor", "dist", "__pycache__")
+            ):
                 continue
             try:
                 code = path.read_text(encoding="utf-8", errors="replace")

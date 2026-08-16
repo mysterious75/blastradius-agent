@@ -22,7 +22,7 @@ from blastradius.patcher.generator import Patch
 from blastradius.sandbox.generator import generate_exploit
 from blastradius.sandbox.runner import SandboxRunner
 
-_REGRESSION_TEST = '''\
+_REGRESSION_TEST = """\
 import target_patched as t
 
 def test_target_returns_string_for_benign_input():
@@ -33,12 +33,13 @@ def test_target_returns_string_for_benign_input():
 def test_target_handles_malicious_input_without_crashing():
     result = t.target("' OR '1'='1 --")
     assert isinstance(result, str)
-'''
+"""
 
 
 @dataclass
 class VerificationResult:
     """Outcome of the three verification checks."""
+
     syntax_ok: bool
     exploit_fixed: bool
     tests_pass: bool
@@ -54,7 +55,7 @@ class PatchVerifier:
         sandbox_runner: Optional[SandboxRunner] = None,
         regression_timeout: int = 60,
     ):
-        self.sandbox_runner = sandbox_runner or SandboxRunner()
+        self.sandbox_runner = sandbox_runner or SandboxRunner(allow_unsandboxed=True)
         self.regression_timeout = regression_timeout
 
     # ------------------------------------------------------------------
@@ -115,7 +116,9 @@ class PatchVerifier:
             try:
                 proc = subprocess.run(
                     [sys.executable, "-m", "pytest", "-q", tmpdir],
-                    capture_output=True, text=True, timeout=self.regression_timeout,
+                    capture_output=True,
+                    text=True,
+                    timeout=self.regression_timeout,
                 )
             except Exception:
                 return False

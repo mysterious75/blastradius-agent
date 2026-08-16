@@ -24,8 +24,9 @@ def _load_findings(args) -> list:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(prog="blastradius-export")
-    parser.add_argument("--format", choices=["csv", "json", "sarif", "html", "markdown"],
-                        default="markdown")
+    parser.add_argument(
+        "--format", choices=["csv", "json", "sarif", "html", "markdown"], default="markdown"
+    )
     parser.add_argument("--output", required=True)
     parser.add_argument("--input", default=None, help="findings JSON file (default: SQLite DB)")
     args = parser.parse_args(argv)

@@ -266,11 +266,11 @@ models are passed through as-is.
 
 | Provider | Base URL | Key env | Models (examples) |
 |---|---|---|---|
-| opencode_zen | https://opencode.ai/zen/go/v1 | `OPENCODE_API_KEY` | deepseek-v4-flash, gpt-5.6-sol, claude-sonnet-4-5, kimi-k3 |
+| opencode_zen | https://opencode.ai/zen/go/v1 | `OPENCODE_API_KEY` | deepseek-v4-flash, gpt-5.4, claude-sonnet-4-6, kimi-k3 |
 | opencode_go | https://opencode.ai/go/v1 | `OPENCODE_API_KEY` | deepseek-v4-flash, mimo-v2.5, grok-4.5, qwen3.8-max |
 | deepseek | https://api.deepseek.com/v1 | `DEEPSEEK_API_KEY` | deepseek-chat, deepseek-reasoner, deepseek-v4-pro |
-| openai | https://api.openai.com/v1 | `OPENAI_API_KEY` | gpt-4o, o3-mini, gpt-5.6-terra |
-| anthropic | https://api.anthropic.com/v1 | `ANTHROPIC_API_KEY` | claude-sonnet-4-6, claude-opus-5, claude-haiku-4-5 |
+| openai | https://api.openai.com/v1 | `OPENAI_API_KEY` | gpt-4o, o3-mini, gpt-5.4 |
+| anthropic | https://api.anthropic.com/v1 | `ANTHROPIC_API_KEY` | claude-sonnet-4-6, claude-opus-4-6, claude-haiku-4-5 |
 | openrouter | https://openrouter.ai/api/v1 | `OPENROUTER_API_KEY` | openai/gpt-4o, deepseek/deepseek-chat, qwen/qwen3.8-max |
 | qwen | https://dashscope.aliyuncs.com/compatible-mode/v1 | `QWEN_API_KEY` | qwen-max, qwen3.7-max, qwen2.5-coder-32b-instruct |
 | kimi | https://api.moonshot.cn/v1 | `KIMI_API_KEY` | moonshot-v1-128k, kimi-k3 |
@@ -333,6 +333,34 @@ models are passed through as-is.
 docker-compose up
 # dashboard http://localhost:8080 · webhook :8000 · Neo4j :7474/:7687
 ```
+
+## Benchmark
+
+[![CI](https://img.shields.io/github/actions/workflow/status/mysterious75/blastradius-agent/ci.yml?branch=main&label=CI%20%28benchmark%20gated%29)](https://github.com/mysterious75/blastradius-agent/actions)
+
+Reproducible, offline detection benchmark — the real pipeline scored against a
+ground-truth corpus (see [`benchmarks/`](benchmarks/README.md)). Every reported
+finding either carries a sandbox-executed `[VULNERABLE]` proof or is honestly
+labeled a candidate. Latest run (detection F1 / sandbox-proven):
+
+| Target | Expected | Reported | F1 | Proven (--verify) |
+|---|---|---|---|---|
+| flask-sqli | 1 | 1 | 1.000 | 1/1 |
+| flask-xss | 1 | 1 | 1.000 | 1/1 |
+| requests-ssrf | 1 | 1 | 1.000 | 1/1 |
+| jinja-ssti | 1 | 1 | 1.000 | 0/1* |
+| lxml-xxe | 1 | 1 | 1.000 | 0/1* |
+| hardcoded-secrets | 1 | 1 | 1.000 | 0/1* |
+| **Total** | **6** | **6** | **1.000** | **3/6** |
+
+\* no exploit template yet — reported as candidate, never silently "proven".
+
+```bash
+python benchmarks/run.py            # detection benchmark (offline)
+python benchmarks/run.py --verify   # + sandbox PoC execution (proven count)
+```
+
+The benchmark runs on every push/PR in CI with an F1 gate.
 
 ## CVE Hall of Fame
 

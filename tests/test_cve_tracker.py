@@ -14,9 +14,17 @@ def dedup(tmp_path):
 
 
 def make_finding(vuln_type="sqli", payload="SELECT * FROM users", line=5):
-    return Finding(file="/repo/app.py", line=line, vuln_type=vuln_type,
-                   payload=payload, confidence=0.9, severity="HIGH",
-                   cwe="CWE-89", description="d", remediation="r")
+    return Finding(
+        file="/repo/app.py",
+        line=line,
+        vuln_type=vuln_type,
+        payload=payload,
+        confidence=0.9,
+        severity="HIGH",
+        cwe="CWE-89",
+        description="d",
+        remediation="r",
+    )
 
 
 def test_fingerprint_deterministic():
@@ -31,12 +39,14 @@ def test_fingerprint_deterministic():
 def test_is_duplicate_flow(dedup):
     finding = make_finding()
     assert dedup.is_duplicate(finding, repo="org/repo") is False  # first sight
-    assert dedup.is_duplicate(finding, repo="org/repo") is True   # duplicate
+    assert dedup.is_duplicate(finding, repo="org/repo") is True  # duplicate
     assert dedup.is_duplicate(make_finding(line=6), repo="org/repo") is False  # different line
 
     with dedup.db._connect() as conn:
-        row = conn.execute("SELECT count FROM fingerprints WHERE fingerprint = ?",
-                           (Deduplicator.fingerprint(finding, "org/repo"),)).fetchone()
+        row = conn.execute(
+            "SELECT count FROM fingerprints WHERE fingerprint = ?",
+            (Deduplicator.fingerprint(finding, "org/repo"),),
+        ).fetchone()
     assert row["count"] == 2
 
 
@@ -79,8 +89,10 @@ def test_avg_fix_time(dedup):
     fid = dedup.db.save_finding(1, make_finding())
     dedup.mark_disclosed(fid, cve_id="CVE-2026-0002")
     with dedup.db._connect() as conn:
-        conn.execute("UPDATE cve_tracking SET disclosed_at = ?, fixed_at = ? WHERE finding_id = ?",
-                     (disclosed, fixed, fid))
+        conn.execute(
+            "UPDATE cve_tracking SET disclosed_at = ?, fixed_at = ? WHERE finding_id = ?",
+            (disclosed, fixed, fid),
+        )
     stats = dedup.get_stats()
     assert stats["avg_fix_days"] == pytest.approx(2, abs=1)
 
@@ -90,8 +102,19 @@ def test_cli_update_and_list(tmp_path, capsys):
     db = SQLiteDB(db_path=str(db_path))
     fid = db.save_finding(1, make_finding())
 
-    rc = tracker_main(["update", "--id", str(fid), "--cve", "CVE-2026-9999", "--bounty", "750",
-                       "--db", str(db_path)])
+    rc = tracker_main(
+        [
+            "update",
+            "--id",
+            str(fid),
+            "--cve",
+            "CVE-2026-9999",
+            "--bounty",
+            "750",
+            "--db",
+            str(db_path),
+        ]
+    )
     assert rc == 0
     out = capsys.readouterr().out
     assert "cve_assigned" in out

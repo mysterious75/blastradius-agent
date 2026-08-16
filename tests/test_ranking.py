@@ -11,8 +11,12 @@ from blastradius.hunter.scanner import Finding
 
 def _f(file, line, vuln_type, confidence, severity="HIGH"):
     return Finding(
-        file=file, line=line, vuln_type=vuln_type, payload="x",
-        confidence=confidence, severity=severity,
+        file=file,
+        line=line,
+        vuln_type=vuln_type,
+        payload="x",
+        confidence=confidence,
+        severity=severity,
     )
 
 
@@ -39,9 +43,7 @@ def test_sandbox_verdict_moves_rankings():
 
 
 def test_rank_is_deterministic():
-    findings = [
-        _f("a.py", i, "sqli", 0.8, "HIGH") for i in range(3)
-    ]
+    findings = [_f("a.py", i, "sqli", 0.8, "HIGH") for i in range(3)]
     a = rank_findings(findings)
     b = rank_findings(findings)
     assert [(r.file, r.line, r.score) for r in a] == [(r.file, r.line, r.score) for r in b]
@@ -72,9 +74,7 @@ def test_custom_confirmed_bonus():
     f = _f("a.py", 1, "sqli", 0.7, "MEDIUM")
     verdicts = {finding_key(f): "exploitable"}
     normal = rank_findings([f], sandbox_verdicts=verdicts)[0].score
-    boosted = rank_findings(
-        [f], sandbox_verdicts=verdicts, weights={"confirmed": 0.5}
-    )[0].score
+    boosted = rank_findings([f], sandbox_verdicts=verdicts, weights={"confirmed": 0.5})[0].score
     assert boosted > normal
 
 

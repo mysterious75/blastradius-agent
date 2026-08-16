@@ -1,0 +1,7 @@
+{
+  "target": "jinja-ssti",
+  "description": "Endpoint rendering a request parameter as a Jinja2 template source.",
+  "expected": [
+    {"file": "view.py", "vuln_type": "ssti", "severity": "CRITICAL", "cwe": "CWE-1336"}
+  ]
+}

@@ -52,7 +52,9 @@ class MemoryBackend:
 class Neo4jBackend:
     """Neo4j-backed graph (Package)-[:USED_IN]->(Repo)."""
 
-    def __init__(self, uri: Optional[str] = None, user: Optional[str] = None, password: Optional[str] = None):
+    def __init__(
+        self, uri: Optional[str] = None, user: Optional[str] = None, password: Optional[str] = None
+    ):
         from neo4j import GraphDatabase
 
         self.driver = GraphDatabase.driver(
@@ -67,14 +69,17 @@ class Neo4jBackend:
             session.run(
                 "MERGE (p:Package {name: $name}) "
                 "SET p.version = $version, p.vulnerable = $vulnerable",
-                name=name, version=version, vulnerable=bool(vulnerable),
+                name=name,
+                version=version,
+                vulnerable=bool(vulnerable),
             )
 
     def add_repo(self, name: str, url: str):
         with self.driver.session() as session:
             session.run(
                 "MERGE (r:Repo {name: $name}) SET r.url = $url",
-                name=name, url=url,
+                name=name,
+                url=url,
             )
 
     def link_package_to_repo(self, package: str, repo: str):
@@ -83,7 +88,8 @@ class Neo4jBackend:
                 "MERGE (p:Package {name: $package}) "
                 "MERGE (r:Repo {name: $repo}) "
                 "MERGE (p)-[:USED_IN]->(r)",
-                package=package, repo=repo,
+                package=package,
+                repo=repo,
             )
 
     def query_blast_radius(self, package: str) -> List[str]:
@@ -175,7 +181,7 @@ def _parse_go_mod(path: Path) -> List[Tuple[str, str]]:
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
         s = line.strip()
         if s.startswith("require") and "(" not in s:
-            m = _GOMOD_REQ_RE.match(s[len("require"):].strip())
+            m = _GOMOD_REQ_RE.match(s[len("require") :].strip())
             if m:
                 deps.append((m.group(1).split("/")[-1], _clean_version(m.group(2).lstrip("v"))))
             continue

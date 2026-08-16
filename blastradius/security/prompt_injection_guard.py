@@ -36,7 +36,8 @@ def log_attempt(code: str, context: str = "") -> None:
     try:
         from blastradius.security.audit_log import AuditLogger
 
-        AuditLogger().log("prompt_injection_attempt", context=context,
-                          patterns=detect_injection(code))
+        AuditLogger().log(
+            "prompt_injection_attempt", context=context, patterns=detect_injection(code)
+        )
     except Exception:
         pass

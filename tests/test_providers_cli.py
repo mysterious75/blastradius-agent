@@ -2,7 +2,7 @@
 
 import pytest
 
-from blastradius.providers.cli import cmd_list, cmd_set, main
+from blastradius.providers.cli import cmd_list, main
 from blastradius.providers.registry import PROVIDER_REGISTRY
 
 

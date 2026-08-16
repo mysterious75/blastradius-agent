@@ -57,19 +57,39 @@ def cmd_test(_args) -> int:
     for name in PROVIDER_REGISTRY:
         model = PROVIDER_REGISTRY[name]["models"][0]
         if not provider_key_set(name):
-            rows.append({"provider": name, "model": "—", "ok": False,
-                         "status": "No API key", "latency": "—"})
+            rows.append(
+                {
+                    "provider": name,
+                    "model": "—",
+                    "ok": False,
+                    "status": "No API key",
+                    "latency": "—",
+                }
+            )
             continue
         start = time.monotonic()
         try:
             LLMClient(provider=name, model=model, verbose=False).chat(["say hi"], "Reply with OK.")
-            rows.append({"provider": name, "model": model, "ok": True,
-                         "status": "Connected",
-                         "latency": f"{(time.monotonic() - start) * 1000:.0f}ms"})
+            rows.append(
+                {
+                    "provider": name,
+                    "model": model,
+                    "ok": True,
+                    "status": "Connected",
+                    "latency": f"{(time.monotonic() - start) * 1000:.0f}ms",
+                }
+            )
             ok += 1
         except Exception as exc:
-            rows.append({"provider": name, "model": model, "ok": False,
-                         "status": f"Failed: {exc}", "latency": "—"})
+            rows.append(
+                {
+                    "provider": name,
+                    "model": model,
+                    "ok": False,
+                    "status": f"Failed: {exc}",
+                    "latency": "—",
+                }
+            )
     display.print_provider_table(rows)
     print(f"{ok} provider(s) reachable")
     return 0
@@ -102,12 +122,14 @@ def cmd_cost(_args) -> int:
 
     monthly = tracker.get_monthly_estimate()
     display = RichDisplay()
-    display.print_stats_panel({
-        "total_scans": len(session["breakdown"]),
-        "confirmed_cves": round(session["total_usd"], 6),
-        "patches_generated": 0,
-        "success_rate": 0.0,
-    })
+    display.print_stats_panel(
+        {
+            "total_scans": len(session["breakdown"]),
+            "confirmed_cves": round(session["total_usd"], 6),
+            "patches_generated": 0,
+            "success_rate": 0.0,
+        }
+    )
     print(f"Session cost: ${session['total_usd']}")
     for key, value in session["breakdown"].items():
         print(f"  {key}: ${value}")
@@ -125,9 +147,7 @@ def cmd_set(args) -> int:
     env["BLASTRADIUS_PROVIDER"] = args.provider
     env["BLASTRADIUS_MODEL"] = model
     env_path.parent.mkdir(parents=True, exist_ok=True)
-    env_path.write_text(
-        "\n".join(f"{k}={v}" for k, v in env.items()) + "\n", encoding="utf-8"
-    )
+    env_path.write_text("\n".join(f"{k}={v}" for k, v in env.items()) + "\n", encoding="utf-8")
     print(f"[+] wrote {env_path}: BLASTRADIUS_PROVIDER={args.provider} BLASTRADIUS_MODEL={model}")
     return 0
 
@@ -149,7 +169,9 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
     if args.command != "set":
         RichDisplay().print_banner()
-    return {"list": cmd_list, "test": cmd_test, "set": cmd_set, "cost": cmd_cost}[args.command](args)
+    return {"list": cmd_list, "test": cmd_test, "set": cmd_set, "cost": cmd_cost}[args.command](
+        args
+    )
 
 
 if __name__ == "__main__":

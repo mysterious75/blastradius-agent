@@ -24,7 +24,8 @@ from urllib import request as urllib_request
 def _default_http(url: str, payload: dict, headers: Dict = None) -> int:
     data = json.dumps(payload).encode("utf-8")
     req = urllib_request.Request(
-        url, data=data,
+        url,
+        data=data,
         headers={"Content-Type": "application/json", **(headers or {})},
         method="POST",
     )
@@ -74,7 +75,8 @@ class Notifier:
         threads = []
         for channel in channels:
             thread = threading.Thread(
-                target=self._dispatch, args=(channel, finding, patch_result, report_path),
+                target=self._dispatch,
+                args=(channel, finding, patch_result, report_path),
                 daemon=True,
             )
             thread.start()
@@ -112,7 +114,9 @@ class Notifier:
     def _summary(finding, report_path: str) -> str:
         repo = getattr(finding, "repo", "") or "unknown"
         file = Path(finding.file).name if finding.file else "?"
-        location = f"{repo}/{file}:{finding.line}" if repo != "unknown" else f"{file}:{finding.line}"
+        location = (
+            f"{repo}/{file}:{finding.line}" if repo != "unknown" else f"{file}:{finding.line}"
+        )
         line = (
             f"🔴 BlastRadius: [{finding.vuln_type.upper()}] confirmed in {location}"
             f"\nSeverity: {finding.severity} | CWE: {finding.cwe}"
@@ -133,13 +137,18 @@ class Notifier:
             color = 0xFF4444 if not patch_result.needs_human else 0xD29922
         else:
             color = 0xFF4444
-        self.http(os.getenv("DISCORD_WEBHOOK_URL"), {
-            "embeds": [{
-                "title": f"BlastRadius: {finding.vuln_type.upper()} confirmed",
-                "description": self._summary(finding, report_path),
-                "color": color,
-            }],
-        })
+        self.http(
+            os.getenv("DISCORD_WEBHOOK_URL"),
+            {
+                "embeds": [
+                    {
+                        "title": f"BlastRadius: {finding.vuln_type.upper()} confirmed",
+                        "description": self._summary(finding, report_path),
+                        "color": color,
+                    }
+                ],
+            },
+        )
 
     def _send_telegram(self, finding, patch_result, report_path) -> None:
         token = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -172,6 +181,12 @@ class Notifier:
         labels = ["security-finding"]
         if patch_result is not None and patch_result.needs_human:
             labels.append("needs-review")
-        self.http(url, {"title": f"Security Finding: {finding.vuln_type.upper()} in {finding.file}",
-                        "body": body, "labels": labels},
-                  {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"})
+        self.http(
+            url,
+            {
+                "title": f"Security Finding: {finding.vuln_type.upper()} in {finding.file}",
+                "body": body,
+                "labels": labels,
+            },
+            {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"},
+        )

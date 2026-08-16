@@ -27,6 +27,7 @@ from blastradius.tools.sandbox_tool import run_exploit_sandbox
 @dataclass
 class PipelineResult:
     """Outcome of a full pipeline run."""
+
     target: str
     findings: List[Finding] = field(default_factory=list)
     patches: List[Tuple[Finding, PatchResult]] = field(default_factory=list)
@@ -154,9 +155,14 @@ class FullPipeline:
                             pass
                     if patch_result.verification is not None:
                         patch_confidence = patch_result.verification.confidence
-                        self._db("save_patch", finding_ids.get(finding.line), patch_result.patch,
-                                 patch_result.attempts, patch_result.needs_human,
-                                 patch_confidence)
+                        self._db(
+                            "save_patch",
+                            finding_ids.get(finding.line),
+                            patch_result.patch,
+                            patch_result.attempts,
+                            patch_result.needs_human,
+                            patch_confidence,
+                        )
 
                     self._emit("on_report", finding=finding, patch_result=patch_result)
                     report = DisclosureReport()
@@ -166,7 +172,9 @@ class FullPipeline:
                 if self.improver is not None:
                     try:
                         self.improver.record_outcome(
-                            finding, was_fp=was_fp, sandbox_result=sandbox_result,
+                            finding,
+                            was_fp=was_fp,
+                            sandbox_result=sandbox_result,
                             patch_confidence=patch_confidence,
                         )
                     except Exception:
@@ -174,8 +182,12 @@ class FullPipeline:
             except Exception:
                 continue  # never let one finding break the pipeline
 
-        self._db("update_scan", scan_id, status="done",
-                 finished_at=datetime.now().isoformat(timespec="seconds"))
+        self._db(
+            "update_scan",
+            scan_id,
+            status="done",
+            finished_at=datetime.now().isoformat(timespec="seconds"),
+        )
         # Log provider usage when the LLM was actually used for a patch.
         if any(pr.patch.source == "api" for _, pr in result.patches):
             sel = None
@@ -190,9 +202,13 @@ class FullPipeline:
 
         summary_path = self.summary.save_summary(result, self.reports_dir)
         result.reports.append(summary_path)
-        self._audit("scan_completed", target=target,
-                    findings=len(result.findings), confirmed=len(result.confirmed),
-                    patches=len(result.patches))
+        self._audit(
+            "scan_completed",
+            target=target,
+            findings=len(result.findings),
+            confirmed=len(result.confirmed),
+            patches=len(result.patches),
+        )
         if self.plugins is not None:
             try:
                 self.plugins.on_scan_complete(result)

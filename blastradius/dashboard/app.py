@@ -14,14 +14,15 @@ Routes:
     GET /ws/{job_id}         WebSocket live scan progress
 """
 
+import hmac
 import html as _html
 import os
-import re
 import threading
 from pathlib import Path
+from typing import Optional
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from blastradius.dashboard.store import ScanStore, run_scan_job
@@ -40,6 +41,7 @@ app.mount("/static", StaticFiles(directory=str(_HERE / "static")), name="static"
 # ---------------------------------------------------------------------------
 # Markdown -> HTML (stdlib only, minimal renderer)
 # ---------------------------------------------------------------------------
+
 
 def _md_to_html(md: str) -> str:
     out, in_code = [], False
@@ -82,19 +84,22 @@ def _providers_status() -> list:
             key, status = "set", "ready"
         else:
             key, status = "none", "no key"
-        rows.append({
-            "provider": name,
-            "model": (cfg["models"] or ["-"])[0],
-            "key": key,
-            "status": status,
-            "active": name == active,
-        })
+        rows.append(
+            {
+                "provider": name,
+                "model": (cfg["models"] or ["-"])[0],
+                "key": key,
+                "status": status,
+                "active": name == active,
+            }
+        )
     return rows
 
 
 # ---------------------------------------------------------------------------
 # Pages
 # ---------------------------------------------------------------------------
+
 
 @app.get("/", response_class=HTMLResponse)
 async def home():
@@ -105,6 +110,7 @@ async def home():
 # ---------------------------------------------------------------------------
 # Findings
 # ---------------------------------------------------------------------------
+
 
 @app.get("/findings")
 async def findings():
@@ -131,6 +137,7 @@ async def finding_detail(finding_id: int):
 # Reports
 # ---------------------------------------------------------------------------
 
+
 @app.get("/reports")
 async def reports():
     return [{"name": r["name"], "path": r["path"]} for r in store.reports_list()]
@@ -155,6 +162,7 @@ async def report_html(name: str):
 # Blast radius / providers / stats
 # ---------------------------------------------------------------------------
 
+
 @app.get("/blast-radius")
 async def blast_radius():
     return store.blast_radius()
@@ -170,12 +178,24 @@ async def stats():
     return store.stats()
 
 
+def _require_dashboard_token(authorization: Optional[str]) -> None:
+    """Enforce ``DASHBOARD_TOKEN`` on mutating endpoints when it is configured."""
+    token = os.getenv("DASHBOARD_TOKEN", "")
+    if not token:
+        return
+    provided = (authorization or "").removeprefix("Bearer ").strip()
+    if not hmac.compare_digest(provided, token):
+        raise HTTPException(status_code=401, detail="invalid dashboard token")
+
+
 # ---------------------------------------------------------------------------
 # Scans
 # ---------------------------------------------------------------------------
 
+
 @app.post("/scan")
-async def trigger_scan(payload: dict):
+async def trigger_scan(payload: dict, authorization: Optional[str] = Header(default=None)):
+    _require_dashboard_token(authorization)
     target = (payload or {}).get("target", "").strip()
     if not target:
         raise HTTPException(status_code=400, detail="target is required")
@@ -189,8 +209,13 @@ async def scan_status(job_id: str):
     job = store.get_job(job_id)
     if not job:
         raise HTTPException(status_code=404, detail="scan not found")
-    return {"id": job["id"], "status": job["status"], "target": job["target"],
-            "files_scanned": job["files_scanned"], "messages": job["messages"]}
+    return {
+        "id": job["id"],
+        "status": job["status"],
+        "target": job["target"],
+        "files_scanned": job["files_scanned"],
+        "messages": job["messages"],
+    }
 
 
 @app.websocket("/ws/{job_id}")

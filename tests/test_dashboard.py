@@ -8,16 +8,15 @@ pytest.importorskip("fastapi")  # optional dep — skip gracefully when not inst
 from fastapi.testclient import TestClient
 
 from blastradius.dashboard.app import app
-from blastradius.dashboard.store import ScanStore
 
-VULN_APP_PY = '''\
+VULN_APP_PY = """\
 from flask import request
 
 def search():
     name = request.args.get("name")
     query = "SELECT * FROM users WHERE name = '" + name + "'"
     return db.execute(query)
-'''
+"""
 
 
 @pytest.fixture
@@ -51,8 +50,14 @@ def test_home_serves_dashboard(client):
 
 def test_stats_and_providers_endpoints(client):
     stats = client.get("/stats").json()
-    assert set(stats) == {"total_scans", "confirmed_cves", "patches_generated",
-                          "repos_monitored", "findings", "success_rate"}
+    assert set(stats) == {
+        "total_scans",
+        "confirmed_cves",
+        "patches_generated",
+        "repos_monitored",
+        "findings",
+        "success_rate",
+    }
     providers = client.get("/providers").json()
     assert "active" in providers and "providers" in providers
     names = {p["provider"] for p in providers["providers"]}
@@ -60,8 +65,9 @@ def test_stats_and_providers_endpoints(client):
 
 
 def test_findings_flow(client, vuln_repo, monkeypatch):
-    monkeypatch.setattr("blastradius.hunter.scanner.CVEHunter.clone_repo",
-                        lambda self, url: str(vuln_repo))
+    monkeypatch.setattr(
+        "blastradius.hunter.scanner.CVEHunter.clone_repo", lambda self, url: str(vuln_repo)
+    )
     resp = client.post("/scan", json={"target": "https://github.com/org/demo"})
     assert resp.status_code == 200
     job_id = resp.json()["job_id"]
@@ -113,10 +119,14 @@ def test_reports_endpoint(client, tmp_path):
 
 
 def test_blast_radius_graph(client, vuln_repo, monkeypatch):
-    monkeypatch.setattr("blastradius.hunter.scanner.CVEHunter.clone_repo",
-                        lambda self, url: str(vuln_repo))
+    monkeypatch.setattr(
+        "blastradius.hunter.scanner.CVEHunter.clone_repo", lambda self, url: str(vuln_repo)
+    )
     client.post("/scan", json={"target": "https://github.com/org/demo"})
-    _wait_done(client, client.post("/scan", json={"target": "https://github.com/org/demo2"}).json()["job_id"])
+    _wait_done(
+        client,
+        client.post("/scan", json={"target": "https://github.com/org/demo2"}).json()["job_id"],
+    )
     graph = client.get("/blast-radius").json()
     assert "nodes" in graph and "links" in graph
     types = {n["type"] for n in graph["nodes"]}
@@ -124,8 +134,9 @@ def test_blast_radius_graph(client, vuln_repo, monkeypatch):
 
 
 def test_websocket_progress(client, vuln_repo, monkeypatch):
-    monkeypatch.setattr("blastradius.hunter.scanner.CVEHunter.clone_repo",
-                        lambda self, url: str(vuln_repo))
+    monkeypatch.setattr(
+        "blastradius.hunter.scanner.CVEHunter.clone_repo", lambda self, url: str(vuln_repo)
+    )
     job_id = client.post("/scan", json={"target": "https://github.com/org/wsdemo"}).json()["job_id"]
     _wait_done(client, job_id)
     with client.websocket_connect(f"/ws/{job_id}") as ws:

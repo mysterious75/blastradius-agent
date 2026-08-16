@@ -184,7 +184,9 @@ def test_cost_tracking_math():
 
 def test_cost_tracking_deepseek_cheap():
     tracker = CostTracker()
-    tracker.track_usage("deepseek", "deepseek-chat", input_tokens=1_000_000, output_tokens=1_000_000)
+    tracker.track_usage(
+        "deepseek", "deepseek-chat", input_tokens=1_000_000, output_tokens=1_000_000
+    )
     assert tracker.get_session_cost()["total_usd"] == pytest.approx(0.42, abs=1e-4)
 
 
@@ -196,8 +198,9 @@ def test_cost_tracking_default_rates():
 
 def test_cost_tracking_opencode_free():
     tracker = CostTracker()
-    tracker.track_usage("opencode_zen", "deepseek-v4-flash", input_tokens=500_000,
-                        output_tokens=500_000)
+    tracker.track_usage(
+        "opencode_zen", "deepseek-v4-flash", input_tokens=500_000, output_tokens=500_000
+    )
     assert tracker.get_session_cost()["total_usd"] == 0.0
 
 
@@ -213,8 +216,9 @@ def test_cost_cli(monkeypatch, capsys):
     from blastradius.providers.cli import main as providers_main
 
     cost_tracker.usage.clear()
-    cost_tracker.track_usage("deepseek", "deepseek-chat", input_tokens=1_000_000,
-                             output_tokens=1_000_000)
+    cost_tracker.track_usage(
+        "deepseek", "deepseek-chat", input_tokens=1_000_000, output_tokens=1_000_000
+    )
     try:
         rc = providers_main(["cost"])
         assert rc == 0
@@ -231,8 +235,10 @@ def test_chat_records_usage(monkeypatch):
     monkeypatch.setenv("DEEPSEEK_API_KEY", "ds")
 
     def http(url, headers, payload, timeout):
-        return {"choices": [{"message": {"content": "ok"}}],
-                "usage": {"prompt_tokens": 500, "completion_tokens": 300}}
+        return {
+            "choices": [{"message": {"content": "ok"}}],
+            "usage": {"prompt_tokens": 500, "completion_tokens": 300},
+        }
 
     tracker = CostTracker()
     client = LLMClient(provider="deepseek", http=http, verbose=False, tracker=tracker)

@@ -65,10 +65,12 @@ def _agent(responses):
 
 @pytest.mark.anyio
 async def test_run_scan_executes_tool_calls_and_returns_final():
-    agent = _agent([
-        Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", '{"target": "x"}')]))),
-        Resp(Choice("stop", Msg(content="done"))),
-    ])
+    agent = _agent(
+        [
+            Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", '{"target": "x"}')]))),
+            Resp(Choice("stop", Msg(content="done"))),
+        ]
+    )
     assert await run_scan("go", agent) == "done"
     # the tool result was fed back to the model
     last = agent["client"].chat.completions.seen_messages[-1]
@@ -78,10 +80,12 @@ async def test_run_scan_executes_tool_calls_and_returns_final():
 
 @pytest.mark.anyio
 async def test_run_scan_unknown_tool_does_not_crash():
-    agent = _agent([
-        Resp(Choice("tool_calls", Msg(tool_calls=[Call("nope", "{}")]))),
-        Resp(Choice("stop", Msg(content="final"))),
-    ])
+    agent = _agent(
+        [
+            Resp(Choice("tool_calls", Msg(tool_calls=[Call("nope", "{}")]))),
+            Resp(Choice("stop", Msg(content="final"))),
+        ]
+    )
     assert await run_scan("go", agent) == "final"
     last = agent["client"].chat.completions.seen_messages[-1]
     assert "unknown tool: nope" in last[-1]["content"]
@@ -89,10 +93,12 @@ async def test_run_scan_unknown_tool_does_not_crash():
 
 @pytest.mark.anyio
 async def test_run_scan_bad_tool_args_does_not_crash():
-    agent = _agent([
-        Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", "not-json")]))),
-        Resp(Choice("stop", Msg(content="final"))),
-    ])
+    agent = _agent(
+        [
+            Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", "not-json")]))),
+            Resp(Choice("stop", Msg(content="final"))),
+        ]
+    )
     assert await run_scan("go", agent) == "final"
 
 
@@ -108,26 +114,42 @@ async def test_run_scan_plain_answer_returns_directly():
 async def test_run_scan_repeated_tool_call_gets_guard_message():
     # identical repeat of a tool call must not be re-executed — it gets a
     # stop-repeating message that breaks infinite tool-call loops
-    agent = _agent([
-        Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", '{"target": "x"}')]))),
-        Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", '{"target": "x"}')]))),
-        Resp(Choice("stop", Msg(content="final"))),
-    ])
+    agent = _agent(
+        [
+            Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", '{"target": "x"}')]))),
+            Resp(Choice("tool_calls", Msg(tool_calls=[Call("dummy_tool", '{"target": "x"}')]))),
+            Resp(Choice("stop", Msg(content="final"))),
+        ]
+    )
     assert await run_scan("go", agent) == "final"
     tool_msgs = [
-        m for m in agent["client"].chat.completions.seen_messages[-1]
+        m
+        for m in agent["client"].chat.completions.seen_messages[-1]
         if isinstance(m, dict) and m.get("role") == "tool"
     ]
-    assert tool_msgs[0]["content"] == "scanned:x"           # first call executed
+    assert tool_msgs[0]["content"] == "scanned:x"  # first call executed
     assert "repeated tool call" in tool_msgs[1]["content"]  # second call guarded
 
 
 @pytest.mark.anyio
 async def test_run_scan_exhausted_returns_last_content():
     # when the loop caps out, any accumulated assistant content is returned
-    agent = _agent([Resp(Choice("tool_calls", Msg(content="progress", tool_calls=[
-        Call("dummy_tool", '{"target": "x"}'),
-    ])))] * 30)
+    agent = _agent(
+        [
+            Resp(
+                Choice(
+                    "tool_calls",
+                    Msg(
+                        content="progress",
+                        tool_calls=[
+                            Call("dummy_tool", '{"target": "x"}'),
+                        ],
+                    ),
+                )
+            )
+        ]
+        * 30
+    )
     out = await run_scan("go", agent)
     assert out  # not a bare crash; last content or the hint message
 

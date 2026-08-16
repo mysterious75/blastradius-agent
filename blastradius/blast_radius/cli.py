@@ -20,7 +20,9 @@ def main(argv=None) -> int:
     )
     parser.add_argument("--repo", required=True, help="path to a repo")
     parser.add_argument(
-        "--backend", choices=["auto", "memory", "neo4j"], default="auto",
+        "--backend",
+        choices=["auto", "memory", "neo4j"],
+        default="auto",
         help="graph backend (default: neo4j with in-memory fallback)",
     )
     args = parser.parse_args(argv)
@@ -45,7 +47,9 @@ def main(argv=None) -> int:
         affected = graph.query_blast_radius(name)
         rows.append([name, version, len(affected), ", ".join(affected)])
     if rows:
-        display.print_table(["Package", "Version", "Affected Repos", "Repos"], rows, title="Blast Radius")
+        display.print_table(
+            ["Package", "Version", "Affected Repos", "Repos"], rows, title="Blast Radius"
+        )
     return 0
 
 

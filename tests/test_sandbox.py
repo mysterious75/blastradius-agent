@@ -6,7 +6,6 @@ templates are executed for real in the runner's local mode
 isolation.
 """
 
-import subprocess
 from unittest import mock
 
 import pytest
@@ -17,39 +16,39 @@ from blastradius.tools.sandbox_tool import run_exploit_sandbox
 
 # --- Targets -----------------------------------------------------------------
 
-VULN_SQLI = '''
+VULN_SQLI = """
 def target(user_input):
     return "SELECT * FROM users WHERE name = '" + user_input + "'"
-'''
+"""
 
-SAFE_SQLI = '''
+SAFE_SQLI = """
 def target(user_input):
     return "SELECT * FROM users WHERE name = '" + user_input.replace("'", "''") + "'"
-'''
+"""
 
-VULN_XSS = '''
+VULN_XSS = """
 def target(user_input):
     return "<html><body>" + user_input + "</body></html>"
-'''
+"""
 
-SAFE_XSS = '''
+SAFE_XSS = """
 import html
 
 def target(user_input):
     return "<html><body>" + html.escape(user_input) + "</body></html>"
-'''
+"""
 
-VULN_SSRF = '''
+VULN_SSRF = """
 def target(user_input):
     return "http://internal-service/fetch?url=" + user_input
-'''
+"""
 
-SAFE_SSRF = '''
+SAFE_SSRF = """
 def target(user_input):
     if "169.254" in user_input:
         return "blocked"
     return "http://internal-service/fetch?url=" + user_input
-'''
+"""
 
 
 # --- Template generation -----------------------------------------------------
@@ -157,9 +156,7 @@ def test_sandbox_tool_unknown_vuln_type_returns_not_exploitable():
 
 
 def test_runner_returns_expected_keys():
-    result = SandboxRunner(use_docker=False).run(
-        "print('hello')", "print('target')"
-    )
+    result = SandboxRunner(use_docker=False).run("print('hello')", "print('target')")
     assert set(result) == {"vulnerable", "output", "error", "exit_code"}
     assert result["output"] == "hello\n"
     assert result["exit_code"] == 0
@@ -194,8 +191,8 @@ def test_docker_command_flags_and_detection(mock_run):
     assert mock_run.call_args.kwargs["timeout"] == 7
 
 
-def test_docker_image_missing_falls_back_to_local(monkeypatch):
-    """Docker present but image not built -> fall back to local subprocess."""
+def test_docker_image_missing_falls_back_to_local_when_opted_in(monkeypatch):
+    """Docker present but image not built -> local subprocess ONLY on opt-in."""
     import subprocess as real_subprocess
 
     calls = []
@@ -209,12 +206,34 @@ def test_docker_image_missing_falls_back_to_local(monkeypatch):
         return real_subprocess.CompletedProcess(cmd, 0, stdout="[VULNERABLE] local\n", stderr="")
 
     monkeypatch.setattr("blastradius.sandbox.runner.subprocess.run", fake_run)
+    monkeypatch.setenv("BLASTRADIUS_ALLOW_UNSANDBOXED", "1")
     runner = SandboxRunner(use_docker=True)
     result = runner.run("print('x')", "print('y')")
 
     assert result["vulnerable"] is True
     assert calls[-1][0] != "docker"  # last candidate was the local subprocess
-    assert any("falling back to local" in w for w in runner.warnings)
+    assert any("local subprocess" in w for w in runner.warnings)
+
+
+def test_no_sandbox_fails_closed_without_unsandboxed_optin(monkeypatch):
+    """Fail-closed: no docker daemon and no opt-in -> nothing executes."""
+    import subprocess as real_subprocess
+
+    calls = []
+
+    def fake_run(cmd, **kwargs):
+        calls.append(cmd)
+        return real_subprocess.CompletedProcess(cmd, 0, stdout="[VULNERABLE]\n", stderr="")
+
+    monkeypatch.setattr("blastradius.sandbox.runner.subprocess.run", fake_run)
+    monkeypatch.setattr("blastradius.sandbox.runner._docker_available", lambda: False)
+    runner = SandboxRunner()  # use_docker=None -> auto-detect (unavailable here)
+    result = runner.run("print('x')", "print('y')")
+
+    assert result["vulnerable"] is False
+    assert calls == []  # nothing ever executed
+    assert "no sandbox available" in result["error"]
+    assert "BLASTRADIUS_ALLOW_UNSANDBOXED" in result["error"]
 
 
 def test_docker_success_does_not_fall_back(monkeypatch):

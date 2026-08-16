@@ -223,9 +223,7 @@ def test_post_comment_calls_github_api(monkeypatch):
         captured["body"] = json.loads(req.data) if req.data else None
         return FakeResp()
 
-    monkeypatch.setattr(
-        "blastradius.github_app.commenter.urllib.request.urlopen", fake_urlopen
-    )
+    monkeypatch.setattr("blastradius.github_app.commenter.urllib.request.urlopen", fake_urlopen)
     commenter = PRCommenter(token="ghp_test")
     commenter.post_finding_comment("org/repo", 42, make_finding(), None)
 

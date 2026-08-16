@@ -9,16 +9,35 @@ from blastradius.export.cli import main as export_main
 from blastradius.export.exporter import FindingsExporter
 
 SAMPLE = [
-    {"repo": "org/demo", "file": "src/app.py", "line": 42, "vuln_type": "sqli",
-     "severity": "CRITICAL", "cvss": 9.8, "status": "open",
-     "payload": "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"",
-     "description": "SQL injection in search", "cwe": "CWE-89",
-     "remediation": "parameterize", "patch_diff": "-a\n+b"},
-    {"repo": "org/demo", "file": "views.js", "line": 7, "vuln_type": "xss",
-     "severity": "HIGH", "cvss": 6.1, "status": "disclosed",
-     "cve_id": "CVE-2026-0001", "bounty_usd": 500,
-     "payload": "el.innerHTML = data;", "description": "DOM XSS", "cwe": "CWE-79",
-     "remediation": "escape"},
+    {
+        "repo": "org/demo",
+        "file": "src/app.py",
+        "line": 42,
+        "vuln_type": "sqli",
+        "severity": "CRITICAL",
+        "cvss": 9.8,
+        "status": "open",
+        "payload": 'query = "SELECT * FROM users WHERE name = \'" + name + "\'"',
+        "description": "SQL injection in search",
+        "cwe": "CWE-89",
+        "remediation": "parameterize",
+        "patch_diff": "-a\n+b",
+    },
+    {
+        "repo": "org/demo",
+        "file": "views.js",
+        "line": 7,
+        "vuln_type": "xss",
+        "severity": "HIGH",
+        "cvss": 6.1,
+        "status": "disclosed",
+        "cve_id": "CVE-2026-0001",
+        "bounty_usd": 500,
+        "payload": "el.innerHTML = data;",
+        "description": "DOM XSS",
+        "cwe": "CWE-79",
+        "remediation": "escape",
+    },
 ]
 
 
@@ -32,8 +51,20 @@ def test_export_csv(exporter, tmp_path):
     exporter.export_csv(str(out))
     with open(out, newline="", encoding="utf-8") as fh:
         rows = list(csv.reader(fh))
-    assert rows[0] == ["ID", "Repo", "File", "Line", "Type", "Severity", "CVSS",
-                       "Status", "Disclosed", "CVE_ID", "Bounty", "Description"]
+    assert rows[0] == [
+        "ID",
+        "Repo",
+        "File",
+        "Line",
+        "Type",
+        "Severity",
+        "CVSS",
+        "Status",
+        "Disclosed",
+        "CVE_ID",
+        "Bounty",
+        "Description",
+    ]
     assert rows[1][1] == "org/demo" and rows[1][4] == "sqli" and rows[1][7] == "open"
     assert rows[2][9] == "CVE-2026-0001" and rows[2][10] == "500"
 
@@ -93,9 +124,20 @@ def test_cli_from_db(tmp_path, monkeypatch, capsys):
     from blastradius.hunter.scanner import Finding
 
     scan_id = db.save_scan("t")
-    db.save_finding(scan_id, Finding(file="a.py", line=1, vuln_type="sqli", payload="p",
-                                     confidence=0.9, severity="HIGH", cwe="CWE-89",
-                                     description="d", remediation="r"))
+    db.save_finding(
+        scan_id,
+        Finding(
+            file="a.py",
+            line=1,
+            vuln_type="sqli",
+            payload="p",
+            confidence=0.9,
+            severity="HIGH",
+            cwe="CWE-89",
+            description="d",
+            remediation="r",
+        ),
+    )
     monkeypatch.setattr("blastradius.db.database.SQLiteDB", lambda: db)
     out = tmp_path / "out.csv"
     rc = export_main(["--format", "csv", "--output", str(out)])

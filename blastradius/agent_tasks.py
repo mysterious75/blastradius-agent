@@ -64,7 +64,9 @@ def _finding_payload(finding, sandbox_output: str = "") -> str:
     )
 
 
-async def run_focused_task(finding, agent: dict = None, max_iterations: int = DEFAULT_TASK_ITERATIONS) -> dict:
+async def run_focused_task(
+    finding, agent: dict = None, max_iterations: int = DEFAULT_TASK_ITERATIONS
+) -> dict:
     """Validate a single finding: deterministic sandbox first, LLM only when needed.
 
     The sandbox is authoritative — the LLM's free-text verdicts were unreliable
@@ -74,9 +76,7 @@ async def run_focused_task(finding, agent: dict = None, max_iterations: int = DE
     """
     agent = agent or build_agent()
     try:
-        sandbox_output = run_exploit_sandbox(
-            finding.vuln_type, reconstruct_target_code(finding)
-        )
+        sandbox_output = run_exploit_sandbox(finding.vuln_type, reconstruct_target_code(finding))
     except Exception as exc:
         sandbox_output = f"error: {exc}"
     sandbox_verdict = classify_verdict(sandbox_output)
@@ -138,10 +138,7 @@ async def run_focused_hunt(
 
     # independent sub-tasks run in parallel
     results = await asyncio.gather(
-        *(
-            run_focused_task(r.finding, agent=agent, max_iterations=max_task_iterations)
-            for r in top
-        )
+        *(run_focused_task(r.finding, agent=agent, max_iterations=max_task_iterations) for r in top)
     )
 
     tasks = []

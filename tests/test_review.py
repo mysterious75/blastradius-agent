@@ -75,11 +75,11 @@ def test_review_drops_rejected_findings(tmp_path):
 
 def test_verify_finding_confirmed_and_rejected():
     finding = {"file": "/repo/a.cc", "line": 5, "severity": "HIGH", "reason": "UAF"}
-    confirmed = verify_finding(finding, "x\ny\nz\nw\nv\n", FakeClient(verify_reply="CONFIRMED: real"))
-    assert confirmed["verified"] is True
-    rejected = verify_finding(
-        finding, "x\n", FakeClient(verify_reply="REJECTED: hardening only")
+    confirmed = verify_finding(
+        finding, "x\ny\nz\nw\nv\n", FakeClient(verify_reply="CONFIRMED: real")
     )
+    assert confirmed["verified"] is True
+    rejected = verify_finding(finding, "x\n", FakeClient(verify_reply="REJECTED: hardening only"))
     assert rejected["verified"] is False
     # fail-closed: unparseable / missing verification replies count as rejected
     unparseable = verify_finding(finding, "x\n", FakeClient(verify_reply="maybe?"))

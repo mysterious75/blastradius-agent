@@ -48,7 +48,11 @@ class PRCommenter:
         else:
             status = "CONFIRMED_EXPLOITABLE"
 
-        diff = patch_result.patch.diff if patch_result is not None and patch_result.patch else "(no patch available)"
+        diff = (
+            patch_result.patch.diff
+            if patch_result is not None and patch_result.patch
+            else "(no patch available)"
+        )
         proof = exploit_output or finding.evidence or finding.payload or "(no exploit output)"
 
         return f"""## 🔴 BlastRadius Security Finding

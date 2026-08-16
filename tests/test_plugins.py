@@ -3,7 +3,6 @@
 import csv
 import os
 
-import pytest
 
 from blastradius.hunter.scanner import Finding
 from blastradius.plugins.base import BasePlugin
@@ -13,9 +12,17 @@ from blastradius.plugins.__main__ import main as plugins_main
 
 
 def make_finding(vuln_type="sqli"):
-    return Finding(file="/repo/app.py", line=5, vuln_type=vuln_type,
-                   payload="SELECT * FROM users", confidence=0.9,
-                   severity="HIGH", cwe="CWE-89", description="d", remediation="r")
+    return Finding(
+        file="/repo/app.py",
+        line=5,
+        vuln_type=vuln_type,
+        payload="SELECT * FROM users",
+        confidence=0.9,
+        severity="HIGH",
+        cwe="CWE-89",
+        description="d",
+        remediation="r",
+    )
 
 
 def test_base_plugin_defaults():
@@ -145,8 +152,7 @@ def test_cli_install(tmp_path, monkeypatch):
     plugin_file = tmp_path / "my_plugin.py"
     plugin_file.write_text("from blastradius.plugins.base import BasePlugin\n", encoding="utf-8")
     dest = tmp_path / "dest"
-    monkeypatch.setattr("blastradius.plugins.__main__._user_plugin_dir",
-                        lambda: dest)
+    monkeypatch.setattr("blastradius.plugins.__main__._user_plugin_dir", lambda: dest)
     rc = plugins_main(["install", str(plugin_file)])
     assert rc == 0
     assert (dest / "my_plugin.py").exists()
@@ -170,7 +176,8 @@ def test_plugin_events_fire_in_pipeline(tmp_path, monkeypatch):
     (tmp_path / "app.py").write_text(
         "from flask import request\n"
         "name = request.args.get('name')\n"
-        "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n", encoding="utf-8"
+        'query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n',
+        encoding="utf-8",
     )
     pipeline = FullPipeline(
         reports_dir=str(tmp_path / "reports"),

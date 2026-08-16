@@ -16,7 +16,7 @@ import json
 import os
 import re
 import urllib.request
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, Optional
 
 from blastradius.hunter.scanner import Finding
@@ -36,20 +36,20 @@ PATCH_RULES = {
 
 # Hardened replacements per vuln type — keep target(user_input) -> str.
 _RULE_PATCHES = {
-    "sqli": '''def target(user_input):
+    "sqli": """def target(user_input):
     return "SELECT * FROM users WHERE name = '" + user_input.replace("'", "''") + "'"
-''',
-    "xss": '''import html
+""",
+    "xss": """import html
 
 def target(user_input):
     return "<html><body>" + html.escape(user_input) + "</body></html>"
-''',
-    "ssrf": '''def target(user_input):
+""",
+    "ssrf": """def target(user_input):
     if not user_input.startswith("https://"):
         return "blocked"
     return "http://internal-service/fetch?url=" + user_input
-''',
-    "traversal": '''import os
+""",
+    "traversal": """import os
 
 def target(user_input):
     path = os.path.abspath(user_input)
@@ -57,7 +57,7 @@ def target(user_input):
     if not path.startswith(root):
         return "blocked"
     return path
-''',
+""",
 }
 
 _RULE_EXPLANATIONS = {
@@ -71,18 +71,21 @@ DEFAULT_MODEL = "deepseek-v4-flash"
 
 
 def _make_diff(original: str, patched: str) -> str:
-    return "\n".join(difflib.unified_diff(
-        original.splitlines(),
-        patched.splitlines(),
-        fromfile="original",
-        tofile="patched",
-        lineterm="",
-    ))
+    return "\n".join(
+        difflib.unified_diff(
+            original.splitlines(),
+            patched.splitlines(),
+            fromfile="original",
+            tofile="patched",
+            lineterm="",
+        )
+    )
 
 
 @dataclass
 class Patch:
     """A generated security patch."""
+
     original_code: str
     patched_code: str
     diff: str = ""
@@ -111,11 +114,19 @@ class PatchGenerator:
         timeout: int = 30,
     ):
         sel = auto_select(verbose=False)
-        self.provider = provider or os.getenv("BLASTRADIUS_PROVIDER", "").strip() \
+        self.provider = (
+            provider
+            or os.getenv("BLASTRADIUS_PROVIDER", "").strip()
             or (sel["provider"] if sel else "")
-        self.model = model or os.getenv("BLASTRADIUS_MODEL", "").strip() \
+        )
+        self.model = (
+            model
+            or os.getenv("BLASTRADIUS_MODEL", "").strip()
             or (sel["model"] if sel else DEFAULT_MODEL)
-        resolved_key = provider_api_key(self.provider) if self.provider in PROVIDER_REGISTRY else None
+        )
+        resolved_key = (
+            provider_api_key(self.provider) if self.provider in PROVIDER_REGISTRY else None
+        )
         self.api_key = api_key or resolved_key
         self.timeout = timeout
 
@@ -153,8 +164,12 @@ class PatchGenerator:
         data = self._http_post(payload)
         content = data["choices"][0]["message"]["content"]
         try:
-            AuditLogger().log("llm_call", provider=self.provider or "auto", model=self.model,
-                              event_detail=f"patch:{finding.vuln_type}")
+            AuditLogger().log(
+                "llm_call",
+                provider=self.provider or "auto",
+                model=self.model,
+                event_detail=f"patch:{finding.vuln_type}",
+            )
         except Exception:
             pass
         return self._parse_patch_response(content, finding)
@@ -166,8 +181,8 @@ class PatchGenerator:
             f"Rules per vulnerability type:\n{rules}\n"
             "Keep the function signature `def target(user_input)` returning a string, and do not "
             "change behavior for benign input.\n"
-            "Respond with ONLY JSON: {\"patched_code\": \"<full patched python code>\", "
-            "\"explanation\": \"<what you changed and why>\"}."
+            'Respond with ONLY JSON: {"patched_code": "<full patched python code>", '
+            '"explanation": "<what you changed and why>"}.'
         )
         user = (
             f"Vulnerability type: {finding.vuln_type}\n"

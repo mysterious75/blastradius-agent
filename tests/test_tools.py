@@ -22,12 +22,11 @@ def vuln_repo(tmp_path):
     (tmp_path / "app.py").write_text(
         "from flask import request\n"
         "name = request.args.get('name')\n"
-        "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n",
+        'query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n',
         encoding="utf-8",
     )
     (tmp_path / "views.js").write_text(
-        "const el = document.getElementById('out');\n"
-        "el.innerHTML = userInput;\n",
+        "const el = document.getElementById('out');\nel.innerHTML = userInput;\n",
         encoding="utf-8",
     )
     (tmp_path / "fetch.py").write_text(
@@ -122,14 +121,21 @@ def test_adversarial_validate_returns_verdict():
 
 def test_adversarial_validate_fallback_without_prometheus(monkeypatch):
     """When prometheus cannot be imported, a local heuristic verdict is used."""
+
     def boom():
         raise ImportError("no prometheus")
 
     monkeypatch.setattr("blastradius.prometheus_bootstrap.ensure_prometheus_importable", boom)
-    result = prometheus_adversarial_validate(json.dumps({
-        "vuln_type": "SQL Injection", "url": "file://x.py",
-        "evidence": "SELECT * FROM users", "confidence": 0.9,
-    }))
+    result = prometheus_adversarial_validate(
+        json.dumps(
+            {
+                "vuln_type": "SQL Injection",
+                "url": "file://x.py",
+                "evidence": "SELECT * FROM users",
+                "confidence": 0.9,
+            }
+        )
+    )
     results = json.loads(result)
     assert results[0]["verdict"] == "needs_manual_review"
     # _local_verdict must propagate dict fields (was getattr-on-dict bug)

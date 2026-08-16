@@ -36,15 +36,18 @@ def cmd_list(args) -> int:
     table = []
     for r in rows:
         status = dedup.get_disclosure_status(r["finding_id"])
-        table.append([
-            f"{r.get('vuln_type', '?').upper()} @ {r.get('file', '?')}:{r.get('line', '?')}",
-            r.get("cve_id") or "—",
-            status,
-            r.get("bounty_usd") or 0,
-            _days_open(r.get("disclosed_at") or ""),
-        ])
-    display.print_table(["Finding", "CVE ID", "Status", "Bounty", "Days Open"], table,
-                        title="CVE Tracker")
+        table.append(
+            [
+                f"{r.get('vuln_type', '?').upper()} @ {r.get('file', '?')}:{r.get('line', '?')}",
+                r.get("cve_id") or "—",
+                status,
+                r.get("bounty_usd") or 0,
+                _days_open(r.get("disclosed_at") or ""),
+            ]
+        )
+    display.print_table(
+        ["Finding", "CVE ID", "Status", "Bounty", "Days Open"], table, title="CVE Tracker"
+    )
     return 0
 
 
@@ -52,7 +55,9 @@ def cmd_update(args) -> int:
     dedup = _dedup(args)
     dedup.mark_disclosed(args.id, cve_id=args.cve or "", bounty=args.bounty or 0)
     status = dedup.get_disclosure_status(args.id)
-    print(f"[+] finding {args.id} → status: {status} (cve={args.cve or '—'}, bounty=${args.bounty or 0})")
+    print(
+        f"[+] finding {args.id} → status: {status} (cve={args.cve or '—'}, bounty=${args.bounty or 0})"
+    )
     return 0
 
 
@@ -61,8 +66,11 @@ def cmd_stats(args) -> int:
     print(f"{'Total disclosed':<20} {stats['total_disclosed']}")
     print(f"{'Assigned CVEs':<20} {stats['assigned_cves']}")
     print(f"{'Total bounty':<20} ${stats['total_bounty_usd']}")
-    print(f"{'Avg fix time':<20} {stats['avg_fix_days']} days" if stats['avg_fix_days'] is not None
-          else f"{'Avg fix time':<20} —")
+    print(
+        f"{'Avg fix time':<20} {stats['avg_fix_days']} days"
+        if stats["avg_fix_days"] is not None
+        else f"{'Avg fix time':<20} —"
+    )
     return 0
 
 

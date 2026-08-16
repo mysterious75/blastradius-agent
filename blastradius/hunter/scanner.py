@@ -27,24 +27,57 @@ from blastradius.security.input_validator import validate_github_url, validate_r
 # ---------------------------------------------------------------------------
 
 FILE_EXTENSIONS = (
-    "*.py", "*.js", "*.php", "*.ts", "*.tsx",
-    "*.rb", "*.java", "*.go", "*.rs", "*.erb", "*.jsx",
+    "*.py",
+    "*.js",
+    "*.php",
+    "*.ts",
+    "*.tsx",
+    "*.rb",
+    "*.java",
+    "*.go",
+    "*.rs",
+    "*.erb",
+    "*.jsx",
 )
 
 # Paths/dirs that are never scanned (vendored code, build artifacts, migrations,
 # and test code — findings in tests are never payable and drown the signal)
 SKIP_DIRS = {
-    ".git", "node_modules", "venv", ".venv", "__pycache__", ".tox",
-    ".mypy_cache", ".pytest_cache", "dist", "build", "vendor", "migrations",
-    "tests", "spec", "buildtest", "__tests__", "testdata",
-    "test", "wpt",  # bare test dirs (internal/test) and Web Platform Tests harness
+    ".git",
+    "node_modules",
+    "venv",
+    ".venv",
+    "__pycache__",
+    ".tox",
+    ".mypy_cache",
+    ".pytest_cache",
+    "dist",
+    "build",
+    "vendor",
+    "migrations",
+    "tests",
+    "spec",
+    "buildtest",
+    "__tests__",
+    "testdata",
+    "test",
+    "wpt",  # bare test dirs (internal/test) and Web Platform Tests harness
     "internal",  # non-public plumbing (binding wrappers, compat internals) — not external attack surface
 }
 
 # Extension -> language key used by the comment/docstring skipping logic
 _LANG_OF = {
-    ".py": "py", ".js": "js", ".php": "php", ".ts": "ts", ".tsx": "tsx",
-    ".rb": "rb", ".erb": "erb", ".java": "java", ".go": "go", ".rs": "rs", ".jsx": "jsx",
+    ".py": "py",
+    ".js": "js",
+    ".php": "php",
+    ".ts": "ts",
+    ".tsx": "tsx",
+    ".rb": "rb",
+    ".erb": "erb",
+    ".java": "java",
+    ".go": "go",
+    ".rs": "rs",
+    ".jsx": "jsx",
 }
 
 # Untrusted input sources (request data, query params, form fields...)
@@ -75,37 +108,63 @@ _SQL_CONCAT = [
 ]
 
 _XSS_SINKS = [
-    r"\binnerHTML\b", r"\bouterHTML\b", r"\bdocument\.write\(", r"\bdocument\.writeln\(",
-    r"\bdangerouslySetInnerHTML\b", r"\bv-html\b",
-    r"\brender_template_string\(", r"\binsertAdjacentHTML\(", r"\.html\(", r"\beval\(",
+    r"\binnerHTML\b",
+    r"\bouterHTML\b",
+    r"\bdocument\.write\(",
+    r"\bdocument\.writeln\(",
+    r"\bdangerouslySetInnerHTML\b",
+    r"\bv-html\b",
+    r"\brender_template_string\(",
+    r"\binsertAdjacentHTML\(",
+    r"\.html\(",
+    r"\beval\(",
 ]
 # echo/print reach the HTTP response only in PHP — elsewhere they are stdout
 # (Go/Ruby/shell echo lines were a huge false-positive class on real repos)
 _PHP_XSS_SINKS = [r"\becho\b", r"\bprint\s*\("]
 _XSS_SAFE = [
-    r"htmlspecialchars", r"html\.escape", r"\bescape\(", r"sanitize", r"purify",
-    r"escapejs", r"DOMPurify", r"markupsafe",
-    r"escape_html", r"html_escape", r"escapeHtml", r"htmlEscape",
-    r"HTMLEscape", r"EscapeString", r"escapeJavaScript",
+    r"htmlspecialchars",
+    r"html\.escape",
+    r"\bescape\(",
+    r"sanitize",
+    r"purify",
+    r"escapejs",
+    r"DOMPurify",
+    r"markupsafe",
+    r"escape_html",
+    r"html_escape",
+    r"escapeHtml",
+    r"htmlEscape",
+    r"HTMLEscape",
+    r"EscapeString",
+    r"escapeJavaScript",
     # i18n helpers (static translation output) and self-referential version eval
     r"->t\(|gettext\b|__(?:\()|_e\(|trans\(|json_encode\(",
     r"__version_info__\s*=",
 ]
 
 _SSRF_SINKS = [
-    r"requests\.(?:get|post|put|delete|request|head)\(", r"urllib\.request\b",
-    r"urlopen\(", r"(?<![.>])\bfetch\(", r"http\.(?:get|request)\(", r"axios\.",
-    r"\bgot\(", r"\bcurl\(", r"httpx\.", r"aiohttp\.", r"(?<![.>])\brequest\(",
+    r"requests\.(?:get|post|put|delete|request|head)\(",
+    r"urllib\.request\b",
+    r"urlopen\(",
+    r"(?<![.>])\bfetch\(",
+    r"http\.(?:get|request)\(",
+    r"axios\.",
+    r"\bgot\(",
+    r"\bcurl\(",
+    r"httpx\.",
+    r"aiohttp\.",
+    r"(?<![.>])\brequest\(",
 ]
 # Same-origin URL builders, explicit browser-side fetch, config-marked
 # endpoints (webhook/response URLs set by admins or third-party services), and
 # Fetcher-wrapper plumbing (binding -> internal service) are NOT
 # attacker-controlled server-side fetches.
 _SSRF_SAFE = [
-    r"generateUrl|generateOcsUrl",                 # same-origin builders (Nextcloud)
-    r"window\.fetch",                              # explicit browser-side fetch
-    r"webhook_url|response_url|slack_api_http",    # config-driven endpoints
-    r"fetcher\.fetch",                             # binding/Fetcher wrapper plumbing
+    r"generateUrl|generateOcsUrl",  # same-origin builders (Nextcloud)
+    r"window\.fetch",  # explicit browser-side fetch
+    r"webhook_url|response_url|slack_api_http",  # config-driven endpoints
+    r"fetcher\.fetch",  # binding/Fetcher wrapper plumbing
     # Worker fetch-handler signature: fetch(req, env, ctx) — a definition, not a call
     r"fetch\(\s*\w+\s*:?[^,)]*,\s*\w+\s*:?[^,)]*,\s*\w+\s*:?[^,)]*\)",
     # function definitions named request/fetch
@@ -256,6 +315,7 @@ VALID_VULN_TYPES = tuple(VULN_META)
 @dataclass
 class Finding:
     """A static candidate finding from scanning a repo file."""
+
     file: str
     line: int
     vuln_type: str
@@ -274,8 +334,8 @@ def _line_references_variable(line: str) -> bool:
     """Whether a sink on this line receives a non-literal value."""
     stripped = re.sub(r"['\"][^'\"]*['\"]", " ", line)  # drop string literals
     return bool(
-        re.search(r"\(\s*[A-Za-z_$][\w$]*", stripped)          # sink(<var>
-        or re.search(r"=\s*[A-Za-z_$][\w$]*", stripped)        # sink = <var>
+        re.search(r"\(\s*[A-Za-z_$][\w$]*", stripped)  # sink(<var>
+        or re.search(r"=\s*[A-Za-z_$][\w$]*", stripped)  # sink = <var>
         or re.search(r"\becho\b[^;]*[A-Za-z_$][\w$]*", stripped, re.I)
         # . $var concat (PHP) — but NOT a method call like .html("literal")
         or re.search(r"\.[ \t]*\$?[A-Za-z_]\w*(?![\w(])", stripped)
@@ -294,7 +354,9 @@ def _is_skippable_line(line: str, lang: str, state: dict) -> bool:
     # single-line comments
     if lang in ("py", "rb", "go", "rs", "php") and stripped.startswith("#"):
         return True
-    if lang in ("js", "ts", "tsx", "jsx", "java", "go", "rs", "php", "rb") and stripped.startswith("//"):
+    if lang in ("js", "ts", "tsx", "jsx", "java", "go", "rs", "php", "rb") and stripped.startswith(
+        "//"
+    ):
         return True
 
     # Python/Ruby docstrings (triple-quoted)
@@ -370,7 +432,8 @@ def _score_xxe(line: str, has_source: bool, has_defusedxml: bool) -> float:
         return 0.0
     if re.search(
         r"(?:xml\.etree\.ElementTree|lxml\.etree|\betree\b|\bET\b)\.(?:parse|fromstring|parseString|XML|iterparse)\s*\(",
-        line, re.I,
+        line,
+        re.I,
     ):
         if _line_references_variable(line) or has_source:
             return 0.8 if has_source else 0.7
@@ -427,9 +490,18 @@ _IDOR_ID_SOURCES = [
     r"\bid\s*=\s*request\.",
 ]
 _IDOR_AUTH = [
-    r"@login_required", r"login_required", r"current_user", r"is_authenticated",
-    r"require_auth", r"permission", r"has_access", r"request\.auth",
-    r"jwt\.require", r"check_permission", r"\bsession\b", r"roles_required",
+    r"@login_required",
+    r"login_required",
+    r"current_user",
+    r"is_authenticated",
+    r"require_auth",
+    r"permission",
+    r"has_access",
+    r"request\.auth",
+    r"jwt\.require",
+    r"check_permission",
+    r"\bsession\b",
+    r"roles_required",
 ]
 
 
@@ -467,7 +539,9 @@ def reconstruct_target_code(finding: Finding) -> str:
     if finding.vuln_type == "sqli":
         return 'def target(user_input):\n    return "SELECT * FROM users WHERE name = \'" + user_input + "\'"\n'
     if finding.vuln_type == "xss":
-        return 'def target(user_input):\n    return "<html><body>" + user_input + "</body></html>"\n'
+        return (
+            'def target(user_input):\n    return "<html><body>" + user_input + "</body></html>"\n'
+        )
     if finding.vuln_type == "ssrf":
         return 'def target(user_input):\n    return "http://internal-service/fetch?url=" + user_input\n'
     if finding.vuln_type == "graphql":
@@ -477,9 +551,9 @@ def reconstruct_target_code(finding: Finding) -> str:
     if finding.vuln_type == "jwt":
         return '# JWT\nimport jwt\ndata = jwt.decode(token, options={"verify_signature": False})\n'
     if finding.vuln_type == "xxe":
-        return '# XXE\nimport xml.etree.ElementTree as ET\nET.parse(user_input)\n'
+        return "# XXE\nimport xml.etree.ElementTree as ET\nET.parse(user_input)\n"
     if finding.vuln_type == "ssti":
-        return '# SSTI\nfrom jinja2 import Environment\nenv = Environment()\nenv.from_string(user_input).render()\n'
+        return "# SSTI\nfrom jinja2 import Environment\nenv = Environment()\nenv.from_string(user_input).render()\n"
     return f"# {finding.vuln_type}\nresult = process(user_input)\n"
 
 
@@ -491,8 +565,11 @@ def reconstruct_target_code(finding: Finding) -> str:
 def _load_learned_rules() -> dict:
     """Read ~/.blastradius/learned_rules.json (written by SelfImprover)."""
     try:
-        path = Path(os.getenv("BLASTRADIUS_HOME", str(Path.home()))) \
-            / ".blastradius" / "learned_rules.json"
+        path = (
+            Path(os.getenv("BLASTRADIUS_HOME", str(Path.home())))
+            / ".blastradius"
+            / "learned_rules.json"
+        )
         if path.is_file():
             return json.loads(path.read_text(encoding="utf-8"))
     except Exception:
@@ -546,7 +623,10 @@ class CVEHunter:
         try:
             subprocess.run(
                 ["git", "clone", "--depth", "1", "--quiet", github_url, str(dest)],
-                check=True, capture_output=True, text=True, timeout=self.clone_timeout,
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=self.clone_timeout,
             )
         except subprocess.CalledProcessError as exc:
             shutil.rmtree(tmp, ignore_errors=True)
@@ -557,7 +637,9 @@ class CVEHunter:
     # Scanning
     # ------------------------------------------------------------------
 
-    def scan_repo(self, repo_path: str, progress=None, use_cache: Optional[bool] = None) -> List[Finding]:
+    def scan_repo(
+        self, repo_path: str, progress=None, use_cache: Optional[bool] = None
+    ) -> List[Finding]:
         """Scan every eligible file in ``repo_path`` (parallel by default).
 
         The path must resolve inside an allowed directory (see
@@ -624,16 +706,24 @@ class CVEHunter:
                     continue
                 if "min." in path.name:  # minified bundles — noise, never real code
                     continue
-                if (path.stem.endswith("_test") or path.stem.startswith("test_")
-                        or path.stem.endswith(".test") or path.stem.endswith(".spec")
-                        or path.stem.endswith("_spec")):  # *_test.go, test_*.py, *.test.js, *.spec.ts
+                if (
+                    path.stem.endswith("_test")
+                    or path.stem.startswith("test_")
+                    or path.stem.endswith(".test")
+                    or path.stem.endswith(".spec")
+                    or path.stem.endswith("_spec")
+                ):  # *_test.go, test_*.py, *.test.js, *.spec.ts
                     continue
-                if any(fnmatch.fnmatch(path.name, p) or fnmatch.fnmatch(str(path), p)
-                       for p in skip_patterns):
+                if any(
+                    fnmatch.fnmatch(path.name, p) or fnmatch.fnmatch(str(path), p)
+                    for p in skip_patterns
+                ):
                     continue
                 yield path
 
-    def _make_finding(self, path: Path, idx: int, lines: list, vuln_type: str, score: float) -> Finding:
+    def _make_finding(
+        self, path: Path, idx: int, lines: list, vuln_type: str, score: float
+    ) -> Finding:
         meta = VULN_META[vuln_type]
         payload = lines[idx - 1].strip()
         # learned payload weights boost proven patterns (capped at 1.0)
@@ -648,7 +738,7 @@ class CVEHunter:
             payload=payload,
             confidence=round(score, 2),
             evidence=payload,
-            context="\n".join(lines[max(0, idx - 2):idx + 1]),
+            context="\n".join(lines[max(0, idx - 2) : idx + 1]),
             severity=meta["severity"],
             cwe=meta["cwe"],
             remediation=meta["remediation"],
@@ -664,8 +754,10 @@ class CVEHunter:
         has_source = any(re.search(p, text, re.I) for p in SOURCES)
         has_defusedxml = "defusedxml" in text
         has_graphql = any(
-            re.search(r"resolve_|strawberry\.field|graphene\.ObjectType|\bField\s*\(|@strawberry", l)
-            for l in lines
+            re.search(
+                r"resolve_|strawberry\.field|graphene\.ObjectType|\bField\s*\(|@strawberry", line
+            )
+            for line in lines
         )
         lang = _LANG_OF.get(path.suffix.lower(), "py")
         state = {"in_docstring": False, "in_block": False}
@@ -721,12 +813,15 @@ class CVEHunter:
             k = i + 1
             while k < n:
                 l2 = lines[k]
-                if l2.strip() and (len(l2) - len(l2.lstrip())) <= base \
-                        and not l2.strip().startswith((")", "]", "}")):
+                if (
+                    l2.strip()
+                    and (len(l2) - len(l2.lstrip())) <= base
+                    and not l2.strip().startswith((")", "]", "}"))
+                ):
                     break
                 k += 1
 
-            func_text = "\n".join(decorators + [lines[i]] + lines[i + 1:k])
+            func_text = "\n".join(decorators + [lines[i]] + lines[i + 1 : k])
             has_id = any(re.search(p, func_text, re.I) for p in _IDOR_ID_SOURCES)
             has_auth = any(re.search(p, func_text, re.I) for p in _IDOR_AUTH)
             if has_id and not has_auth:

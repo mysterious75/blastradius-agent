@@ -1,7 +1,5 @@
 """OSV dependency-check script tests — OSV queries mocked, no network."""
 
-import pytest
-
 from scripts.osv_check import check, project_deps
 
 
@@ -33,23 +31,36 @@ def test_check_clean(monkeypatch):
 
 
 def test_check_noncritical_vulns(monkeypatch):
-    monkeypatch.setattr("scripts.osv_check.query_osv", lambda pkg, ecosystem="PyPI": [
-        {"id": "GHSA-1", "summary": "low severity issue", "database_specific": {"severity": "MODERATE"}},
-    ])
+    monkeypatch.setattr(
+        "scripts.osv_check.query_osv",
+        lambda pkg, ecosystem="PyPI": [
+            {
+                "id": "GHSA-1",
+                "summary": "low severity issue",
+                "database_specific": {"severity": "MODERATE"},
+            },
+        ],
+    )
     assert check() == 0
 
 
 def test_check_critical_fails(monkeypatch):
-    monkeypatch.setattr("scripts.osv_check.query_osv", lambda pkg, ecosystem="PyPI": [
-        {"id": "GHSA-2", "summary": "RCE", "database_specific": {"severity": "CRITICAL"}},
-    ])
+    monkeypatch.setattr(
+        "scripts.osv_check.query_osv",
+        lambda pkg, ecosystem="PyPI": [
+            {"id": "GHSA-2", "summary": "RCE", "database_specific": {"severity": "CRITICAL"}},
+        ],
+    )
     assert check() == 1
 
 
 def test_check_critical_no_fail_flag(monkeypatch):
-    monkeypatch.setattr("scripts.osv_check.query_osv", lambda pkg, ecosystem="PyPI": [
-        {"id": "GHSA-2", "summary": "RCE", "database_specific": {"severity": "CRITICAL"}},
-    ])
+    monkeypatch.setattr(
+        "scripts.osv_check.query_osv",
+        lambda pkg, ecosystem="PyPI": [
+            {"id": "GHSA-2", "summary": "RCE", "database_specific": {"severity": "CRITICAL"}},
+        ],
+    )
     assert check(fail_on_critical=False) == 0
 
 

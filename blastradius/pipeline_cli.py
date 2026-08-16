@@ -38,12 +38,14 @@ def main(argv=None) -> int:
 
     if result.findings:
         display.print_findings_table(result.findings)
-    display.print_stats_panel({
-        "total_scans": 1,
-        "confirmed_cves": len(result.confirmed),
-        "patches_generated": len(result.patches),
-        "success_rate": 100.0 if result.findings else 0.0,
-    })
+    display.print_stats_panel(
+        {
+            "total_scans": 1,
+            "confirmed_cves": len(result.confirmed),
+            "patches_generated": len(result.patches),
+            "success_rate": 100.0 if result.findings else 0.0,
+        }
+    )
     return 0
 
 

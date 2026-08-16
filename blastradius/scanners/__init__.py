@@ -7,7 +7,7 @@ runs them all against a file's source.
 import importlib
 import pkgutil
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 __all__ = ["get_scanners", "get_scanner", "scan_file"]
 

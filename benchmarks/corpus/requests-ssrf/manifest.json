@@ -1,0 +1,7 @@
+{
+  "target": "requests-ssrf",
+  "description": "Proxy endpoint forwarding a request parameter to requests.get.",
+  "expected": [
+    {"file": "proxy.py", "vuln_type": "ssrf", "severity": "HIGH", "cwe": "CWE-918"}
+  ]
+}

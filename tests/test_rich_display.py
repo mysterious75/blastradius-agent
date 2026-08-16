@@ -16,9 +16,17 @@ def display():
 
 
 def make_finding(vuln_type="sqli"):
-    return Finding(file="/repo/app.py", line=5, vuln_type=vuln_type,
-                   payload="x", confidence=0.95, severity="CRITICAL",
-                   cwe="CWE-89", description="d", remediation="r")
+    return Finding(
+        file="/repo/app.py",
+        line=5,
+        vuln_type=vuln_type,
+        payload="x",
+        confidence=0.95,
+        severity="CRITICAL",
+        cwe="CWE-89",
+        description="d",
+        remediation="r",
+    )
 
 
 def test_banner(display):
@@ -78,8 +86,9 @@ def test_patch_result_no_patch(display):
 
 def test_stats_panel(display):
     d, buf = display
-    d.print_stats_panel({"total_scans": 5, "confirmed_cves": 2, "patches_generated": 3,
-                         "success_rate": 80.0})
+    d.print_stats_panel(
+        {"total_scans": 5, "confirmed_cves": 2, "patches_generated": 3, "success_rate": 80.0}
+    )
     out = buf.getvalue()
     assert "Total Scans" in out
     assert "5" in out and "2" in out and "3" in out and "80.0%" in out
@@ -87,12 +96,24 @@ def test_stats_panel(display):
 
 def test_provider_table(display):
     d, buf = display
-    d.print_provider_table([
-        {"provider": "opencode_go", "model": "deepseek-v4-flash", "ok": True,
-         "status": "Connected", "latency": "42ms"},
-        {"provider": "anthropic", "model": "—", "ok": False,
-         "status": "No API key", "latency": "—"},
-    ])
+    d.print_provider_table(
+        [
+            {
+                "provider": "opencode_go",
+                "model": "deepseek-v4-flash",
+                "ok": True,
+                "status": "Connected",
+                "latency": "42ms",
+            },
+            {
+                "provider": "anthropic",
+                "model": "—",
+                "ok": False,
+                "status": "No API key",
+                "latency": "—",
+            },
+        ]
+    )
     out = buf.getvalue()
     assert "✅ opencode_go" in out
     assert "deepseek-v4-flash" in out
@@ -114,11 +135,11 @@ def test_hunter_cli_uses_display(tmp_path, capsys):
     from blastradius.hunter.cli import main as hunter_main
 
     (tmp_path / "app.py").write_text(
-        "query = \"SELECT * FROM users WHERE name = '\" + name + \"'\"\n", encoding="utf-8"
+        'query = "SELECT * FROM users WHERE name = \'" + name + "\'"\n', encoding="utf-8"
     )
     rc = hunter_main(["--target", str(tmp_path)])
     assert rc == 0
     out = capsys.readouterr().out
-    assert "BlastRadius Agent" in out          # banner
-    assert "candidate finding(s)" in out       # plain status line kept
-    assert "sqli" in out                       # rich findings table
+    assert "BlastRadius Agent" in out  # banner
+    assert "candidate finding(s)" in out  # plain status line kept
+    assert "sqli" in out  # rich findings table

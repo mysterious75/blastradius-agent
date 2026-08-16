@@ -158,9 +158,7 @@ async def _run_conversation(messages: list, agent: dict, max_iterations: int) ->
                         result = fn(**args)
                     except Exception as exc:  # a failed tool call must not kill the loop
                         result = f"error: {exc}"
-            messages.append(
-                {"role": "tool", "tool_call_id": call.id, "content": str(result)}
-            )
+            messages.append({"role": "tool", "tool_call_id": call.id, "content": str(result)})
     return (
         last_content
         or f"conversation exceeded {max_iterations} iterations — try a smaller task, "

@@ -14,9 +14,7 @@ Usage:
 """
 
 import argparse
-import sys
 
-from blastradius.cli.display import RichDisplay
 from blastradius.version import __version__
 
 
@@ -38,11 +36,14 @@ def cmd_dashboard(_args) -> int:
 
 
 def cmd_api(args) -> int:
+    import os
+
     import uvicorn
 
     from blastradius.api.server import app
 
-    uvicorn.run(app, host="0.0.0.0", port=args.port, reload=args.reload)
+    host = os.getenv("BLASTRADIUS_HOST", "127.0.0.1")
+    uvicorn.run(app, host=host, port=args.port, reload=args.reload)
     return 0
 
 
@@ -55,12 +56,18 @@ def cmd_scan(args) -> int:
 def cmd_hunt(args) -> int:
     from blastradius.auto_hunt import main as auto_hunt_main
 
-    return auto_hunt_main([
-        "--strategy", args.strategy,
-        "--max", str(args.max),
-        "--min-stars", str(args.min_stars),
-        "--reports-dir", args.reports_dir,
-    ])
+    return auto_hunt_main(
+        [
+            "--strategy",
+            args.strategy,
+            "--max",
+            str(args.max),
+            "--min-stars",
+            str(args.min_stars),
+            "--reports-dir",
+            args.reports_dir,
+        ]
+    )
 
 
 def cmd_blast(args) -> int:
@@ -127,8 +134,9 @@ def main(argv=None) -> int:
     cve_p.add_argument("action", choices=["list"])
 
     export_p = sub.add_parser("export", help="export findings")
-    export_p.add_argument("--format", choices=["csv", "json", "sarif", "html", "markdown"],
-                          default="markdown")
+    export_p.add_argument(
+        "--format", choices=["csv", "json", "sarif", "html", "markdown"], default="markdown"
+    )
     export_p.add_argument("--output", required=True)
 
     args = parser.parse_args(argv)

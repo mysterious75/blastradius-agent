@@ -1,0 +1,7 @@
+{
+  "target": "lxml-xxe",
+  "description": "XML parsed with lxml without defusedxml hardening.",
+  "expected": [
+    {"file": "parse.py", "vuln_type": "xxe", "severity": "HIGH", "cwe": "CWE-611"}
+  ]
+}

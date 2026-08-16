@@ -7,10 +7,8 @@ Usage:
 
 import argparse
 import json
-import sys
 import tomllib
 import urllib.request
-from pathlib import Path
 from typing import List
 
 
@@ -53,12 +51,14 @@ def check(fail_on_critical: bool = True, pyproject_path: str = "pyproject.toml")
         except Exception:
             continue  # OSV unreachable — skip, don't fail
         for vuln in vulns:
-            issues.append({
-                "package": dep,
-                "id": vuln.get("id"),
-                "summary": (vuln.get("summary") or "")[:120],
-                "critical": _is_critical(vuln),
-            })
+            issues.append(
+                {
+                    "package": dep,
+                    "id": vuln.get("id"),
+                    "summary": (vuln.get("summary") or "")[:120],
+                    "critical": _is_critical(vuln),
+                }
+            )
 
     critical = [i for i in issues if i["critical"]]
     if critical:
@@ -67,8 +67,10 @@ def check(fail_on_critical: bool = True, pyproject_path: str = "pyproject.toml")
             print(f"   {item['package']}: {item['id']} — {item['summary']}")
         return 1 if fail_on_critical else 0
 
-    print(f"✅ {len(issues)} known vulnerability record(s) across "
-          f"{len(project_deps(pyproject_path))} dependencies — none critical.")
+    print(
+        f"✅ {len(issues)} known vulnerability record(s) across "
+        f"{len(project_deps(pyproject_path))} dependencies — none critical."
+    )
     return 0
 
 

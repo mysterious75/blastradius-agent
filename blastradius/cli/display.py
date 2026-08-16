@@ -56,7 +56,9 @@ class RichDisplay:
     # Findings table
     # ------------------------------------------------------------------
 
-    def print_findings_table(self, findings: Iterable, statuses: Optional[Dict[int, str]] = None) -> None:
+    def print_findings_table(
+        self, findings: Iterable, statuses: Optional[Dict[int, str]] = None
+    ) -> None:
         table = Table(title="Findings", box=box.MINIMAL, expand=False)
         for header in ("File", "Line", "Type", "Confidence", "Severity", "Status"):
             table.add_column(header)
@@ -102,7 +104,11 @@ class RichDisplay:
     # ------------------------------------------------------------------
 
     def print_patch_result(self, patch_result) -> None:
-        diff = patch_result.patch.diff if patch_result and getattr(patch_result, "patch", None) else "(no patch available)"
+        diff = (
+            patch_result.patch.diff
+            if patch_result and getattr(patch_result, "patch", None)
+            else "(no patch available)"
+        )
         self.console.print(Syntax(diff, "diff", theme="monokai"))
 
     # ------------------------------------------------------------------

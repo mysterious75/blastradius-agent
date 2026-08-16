@@ -8,7 +8,6 @@ from blastradius.scope import (
     list_programs,
     remove_scope,
     save_scope,
-    scopes_dir,
 )
 
 

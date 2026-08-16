@@ -7,13 +7,31 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-_SARIF_SCHEMA = ("https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/"
-                 "Schemata/sarif-schema-2.1.0.json")
-_SEVERITY_LEVEL = {"CRITICAL": "error", "HIGH": "error", "MEDIUM": "warning",
-                   "LOW": "note", "INFO": "note"}
+_SARIF_SCHEMA = (
+    "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
+)
+_SEVERITY_LEVEL = {
+    "CRITICAL": "error",
+    "HIGH": "error",
+    "MEDIUM": "warning",
+    "LOW": "note",
+    "INFO": "note",
+}
 
-_CSV_COLUMNS = ["ID", "Repo", "File", "Line", "Type", "Severity", "CVSS",
-                "Status", "Disclosed", "CVE_ID", "Bounty", "Description"]
+_CSV_COLUMNS = [
+    "ID",
+    "Repo",
+    "File",
+    "Line",
+    "Type",
+    "Severity",
+    "CVSS",
+    "Status",
+    "Disclosed",
+    "CVE_ID",
+    "Bounty",
+    "Description",
+]
 
 
 def _get(obj, name, default=""):
@@ -37,20 +55,22 @@ class FindingsExporter:
             writer = csv.writer(fh)
             writer.writerow(_CSV_COLUMNS)
             for idx, f in enumerate(self.findings, 1):
-                writer.writerow([
-                    idx,
-                    _get(f, "repo", ""),
-                    _get(f, "file"),
-                    _get(f, "line"),
-                    _get(f, "vuln_type"),
-                    _get(f, "severity"),
-                    _get(f, "cvss", 0.0),
-                    _get(f, "status", "open"),
-                    _get(f, "disclosed_at", ""),
-                    _get(f, "cve_id", ""),
-                    _get(f, "bounty_usd", 0),
-                    _get(f, "description"),
-                ])
+                writer.writerow(
+                    [
+                        idx,
+                        _get(f, "repo", ""),
+                        _get(f, "file"),
+                        _get(f, "line"),
+                        _get(f, "vuln_type"),
+                        _get(f, "severity"),
+                        _get(f, "cvss", 0.0),
+                        _get(f, "status", "open"),
+                        _get(f, "disclosed_at", ""),
+                        _get(f, "cve_id", ""),
+                        _get(f, "bounty_usd", 0),
+                        _get(f, "description"),
+                    ]
+                )
 
     # ------------------------------------------------------------------
     # JSON
@@ -59,12 +79,26 @@ class FindingsExporter:
     def export_json(self, path: str) -> None:
         data = []
         for f in self.findings:
-            entry = dict(f) if isinstance(f, dict) else {
-                k: getattr(f, k) for k in ("file", "line", "vuln_type", "payload",
-                                           "confidence", "evidence", "severity",
-                                           "cwe", "description", "remediation")
-                if hasattr(f, k)
-            }
+            entry = (
+                dict(f)
+                if isinstance(f, dict)
+                else {
+                    k: getattr(f, k)
+                    for k in (
+                        "file",
+                        "line",
+                        "vuln_type",
+                        "payload",
+                        "confidence",
+                        "evidence",
+                        "severity",
+                        "cwe",
+                        "description",
+                        "remediation",
+                    )
+                    if hasattr(f, k)
+                }
+            )
             entry["patch_diff"] = _get(f, "patch_diff", "")
             data.append(entry)
         with open(path, "w", encoding="utf-8") as fh:
@@ -79,36 +113,45 @@ class FindingsExporter:
         results = []
         for f in self.findings:
             rule_id = f"BR-{str(_get(f, 'vuln_type', 'X')).upper()}"
-            rules.setdefault(rule_id, {
-                "id": rule_id,
-                "name": _get(f, "vuln_type"),
-                "shortDescription": {"text": str(_get(f, "description", ""))[:200]},
-            })
-            results.append({
-                "ruleId": rule_id,
-                "level": _SEVERITY_LEVEL.get(str(_get(f, "severity")).upper(), "warning"),
-                "message": {"text": str(_get(f, "description", ""))},
-                "locations": [{
-                    "physicalLocation": {
-                        "artifactLocation": {"uri": str(_get(f, "file", "unknown"))},
-                        "region": {"startLine": int(_get(f, "line", 1) or 1)},
-                    }
-                }],
-            })
+            rules.setdefault(
+                rule_id,
+                {
+                    "id": rule_id,
+                    "name": _get(f, "vuln_type"),
+                    "shortDescription": {"text": str(_get(f, "description", ""))[:200]},
+                },
+            )
+            results.append(
+                {
+                    "ruleId": rule_id,
+                    "level": _SEVERITY_LEVEL.get(str(_get(f, "severity")).upper(), "warning"),
+                    "message": {"text": str(_get(f, "description", ""))},
+                    "locations": [
+                        {
+                            "physicalLocation": {
+                                "artifactLocation": {"uri": str(_get(f, "file", "unknown"))},
+                                "region": {"startLine": int(_get(f, "line", 1) or 1)},
+                            }
+                        }
+                    ],
+                }
+            )
         sarif = {
             "$schema": _SARIF_SCHEMA,
             "version": "2.1.0",
-            "runs": [{
-                "tool": {
-                    "driver": {
-                        "name": "BlastRadius",
-                        "version": "1.0.0",
-                        "informationUri": "https://github.com/mysterious75/blastradius-agent",
-                        "rules": list(rules.values()),
-                    }
-                },
-                "results": results,
-            }],
+            "runs": [
+                {
+                    "tool": {
+                        "driver": {
+                            "name": "BlastRadius",
+                            "version": "1.0.0",
+                            "informationUri": "https://github.com/mysterious75/blastradius-agent",
+                            "rules": list(rules.values()),
+                        }
+                    },
+                    "results": results,
+                }
+            ],
         }
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(sarif, fh, indent=2)
@@ -146,14 +189,14 @@ class FindingsExporter:
  @media print {{ body {{ background:#fff; color:#000; }} table {{ background:#fff; }} .card {{ border:1px solid #ccc; }} }}
 </style></head><body>
 <h1>🔴 BlastRadius Security Report</h1>
-<p>Generated {datetime.now().isoformat(timespec='seconds')} · {total} finding(s)</p>
+<p>Generated {datetime.now().isoformat(timespec="seconds")} · {total} finding(s)</p>
 <div class="card"><b>{total}</b> total findings</div>
-<div class="card"><b>{by_sev.get('CRITICAL', 0)}</b> critical</div>
-<div class="card"><b>{by_sev.get('HIGH', 0)}</b> high</div>
+<div class="card"><b>{by_sev.get("CRITICAL", 0)}</b> critical</div>
+<div class="card"><b>{by_sev.get("HIGH", 0)}</b> high</div>
 <canvas id="sev" style="max-width:400px;max-height:300px"></canvas>
 <h2>Findings</h2>
 <table><thead><tr><th>#</th><th>File</th><th>Line</th><th>Type</th><th>Severity</th><th>Payload</th></tr></thead>
-<tbody>{''.join(rows)}</tbody></table>
+<tbody>{"".join(rows)}</tbody></table>
 <script>
 new Chart(document.getElementById('sev'), {{ type:'doughnut',
  data: {{ labels: [{labels}], datasets: [{{ data: [{values}], backgroundColor: ['#ff4444','#f0883e','#d29922','#58a6ff'] }}] }} }});
@@ -165,10 +208,14 @@ new Chart(document.getElementById('sev'), {{ type:'doughnut',
     # ------------------------------------------------------------------
 
     def export_markdown(self, path: str) -> None:
-        lines = ["# BlastRadius Findings", "",
-                 f"**{len(self.findings)}** finding(s) — generated {datetime.now().isoformat(timespec='seconds')}",
-                 "", "| # | File | Line | Type | Severity | Payload |",
-                 "|---|------|------|------|----------|---------|"]
+        lines = [
+            "# BlastRadius Findings",
+            "",
+            f"**{len(self.findings)}** finding(s) — generated {datetime.now().isoformat(timespec='seconds')}",
+            "",
+            "| # | File | Line | Type | Severity | Payload |",
+            "|---|------|------|------|----------|---------|",
+        ]
         for idx, f in enumerate(self.findings, 1):
             lines.append(
                 f"| {idx} | `{_get(f, 'file')}` | {_get(f, 'line')} | "

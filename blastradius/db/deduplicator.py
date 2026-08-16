@@ -20,13 +20,15 @@ class Deduplicator:
     @staticmethod
     def fingerprint(finding, repo: str = "") -> str:
         """SHA256 of (repo, file, line, vuln_type, payload)."""
-        key = "|".join([
-            repo,
-            getattr(finding, "file", ""),
-            str(getattr(finding, "line", "")),
-            getattr(finding, "vuln_type", ""),
-            getattr(finding, "payload", ""),
-        ])
+        key = "|".join(
+            [
+                repo,
+                getattr(finding, "file", ""),
+                str(getattr(finding, "line", "")),
+                getattr(finding, "vuln_type", ""),
+                getattr(finding, "payload", ""),
+            ]
+        )
         return hashlib.sha256(key.encode("utf-8")).hexdigest()
 
     def is_duplicate(self, finding, repo: str = "") -> bool:
@@ -40,12 +42,14 @@ class Deduplicator:
             if row:
                 conn.execute(
                     "UPDATE fingerprints SET count = count + 1, last_seen = ? "
-                    "WHERE fingerprint = ?", (now, fp),
+                    "WHERE fingerprint = ?",
+                    (now, fp),
                 )
                 return True
             conn.execute(
                 "INSERT INTO fingerprints (fingerprint, finding_id, first_seen, last_seen, count) "
-                "VALUES (?,?,?,?,1)", (fp, getattr(finding, "id", 0), now, now),
+                "VALUES (?,?,?,?,1)",
+                (fp, getattr(finding, "id", 0), now, now),
             )
             return False
 
@@ -62,12 +66,14 @@ class Deduplicator:
             if row:
                 conn.execute(
                     "UPDATE cve_tracking SET cve_id = ?, disclosed_at = ?, bounty_usd = ? "
-                    "WHERE finding_id = ?", (cve_id, now, float(bounty), finding_id),
+                    "WHERE finding_id = ?",
+                    (cve_id, now, float(bounty), finding_id),
                 )
             else:
                 conn.execute(
                     "INSERT INTO cve_tracking (finding_id, cve_id, disclosed_at, bounty_usd) "
-                    "VALUES (?,?,?,?)", (finding_id, cve_id, now, float(bounty)),
+                    "VALUES (?,?,?,?)",
+                    (finding_id, cve_id, now, float(bounty)),
                 )
 
     def mark_fixed(self, finding_id: int) -> None:
