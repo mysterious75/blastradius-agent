@@ -19,6 +19,7 @@ Usage:
     findings = scanner.scan("http://localhost:8000")
 """
 
+import re
 import urllib.parse
 from dataclasses import dataclass
 from html.parser import HTMLParser
@@ -39,6 +40,20 @@ REQUIRED_HEADERS = {
 }
 EXPOSED_PATHS = ("/.git/config", "/.git/HEAD", "/.env", "/admin", "/server-status", "/wp-admin/")
 LISTING_MARKERS = ("Index of /", "Directory listing for", "Parent Directory</a>")
+
+# JS endpoint extraction: fetch/axios/XHR/WebSocket call sites with a quoted URL.
+_JS_ENDPOINT_RE = re.compile(
+    r"""(?:fetch\s*\(|axios\.(?:get|post|put|delete|patch|head|options)\s*\(|"""
+    r"""\.(?:get|post|put|delete|patch)\s*\(|new\s+WebSocket\s*\(|"""
+    r"""\.open\s*\(\s*['\"](?:GET|POST|PUT|DELETE|PATCH)['\"]\s*,)"""
+    r"""\s*['\"]([^'\"]+)['\"]""",
+    re.IGNORECASE,
+)
+# Fallback: string literals that look like API paths.
+_JS_PATH_LITERAL_RE = re.compile(r"""['\"](/[A-Za-z0-9_./?=&:{}-]{3,})['\"]""")
+_JS_PATH_MARKERS = ("/api", "/v1", "/user", "/admin", "/search", "/account", "/auth", "/payment")
+_MAX_JS_SCRIPTS_PER_PAGE = 5
+_MAX_JS_FETCHES_PER_SCAN = 20
 
 
 @dataclass
@@ -62,11 +77,14 @@ class _LinkParser(HTMLParser):
         super().__init__()
         self.links: List[str] = []
         self.forms: List[Dict] = []
+        self.scripts: List[str] = []
 
     def handle_starttag(self, tag, attrs):
         attr_map = dict(attrs)
         if tag == "a" and attr_map.get("href"):
             self.links.append(attr_map["href"])
+        if tag == "script" and attr_map.get("src"):
+            self.scripts.append(attr_map["src"])
         if tag == "form":
             self.forms.append(
                 {
@@ -100,6 +118,8 @@ class DynamicWebScanner:
         self.probe_exposed = probe_exposed
         # Real HackerOne payloads (defaults always included) for reflected XSS.
         self.xss_payloads = xss_payloads()
+        # Budget guard: total JS fetches allowed per scan() call.
+        self._js_fetches = 0
 
     # ------------------------------------------------------------------
     # Public API
@@ -124,6 +144,9 @@ class DynamicWebScanner:
             findings.extend(self._check_response(url, page))
             for link in self._same_origin_links(url, page.text):
                 if link not in visited and link not in queue:
+                    queue.append(link)
+            for link in self._collect_js_endpoints(url, page.text):
+                if link not in visited and link not in queue and len(visited) < self.max_urls:
                     queue.append(link)
             for form in self._parse_forms(page.text):
                 findings.extend(self._check_form(target, form))
@@ -308,3 +331,47 @@ class DynamicWebScanner:
         except Exception:
             return []
         return parser.forms
+
+    def _collect_js_endpoints(self, url: str, html: str) -> List[str]:
+        """Discover API endpoints referenced inside the page's JS files.
+
+        Fetches same-origin ``<script src>`` files (max 5 per page, 20 total
+        per scan) and extracts endpoint-like strings from fetch/axios/XHR/
+        WebSocket call sites plus path literals. Network failures never raise
+        — they just yield no endpoints for that script.
+        """
+        base = urllib.parse.urlparse(url)
+        scripts: List[str] = []
+        parser = _LinkParser()
+        try:
+            parser.feed(html)
+        except Exception:
+            return []
+        for src in parser.scripts:
+            if src not in scripts:
+                scripts.append(src)
+        endpoints: List[str] = []
+        for src in scripts[:_MAX_JS_SCRIPTS_PER_PAGE]:
+            script_url = urllib.parse.urljoin(url, src)
+            if urllib.parse.urlparse(script_url).netloc != base.netloc:
+                continue
+            if self._js_fetches >= _MAX_JS_FETCHES_PER_SCAN:
+                break
+            self._js_fetches += 1
+            try:
+                js = self.browser.get(script_url).text
+            except Exception:
+                continue
+            for raw in _JS_ENDPOINT_RE.findall(js):
+                self._add_js_endpoint(endpoints, script_url, base.netloc, raw)
+            for raw in _JS_PATH_LITERAL_RE.findall(js):
+                if any(marker in raw for marker in _JS_PATH_MARKERS):
+                    self._add_js_endpoint(endpoints, script_url, base.netloc, raw)
+        return endpoints
+
+    @staticmethod
+    def _add_js_endpoint(endpoints: List[str], script_url: str, netloc: str, raw: str) -> None:
+        """urljoin ``raw`` against the script URL; keep same-origin + dedupe."""
+        joined = urllib.parse.urljoin(script_url, raw.strip())
+        if urllib.parse.urlparse(joined).netloc == netloc and joined not in endpoints:
+            endpoints.append(joined)
