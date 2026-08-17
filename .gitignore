@@ -24,3 +24,5 @@ reports5000/*.md
 payloads/*.json
 payloads/README.md
 tasks/
+
+.cache/
