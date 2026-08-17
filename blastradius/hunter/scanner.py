@@ -23,7 +23,7 @@ from typing import List, Optional
 
 from blastradius.prometheus_bootstrap import ensure_prometheus_importable
 from blastradius.security.input_validator import validate_github_url, validate_repo_path
-from blastradius.taint import sink_arg_var, trace_sink
+from blastradius.taint import has_enclosing_function, is_var_tainted, sink_arg_var, trace_sink
 
 # ---------------------------------------------------------------------------
 # Static analysis rules (file-level equivalents of the URL scanners)
@@ -502,19 +502,8 @@ _TAINT_CAP_TYPES = frozenset(
 )
 
 
-def _sink_arg_tainted(line: str, has_source: bool) -> bool:
-    """Whether a sink's first argument references user-controlled data.
-
-    A file with any user-input source (``has_source``) is tainted outright.
-    Otherwise the text inside the first '(' ... ')' of the line is inspected
-    after string literals are stripped: any remaining source-like identifier
-    (host, url, request, body, id...) means the argument is a variable that can
-    carry input. Pure constants (os.system("cls"), os.system(api_url),
-    requests.get("https://static.example/data.json")) return False so
-    constant-sink findings stay below the candidate threshold.
-    """
-    if has_source:
-        return True
+def _arg_is_pure_literal(line: str) -> bool:
+    """Whether the sink's first paren group contains only literals."""
     start = line.find("(")
     if start == -1:
         return False
@@ -532,9 +521,72 @@ def _sink_arg_tainted(line: str, has_source: bool) -> bool:
     if end == -1:
         return False
     arg_text = line[start + 1 : end]
-    # Strip string literals (single/double-quoted, escaped chars handled).
+    stripped = re.sub(r"(['\"])(?:\\.|(?!\1)[^\\])*?\1", " ", arg_text)
+    return not bool(re.search(r"[A-Za-z_$][\w$]*", stripped))
+
+
+def _arg_names_tainted(line: str) -> bool:
+    """Name-based fallback: any source-like identifier (host, url, data, ...)
+    inside the sink's paren group after string literals are stripped.
+
+    Kept for direct unit-test callers and top-level script code where
+    intraprocedural taint tracing cannot run.
+    """
+    start = line.find("(")
+    if start == -1:
+        return False
+    depth = 0
+    end = -1
+    for i in range(start, len(line)):
+        ch = line[i]
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                end = i
+                break
+    if end == -1:
+        return False
+    arg_text = line[start + 1 : end]
     stripped = re.sub(r"(['\"])(?:\\.|(?!\1)[^\\])*?\1", " ", arg_text)
     return bool(_SOURCE_LIKE_ARG_NAMES.search(stripped))
+
+
+def _sink_arg_tainted(line: str, has_source: bool, lines=None, idx=None) -> bool:
+    """Whether a sink's first argument references user-controlled data.
+
+    A file with any user-input source (``has_source``) is tainted outright.
+    Otherwise the taint decision is ASSIGNMENT-CHAIN based, not name based:
+
+    (a) a pure-literal paren argument (``os.system("cls")``) is not tainted;
+    (b) when the enclosing file's lines are supplied (``lines`` + the 1-based
+        line number ``idx``) and the line sits inside a function, the sink
+        argument variable is resolved via ``taint.sink_arg_var`` and traced to
+        its assignment origin with ``taint.is_var_tainted``. Only a REAL
+        user-input origin (request.args, $_GET, getParameter, ...) makes it
+        tainted — constants, config values, ``self.`` attribute access and
+        constructor/module origins do not, so client-library lines like
+        ``urlopen(req)`` / ``client.post(endpoint, json=data)`` with non-user
+        variables stay untarnished.
+
+    Without file context, or for top-level script code with no enclosing
+    function, the name-based fallback is used: any remaining source-like
+    identifier (host, url, data, ...) inside the paren group after string
+    literals are stripped.
+    """
+    if has_source:
+        return True
+    if _arg_is_pure_literal(line):
+        return False
+    if lines is not None and idx is not None:
+        var = sink_arg_var(line)
+        if not var:
+            return False
+        if not has_enclosing_function(lines, idx - 1):
+            return _arg_names_tainted(line)
+        return is_var_tainted(lines, idx - 1, var)
+    return _arg_names_tainted(line)
 
 
 def _is_skippable_line(line: str, lang: str, state: dict) -> bool:
@@ -771,11 +823,35 @@ _CMD_INJECTION_SAFE = [
     r"subprocess\.(?:run|call|Popen)\s*\(\s*\[",  # list-form, no shell
 ]
 
+# exec/eval-family sinks (sandboxed-exec downgrade applies only to these).
+_EXEC_SINKS = [
+    r"(?<![.\w])exec\s*\(",
+    r"\beval\s*\(",
+    r"\bexecfile\s*\(",
+    r"\bexecSync\s*\(",
+]
+
+# Markers that indicate the exec/eval is a SANDBOXED interpreter (restricted
+# globals/builtins, sanitized-AST validation, allowlisted imports) rather than
+# attacker-controlled code execution.
+_SANDBOXED_EXEC = re.compile(
+    r"safe_globals|restricted_builtins|safe_builtins|"
+    r"ast\.|\bAST\b|validate_node|validate_ast|_ast_validate|"
+    r"sandbox|allowlist|blocklist.*import",
+    re.I,
+)
+
 
 def _score_cmd_injection(line: str, has_source: bool) -> float:
-    if any(re.search(p, line, re.I) for p in _CMD_INJECTION_SAFE):
-        return 0.0
     if not any(re.search(p, line, re.I) for p in _CMD_INJECTION_SINKS):
+        return 0.0
+    # Sandboxed exec/eval (compile+run with restricted builtins, sanitized AST,
+    # allowlisted imports) is scored below the 0.7 candidate threshold — the
+    # exec surface stays discoverable via code_flows / real-repo targets. Plain
+    # exec(eval) WITHOUT these markers is still a full-score sink.
+    if any(re.search(p, line, re.I) for p in _EXEC_SINKS) and _SANDBOXED_EXEC.search(line):
+        return 0.55
+    if any(re.search(p, line, re.I) for p in _CMD_INJECTION_SAFE):
         return 0.0
     if not _line_references_variable(line):
         return 0.0
@@ -910,15 +986,61 @@ _CRLF_SINKS = [
 ]
 _CRLF_SAFE = [r"quote|escape|sanitize|strip|validate|encode"]
 
+_CRLF_ESCAPE = re.compile(r"\\[rn]", re.I)
 
-def _score_crlf(line: str, has_source: bool) -> float:
+
+def _crlf_value_var(line: str) -> str:
+    """Identifier carrying the header value on a CRLF sink line.
+
+    Assignment form (``headers['X'] = <expr>``) resolves the identifier right
+    after ``=``; header-setter call form (``set_header(name, value)``) uses the
+    sink-arg variable.
+    """
+    m = re.search(r"=\s*([A-Za-z_$][\w$]*)", line)
+    if m:
+        return m.group(1)
+    return sink_arg_var(line)
+
+
+def _crlf_value_tainted(line: str, has_source: bool, lines, idx) -> bool:
+    """Whether the header value on a CRLF sink line is user-derived."""
+    if has_source:
+        return True
+    var = _crlf_value_var(line)
+    if not var:
+        return False
+    return is_var_tainted(lines, idx - 1, var)
+
+
+def _builds_crlf(line: str) -> bool:
+    """Line embeds a CR/LF escape literal AND a variable (raw newlines from
+    input concatenated into the header value)."""
+    if not _CRLF_ESCAPE.search(line):
+        return False
+    stripped = re.sub(r"(['\"])(?:\\.|(?!\1)[^\\])*?\1", " ", line)
+    return bool(re.search(r"[A-Za-z_$][\w$]*", stripped))
+
+
+def _score_crlf(line: str, has_source: bool, lines=None, idx=None) -> float:
     if any(re.search(p, line, re.I) for p in _CRLF_SAFE):
         return 0.0
     if not any(re.search(p, line, re.I) for p in _CRLF_SINKS):
         return 0.0
     if not _line_references_variable(line):
         return 0.0
-    return 0.8 if has_source else 0.7
+    # Only flag when the header value is user-derived (assignment-chain taint
+    # check) OR the line literally builds CR/LF from input. A line like
+    # headers['Authorization'] = f'Bearer {token}' with token from config is
+    # NOT flagged.
+    if lines is not None and idx is not None:
+        tainted = _crlf_value_tainted(line, has_source, lines, idx)
+    else:
+        tainted = _sink_arg_tainted(line, has_source)
+    if tainted:
+        return 0.8 if has_source else 0.7
+    if _builds_crlf(line):
+        return 0.8 if has_source else 0.7
+    return 0.0
 
 
 # Authentication bypass: client-controlled privilege, spoofable headers,
@@ -1444,6 +1566,9 @@ class CVEHunter:
             for path in root.rglob(ext):
                 if any(part in SKIP_DIRS or part.endswith("-test") for part in path.parts):
                     continue
+                if ".github" in path.parts and "scripts" in path.parts:
+                    # self-test fixtures (.github/scripts/* with fake secrets)
+                    continue
                 if "min." in path.name:  # minified bundles — noise, never real code
                     continue
                 if (
@@ -1527,6 +1652,10 @@ class CVEHunter:
                     score = _score_traversal(line, has_source, has_safe_paths)
                 elif vuln_type == "proto_pollution":
                     score = _score_proto_pollution(line, has_source, lang)
+                elif vuln_type == "crlf":
+                    # CRLF needs the file lines to judge whether the header
+                    # VALUE is user-derived (assignment-chain taint check).
+                    score = _score_crlf(line, has_source, lines, idx)
                 else:
                     score = scorer(line, has_source)
                 # Constant-sink taint refinement: a sink whose argument does
@@ -1535,11 +1664,14 @@ class CVEHunter:
                 # os.system("cls") / requests.get("https://...") stop producing
                 # candidate findings. (auth_bypass hardcoded-credential
                 # compares — `password == "admin"` — are constant BY DESIGN and
-                # are exempt: the constant comparison is the detection.)
+                # are exempt: the constant comparison is the detection. crlf is
+                # exempt too: _score_crlf already returns 0.0 for untainted
+                # header values, and the CR/LF-literal path must not be capped.)
                 if (
                     vuln_type in _TAINT_CAP_TYPES
+                    and vuln_type != "crlf"
                     and not (vuln_type == "auth_bypass" and _AUTH_CRED_COMPARE.search(line))
-                    and not _sink_arg_tainted(line, has_source)
+                    and not _sink_arg_tainted(line, has_source, lines, idx)
                 ):
                     score = min(score, 0.5)
                 if score < self._learned_threshold(vuln_type):

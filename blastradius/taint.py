@@ -23,11 +23,25 @@ or an ``execute(..., (var,))`` tuple) is present in the function.
 
 import re
 
-# Source names: identifiers whose presence in an assignment RHS means the
-# value originates from user input.
+# Real user-input APIs (assignment RHS matching means the value originates from
+# user input). Taint is assignment-chain based, not name based: a bare
+# identifier name (req, data, url, ...) is NOT a source — the RHS must call a
+# genuine input accessor. The `request.` / `req.` patterns require an input
+# accessor so module paths like ``urllib.request.Request(`` or a bare
+# ``self.request`` never match; `(?<![.\w])` guards keep `params[`/`ctx.query`/
+# `context.request` from substring-matching inside other identifiers.
 _SOURCE_RE = re.compile(
-    r"\b(?:request|req|ctx|params|body|input|query|getParameter|FormValue|"
-    r"args|form|cookies|headers)\b",
+    r"request\.(?:args|form|values|get_json|query_params|cookies|headers)\b"
+    r"|req\.(?:query|body|params|headers)\b"
+    r"|\$_GET|\$_POST|\$_REQUEST"
+    r"|getParameter\s*\("
+    r"|r\.FormValue\s*\("
+    r"|\binput\s*\("
+    r"|(?<![.\w])params\["
+    r"|searchParams\.get\s*\("
+    r"|(?<![.\w])ctx\.query\b"
+    r"|(?<![.\w])context\.(?:request|args)\b"
+    r"|window\.location",
     re.I,
 )
 
@@ -285,3 +299,25 @@ def trace_sink(lines: list, sink_line_idx: int, sink_var: str = "") -> list:
         }
     )
     return steps
+
+
+def is_var_tainted(lines: list, sink_line_idx: int, sink_var: str = "") -> bool:
+    """Whether ``sink_var`` on the 0-based ``sink_line_idx`` is user-controlled.
+
+    True iff ``trace_sink`` returns a non-empty trace whose FIRST step has
+    ``kind == 'source'`` — i.e. the variable's origin was found at a real
+    user-input API. Constants, config values, attribute access (``self.``),
+    constructor/module origins and unassigned variables are not tainted.
+    """
+    trace = trace_sink(lines, sink_line_idx, sink_var)
+    return bool(trace and trace[0].get("kind") == "source")
+
+
+def has_enclosing_function(lines: list, sink_line_idx: int) -> bool:
+    """Whether any enclosing function scope exists above ``sink_line_idx``.
+
+    Intraprocedural taint tracing is scoped to the containing function; when
+    no function encloses the line (top-level script code) callers should fall
+    back to a coarser heuristic.
+    """
+    return _find_func_start(lines, sink_line_idx) is not None
