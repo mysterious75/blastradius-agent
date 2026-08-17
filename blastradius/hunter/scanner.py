@@ -23,7 +23,14 @@ from typing import List, Optional
 
 from blastradius.prometheus_bootstrap import ensure_prometheus_importable
 from blastradius.security.input_validator import validate_github_url, validate_repo_path
-from blastradius.taint import has_enclosing_function, is_var_tainted, sink_arg_var, trace_sink
+from blastradius.taint import (
+    _KEYWORDS,
+    has_enclosing_function,
+    is_function_parameter,
+    is_var_tainted,
+    sink_arg_var,
+    trace_sink,
+)
 
 # ---------------------------------------------------------------------------
 # Static analysis rules (file-level equivalents of the URL scanners)
@@ -87,7 +94,7 @@ _LANG_OF = {
 
 # Untrusted input sources (request data, query params, form fields...)
 SOURCES = [
-    r"request\.(?:args|form|values|get_json|query_params|cookies|headers)\b",
+    r"request\.(?:args|form|values|get_json|query_params|cookies|headers|json|body)\b",
     r"req\.(?:query|body|params|headers)\b",
     r"\$_GET|\$_POST|\$_REQUEST",
     r"getParameter\(",
@@ -553,39 +560,78 @@ def _arg_names_tainted(line: str) -> bool:
     return bool(_SOURCE_LIKE_ARG_NAMES.search(stripped))
 
 
+def _candidate_vars(line: str) -> list:
+    """Data identifiers inside the sink's first paren group, best-first.
+
+    String literals are stripped, keywords and call-names (identifiers
+    immediately followed by ``(``) are skipped, but dot-prefixed module/attr
+    names are kept as candidates so ``bytes.fromhex(data)`` yields
+    ``['bytes', 'data']`` — the caller tries each until one is tainted.
+    """
+    start = line.find("(")
+    if start == -1:
+        return []
+    depth = 0
+    end = -1
+    for i in range(start, len(line)):
+        ch = line[i]
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                end = i
+                break
+    if end == -1:
+        return []
+    arg_text = line[start + 1 : end]
+    stripped = re.sub(r"(['\"])(?:\\.|(?!\1)[^\\])*?\1", " ", arg_text)
+    out = []
+    for m in re.finditer(r"[A-Za-z_$][\w$]*", stripped):
+        ident = m.group(0)
+        if ident in _KEYWORDS or ident in out:
+            continue
+        if stripped[m.end() : m.end() + 1] == "(":  # call name, not a variable
+            continue
+        out.append(ident)
+    return out
+
+
 def _sink_arg_tainted(line: str, has_source: bool, lines=None, idx=None) -> bool:
     """Whether a sink's first argument references user-controlled data.
 
-    A file with any user-input source (``has_source``) is tainted outright.
-    Otherwise the taint decision is ASSIGNMENT-CHAIN based, not name based:
+    The taint decision is ASSIGNMENT-CHAIN based, not name based and NOT a
+    file-level short-circuit — a ``window.location``/``params[`` anywhere in
+    the file does NOT taint every sink (client-library lines like
+    ``requests.get(f"http://localhost:{port}/json")`` stay untarnished):
 
-    (a) a pure-literal paren argument (``os.system("cls")``) is not tainted;
-    (b) when the enclosing file's lines are supplied (``lines`` + the 1-based
-        line number ``idx``) and the line sits inside a function, the sink
-        argument variable is resolved via ``taint.sink_arg_var`` and traced to
-        its assignment origin with ``taint.is_var_tainted``. Only a REAL
-        user-input origin (request.args, $_GET, getParameter, ...) makes it
-        tainted — constants, config values, ``self.`` attribute access and
-        constructor/module origins do not, so client-library lines like
-        ``urlopen(req)`` / ``client.post(endpoint, json=data)`` with non-user
-        variables stay untarnished.
-
-    Without file context, or for top-level script code with no enclosing
-    function, the name-based fallback is used: any remaining source-like
-    identifier (host, url, data, ...) inside the paren group after string
-    literals are stripped.
+    (a) a line carrying a REAL input API itself (``role = request.args...``,
+        ``find_one({'u': request.args...})``) is tainted outright;
+    (b) a pure-literal paren argument (``os.system("cls")``) is not tainted;
+    (c) inside a function (``lines`` + 1-based ``idx``), each candidate
+        argument variable is traced to its assignment origin via
+        ``taint.is_var_tainted`` — only a REAL user-input origin taints it.
+        Constants, config values, ``self.`` attribute access and
+        constructor/module origins do not.
+    (d) when no origin is found but a candidate is a FUNCTION PARAMETER
+        (cross-function taint, unknowable intra-procedurally), the file-level
+        source flag is trusted;
+    (e) top-level code / no file context falls back to the name-based check.
     """
-    if has_source:
+    if any(re.search(p, line, re.I) for p in SOURCES):
         return True
     if _arg_is_pure_literal(line):
         return False
     if lines is not None and idx is not None:
-        var = sink_arg_var(line)
-        if not var:
-            return False
         if not has_enclosing_function(lines, idx - 1):
             return _arg_names_tainted(line)
-        return is_var_tainted(lines, idx - 1, var)
+        for var in _candidate_vars(line):
+            if is_var_tainted(lines, idx - 1, var):
+                return True
+        for var in _candidate_vars(line):
+            if is_function_parameter(lines, idx - 1, var):
+                return has_source
+        return False
     return _arg_names_tainted(line)
 
 

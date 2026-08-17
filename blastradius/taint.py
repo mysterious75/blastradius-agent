@@ -31,7 +31,7 @@ import re
 # ``self.request`` never match; `(?<![.\w])` guards keep `params[`/`ctx.query`/
 # `context.request` from substring-matching inside other identifiers.
 _SOURCE_RE = re.compile(
-    r"request\.(?:args|form|values|get_json|query_params|cookies|headers)\b"
+    r"request\.(?:args|form|values|get_json|query_params|cookies|headers|json|body)\b"
     r"|req\.(?:query|body|params|headers)\b"
     r"|\$_GET|\$_POST|\$_REQUEST"
     r"|getParameter\s*\("
@@ -164,7 +164,12 @@ def _assign_re(var: str) -> re.Pattern:
 
 
 def sink_arg_var(line: str) -> str:
-    """First identifier inside the sink's first paren group (literals/keywords skipped)."""
+    """First data identifier inside the sink's first paren group.
+
+    String literals are stripped and call-names (identifiers immediately
+    followed by ``(``) are skipped, so ``pickle.loads(bytes.fromhex(data))``
+    resolves to ``data``, not ``bytes``.
+    """
     start = line.find("(")
     if start == -1:
         return ""
@@ -186,6 +191,8 @@ def sink_arg_var(line: str) -> str:
     for m in _IDENT_RE.finditer(stripped):
         ident = m.group(0)
         if ident in _KEYWORDS:
+            continue
+        if stripped[m.end() : m.end() + 1] == "(":  # call name, not a variable
             continue
         return ident
     return ""
@@ -213,12 +220,17 @@ def _find_assignment(lines: list, var: str, start_idx: int, end_idx: int):
 
 
 def _chain_var(expr: str, seen: set) -> str:
-    """First identifier in an RHS that can be followed as a tainted variable."""
-    for m in _IDENT_RE.finditer(expr):
+    """First identifier in an RHS that can be followed as a tainted variable.
+
+    String literals are stripped first so words inside them (``'ping -c 1 '``)
+    are never treated as chain variables — only real identifiers survive.
+    """
+    stripped = re.sub(r"(['\"])(?:\\.|(?!\1)[^\\])*?\1", " ", expr)
+    for m in _IDENT_RE.finditer(stripped):
         ident = m.group(0)
         if ident in _KEYWORDS or _SOURCE_RE.match(ident) or ident in seen:
             continue
-        if expr[m.end() : m.end() + 1] == "(":  # a call, not a variable
+        if stripped[m.end() : m.end() + 1] == "(":  # a call, not a variable
             continue
         return ident
     return None
@@ -321,3 +333,20 @@ def has_enclosing_function(lines: list, sink_line_idx: int) -> bool:
     back to a coarser heuristic.
     """
     return _find_func_start(lines, sink_line_idx) is not None
+
+
+def is_function_parameter(lines: list, sink_line_idx: int, var: str) -> bool:
+    """Whether ``var`` is a parameter of the function enclosing ``sink_line_idx``.
+
+    Cross-function taint cannot be resolved intra-procedurally — a parameter's
+    origin lives in the caller. Callers should treat a parameter argument as
+    potentially tainted when the FILE contains user-input sources elsewhere
+    (the parameter may receive request data from a call site).
+    """
+    func_start = _find_func_start(lines, sink_line_idx)
+    if func_start is None or not var:
+        return False
+    m = re.search(r"\(([^)]*)\)", lines[func_start])
+    if not m:
+        return False
+    return re.search(rf"(?<![\w$]){re.escape(var)}(?![\w$])", m.group(1)) is not None

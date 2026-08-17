@@ -1,10 +1,10 @@
 # BlastRadius Benchmark
 
-Generated: `2026-08-17T04:51:37Z`  
+Generated: `2026-08-17T14:19:18Z`  
 Corpus: `D:\vora\New folder\mycli\blastradius-agent\benchmarks\corpus`  
 Verify (sandbox PoC): `False`  
 Min confidence: `0.7`  
-Elapsed: `0.12s`
+Elapsed: `0.15s`
 
 | Target | Expected | Reported | Hits | Precision | Recall | F1 | Proven |
 |---|---|---|---|---|---|---|---|
