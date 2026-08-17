@@ -101,7 +101,7 @@ jobs:
       - name: Export findings to SARIF
         run: python -m blastradius.export --format sarif --output report.sarif || true
       - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         if: hashFiles('report.sarif') != ''
         with:
           sarif_file: report.sarif
