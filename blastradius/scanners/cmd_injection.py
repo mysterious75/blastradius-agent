@@ -39,6 +39,23 @@ _SAFE = re.compile(
     re.I,
 )
 
+# exec/eval-family sinks (sandboxed-exec downgrade applies only to these).
+_EXEC_SINKS = [
+    r"(?<![.\w])exec\s*\(",
+    r"\beval\s*\(",
+    r"\bexecfile\s*\(",
+    r"\bexecSync\s*\(",
+]
+
+# Markers indicating a SANDBOXED interpreter (restricted globals/builtins,
+# sanitized-AST validation, allowlisted imports) rather than attacker code exec.
+_SANDBOXED_EXEC = re.compile(
+    r"safe_globals|restricted_builtins|safe_builtins|"
+    r"ast\.|\bAST\b|validate_node|validate_ast|_ast_validate|"
+    r"sandbox|allowlist|blocklist.*import",
+    re.I,
+)
+
 
 class CmdInjectionScanner:
     """Pattern-based OS command injection scanner."""
@@ -49,9 +66,24 @@ class CmdInjectionScanner:
         has_source_flag = code_has_source(code)
 
         def check(line, idx):
-            if _SAFE.search(line):
-                return None
             if not any(re.search(p, line, re.I) for p in _SINKS):
+                return None
+            if any(re.search(p, line, re.I) for p in _EXEC_SINKS) and _SANDBOXED_EXEC.search(line):
+                # sandboxed exec/eval (restricted builtins / sanitized AST /
+                # allowlisted imports): below the 0.7 candidate threshold —
+                # still discoverable via code_flows / real-repo targets.
+                return make_finding(
+                    path,
+                    idx,
+                    "cmd_injection",
+                    line.strip(),
+                    0.55,
+                    "CRITICAL",
+                    "CWE-78",
+                    "Command/code injection: user input reaches an OS command or eval sink.",
+                    "Use list-form subprocess without shell=True and an allowlist; never eval user input.",
+                )
+            if _SAFE.search(line):
                 return None
             if not references_variable(line):
                 return None
