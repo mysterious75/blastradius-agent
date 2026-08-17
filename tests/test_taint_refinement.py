@@ -76,10 +76,10 @@ def test_tainted_sink_flagged():
 def test_env_var_sink_downgraded():
     # plain string constant, no source anywhere -> no finding
     assert _scan(CONSTANT_ENV_CMD) == []
-    # same sink line in a file with request.args elsewhere -> finding
-    # (has_source=True path keeps the finding above threshold)
-    f = next((f for f in _scan(SOURCE_ELSEWHERE_CMD) if f.vuln_type == "cmd_injection"), None)
-    assert f is not None
+    # same constant sink in a file with request.args ELSEWHERE -> still no
+    # finding: the assignment-chain is the final authority, not the file flag
+    # (this is the browser.py-style localhost/config-URL FP the fix kills)
+    assert _scan(SOURCE_ELSEWHERE_CMD) == []
 
 
 # --- _sink_arg_tainted unit checks -------------------------------------------
@@ -94,13 +94,14 @@ def test_sink_arg_tainted_constants():
 
 
 def test_sink_arg_tainted_identifiers():
+    # name-based fallback applies for direct callers / top-level code
     assert _sink_arg_tainted("os.system(host)", False) is True
     assert _sink_arg_tainted("requests.get(url)", False) is True
     assert _sink_arg_tainted("pickle.loads(data)", False) is True
     assert _sink_arg_tainted('open(file_path + name, "r")', False) is True
 
 
-def test_sink_arg_tainted_file_source_short_circuit():
-    # any file-level source marks every sink line tainted (conservative)
-    assert _sink_arg_tainted("os.system('cls')", True) is True
-    assert _sink_arg_tainted("requests.get('https://static.example/data.json')", True) is True
+def test_sink_arg_tainted_file_source_does_not_touch_literals():
+    # a file-level source does NOT short-circuit literal/constant sinks
+    assert _sink_arg_tainted("os.system('cls')", True) is False
+    assert _sink_arg_tainted("requests.get('https://static.example/data.json')", True) is False
