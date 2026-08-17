@@ -39,7 +39,7 @@ class DisclosureReport:
         return f"""# Vulnerability Disclosure: {f.vuln_type.upper()} in {repo_name}
 
 - **Date:** {date}
-- **Severity:** {f.severity} | **CVSS estimate:** {VULN_META[f.vuln_type]["cvss"]} | **CWE:** {f.cwe}
+- **Severity:** {f.severity} | **CVSS estimate:** {VULN_META.get(f.vuln_type, {}).get("cvss", "n/a")} | **CWE:** {f.cwe}
 - **Affected file:** `{f.file}` line {f.line}
 - **Confidence:** {f.confidence}
 

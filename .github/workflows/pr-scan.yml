@@ -35,7 +35,7 @@ jobs:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python scripts/pr_scan.py --repo "$GITHUB_WORKSPACE" --base "origin/${{ github.event.pull_request.base.ref }}" --out "$GITHUB_WORKSPACE/pr-scan"
+        run: python scripts/pr_scan.py --repo "$GITHUB_WORKSPACE" --base "origin/${{ github.event.pull_request.base.ref }}" --baseline-ref "origin/${{ github.event.pull_request.base.ref }}" --fail-on high --out "$GITHUB_WORKSPACE/pr-scan"
 
       - name: Upload SARIF to code scanning
         if: ${{ always() && hashFiles('pr-scan/pr-scan.sarif') != '' }}

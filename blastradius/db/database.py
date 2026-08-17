@@ -4,6 +4,7 @@ Zero external dependencies (stdlib sqlite3). DB file: ~/.blastradius/blastradius
 (override with BLASTRADIUS_DB or BLASTRADIUS_HOME).
 """
 
+import json
 import os
 import sqlite3
 from datetime import datetime
@@ -72,6 +73,11 @@ CREATE TABLE IF NOT EXISTS cve_tracking (
     disclosed_at TEXT,
     fixed_at TEXT,
     bounty_usd REAL DEFAULT 0
+);
+CREATE TABLE IF NOT EXISTS sca_cache (
+    key TEXT PRIMARY KEY,
+    payload TEXT,
+    ts TEXT
 );
 """
 
@@ -260,6 +266,37 @@ class SQLiteDB:
                 ),
             )
             return cur.lastrowid
+
+    # ------------------------------------------------------------------
+    # SCA cache (OSV query results, keyed by ecosystem|name|version)
+    # ------------------------------------------------------------------
+
+    def save_sca(self, key: str, payload) -> None:
+        """Store an OSV result payload under ``key`` (upsert)."""
+        with self._connect() as conn:
+            conn.execute(
+                "INSERT INTO sca_cache (key, payload, ts) VALUES (?, ?, ?) "
+                "ON CONFLICT(key) DO UPDATE SET payload = excluded.payload, "
+                "ts = excluded.ts",
+                (key, json.dumps(payload), datetime.now().isoformat(timespec="seconds")),
+            )
+
+    def get_sca(self, key: str, ttl_days: int = 7) -> Optional[Dict]:
+        """Return the cached payload for ``key`` if it is fresher than ``ttl_days``."""
+        with self._connect() as conn:
+            row = conn.execute("SELECT payload, ts FROM sca_cache WHERE key = ?", (key,)).fetchone()
+        if not row:
+            return None
+        try:
+            ts = datetime.fromisoformat(row["ts"])
+        except (ValueError, TypeError):
+            return None
+        if (datetime.now() - ts).total_seconds() > ttl_days * 86400:
+            return None
+        try:
+            return json.loads(row["payload"])
+        except (ValueError, TypeError):
+            return None
 
     # ------------------------------------------------------------------
     # Stats

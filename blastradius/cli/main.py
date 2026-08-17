@@ -9,11 +9,13 @@ Usage:
     blastradius providers list|test
     blastradius cve list
     blastradius export --format <csv|json|sarif|html|markdown> --output <file>
+    blastradius sca --repo . [--online]
     blastradius setup
     blastradius version
 """
 
 import argparse
+from pathlib import Path
 
 from blastradius.version import __version__
 
@@ -130,6 +132,66 @@ def cmd_export(args) -> int:
     return export_main(["--format", args.format, "--output", args.output])
 
 
+def cmd_sca(args) -> int:
+    import json as _json
+    from datetime import datetime
+
+    from blastradius import sca as sca_mod
+    from blastradius.sca import parse_lockfiles, query_osv, summarize
+
+    packages = parse_lockfiles(args.repo)
+    if not packages:
+        print(f"No supported lockfiles found under {args.repo!r} — nothing to check.")
+        return 0
+
+    print(f"Found {len(packages)} dependency record(s) under {args.repo!r}.")
+    if not args.online:
+        print("Offline mode: using cached OSV results only (pass --online to query the API).")
+
+    results = query_osv(packages, online=args.online)
+    if not sca_mod.network_available:
+        print("WARNING: OSV API unreachable — results limited to cached data.")
+
+    total = sum(len(entry["advisories"]) for entry in results)
+    if total:
+        header = f"{'package':<32} {'id':<24} {'severity':<9} {'fixed'}"
+        print(header)
+        print("-" * len(header))
+        for entry in results:
+            for advisory in entry["advisories"]:
+                pkg = entry["package"]
+                print(
+                    f"{str(pkg.get('name')):<32} {str(advisory.get('id')):<24} "
+                    f"{str(advisory.get('severity')):<9} {advisory.get('fixed') or '-'}"
+                )
+    else:
+        print("No known vulnerabilities found in the dependency set.")
+
+    summary = summarize(results)
+    print("Summary: " + ", ".join(f"{k}={v}" for k, v in summary.items()))
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    reports_dir = Path(args.reports_dir)
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    report_path = reports_dir / f"{ts}_sca.json"
+    report = {
+        "tool": "blastradius-sca",
+        "repo": str(args.repo),
+        "packages_checked": len(packages),
+        "packages": packages,
+        "results": results,
+        "summary": summary,
+        "network_available": sca_mod.network_available,
+    }
+    with report_path.open("w", encoding="utf-8") as fh:
+        _json.dump(report, fh, indent=2)
+    print(f"Report written to {report_path}")
+
+    if summary.get("CRITICAL", 0) or summary.get("HIGH", 0):
+        return 1
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         prog="blastradius",
@@ -187,6 +249,11 @@ def main(argv=None) -> int:
     )
     export_p.add_argument("--output", required=True)
 
+    sca_p = sub.add_parser("sca", help="dependency/SCA scan via OSV (lockfiles)")
+    sca_p.add_argument("--repo", default=".", help="path to the project to scan")
+    sca_p.add_argument("--online", action="store_true", help="allow network queries to OSV")
+    sca_p.add_argument("--reports-dir", default="reports")
+
     args = parser.parse_args(argv)
     if args.command == "version":
         return cmd_version(args)
@@ -214,6 +281,8 @@ def main(argv=None) -> int:
         return cmd_web(args)
     if args.command == "export":
         return cmd_export(args)
+    if args.command == "sca":
+        return cmd_sca(args)
     return 1
 
 

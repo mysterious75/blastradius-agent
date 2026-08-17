@@ -1,0 +1,10 @@
+# BlastRadius pre-commit hooks.
+# Install with:
+#   pre-commit install --hook-type pre-commit
+- id: blastradius-secrets
+  name: blastradius-secrets
+  description: Block commits containing hard-coded credentials (entropy-gated, blastradius:allow opt-out).
+  entry: python -m blastradius.scan_secrets_hook
+  language: python
+  types: [text]
+  pass_filenames: true
