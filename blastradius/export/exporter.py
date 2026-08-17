@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
 
+from blastradius.reporting.attack_map import attack_for
 from blastradius.version import __version__
 
 _SARIF_SCHEMA = (
@@ -163,6 +164,9 @@ class FindingsExporter:
                         "tags": [vuln_type],
                     },
                 }
+                techniques = [t["id"] for t in attack_for(f)]
+                if techniques:
+                    rules[rule_id]["properties"]["techniques"] = techniques
             line = int(_get(f, "line", 1) or 1)
             result = {
                 "ruleId": rule_id,

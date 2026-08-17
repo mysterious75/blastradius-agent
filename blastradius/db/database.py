@@ -79,6 +79,11 @@ CREATE TABLE IF NOT EXISTS sca_cache (
     payload TEXT,
     ts TEXT
 );
+CREATE TABLE IF NOT EXISTS kev (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    ts TEXT,
+    payload TEXT
+);
 """
 
 
@@ -293,6 +298,42 @@ class SQLiteDB:
             return None
         if (datetime.now() - ts).total_seconds() > ttl_days * 86400:
             return None
+        try:
+            return json.loads(row["payload"])
+        except (ValueError, TypeError):
+            return None
+
+    # ------------------------------------------------------------------
+    # KEV catalog cache (single-row snapshot of the CISA KEV feed)
+    # ------------------------------------------------------------------
+
+    def save_kev(self, payload) -> None:
+        """Store the parsed KEV catalog (single-row upsert)."""
+        with self._connect() as conn:
+            conn.execute(
+                "INSERT INTO kev (id, payload, ts) VALUES (1, ?, ?) "
+                "ON CONFLICT(id) DO UPDATE SET payload = excluded.payload, "
+                "ts = excluded.ts",
+                (json.dumps(payload), datetime.now().isoformat(timespec="seconds")),
+            )
+
+    def get_kev(self, ttl_days: Optional[int] = 1):
+        """Return the cached KEV catalog, or None when absent/too stale.
+
+        ``ttl_days=None`` disables the freshness check (offline fallback —
+        a stale catalog is better than no catalog).
+        """
+        with self._connect() as conn:
+            row = conn.execute("SELECT payload, ts FROM kev WHERE id = 1").fetchone()
+        if not row:
+            return None
+        if ttl_days is not None:
+            try:
+                ts = datetime.fromisoformat(row["ts"])
+            except (ValueError, TypeError):
+                return None
+            if (datetime.now() - ts).total_seconds() > ttl_days * 86400:
+                return None
         try:
             return json.loads(row["payload"])
         except (ValueError, TypeError):

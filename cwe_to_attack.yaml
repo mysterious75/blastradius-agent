@@ -1,0 +1,138 @@
+# MITRE ATT&CK technique mapping for CWE-identified vulnerabilities.
+#
+# Each row maps a CWE to the ATT&CK technique most commonly used to exploit
+# it (real technique IDs from https://attack.mitre.org). Used by
+# blastradius/reporting/attack_map.py to annotate findings, summary reports,
+# and SARIF exports.
+CWE-89:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-79:
+  id: T1059.007
+  name: JavaScript/Command
+CWE-918:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-639:
+  id: T1213
+  name: Data from Information Repositories
+CWE-1336:
+  id: T1059
+  name: Command and Scripting Interpreter
+CWE-611:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-347:
+  id: T1606
+  name: Forge Web Credentials
+CWE-943:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-798:
+  id: T1078.001
+  name: "Valid Accounts: Default Accounts"
+CWE-502:
+  id: T1203
+  name: Exploitation for Client Execution
+CWE-78:
+  id: T1059
+  name: Command and Scripting Interpreter
+CWE-22:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-93:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-287:
+  id: T1078
+  name: Valid Accounts
+CWE-1321:
+  id: T1059.007
+  name: JavaScript/Command
+CWE-94:
+  id: T1059
+  name: Command and Scripting Interpreter
+CWE-706:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-710:
+  id: T1595
+  name: Active Scanning
+CWE-20:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-77:
+  id: T1059
+  name: Command and Scripting Interpreter
+CWE-88:
+  id: T1059
+  name: Command and Scripting Interpreter
+CWE-95:
+  id: T1059
+  name: Command and Scripting Interpreter
+CWE-98:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-119:
+  id: T1210
+  name: Exploitation of Remote Services
+CWE-120:
+  id: T1210
+  name: Exploitation of Remote Services
+CWE-190:
+  id: T1210
+  name: Exploitation of Remote Services
+CWE-200:
+  id: T1005
+  name: Data from Local System
+CWE-209:
+  id: T1082
+  name: System Information Discovery
+CWE-250:
+  id: T1548
+  name: Abuse Elevation Control Mechanism
+CWE-269:
+  id: T1548
+  name: Abuse Elevation Control Mechanism
+CWE-285:
+  id: T1078
+  name: Valid Accounts
+CWE-288:
+  id: T1078
+  name: Valid Accounts
+CWE-306:
+  id: T1078
+  name: Valid Accounts
+CWE-307:
+  id: T1110
+  name: Brute Force
+CWE-319:
+  id: T1040
+  name: Network Sniffing
+CWE-326:
+  id: T1600
+  name: Weaken Encryption
+CWE-327:
+  id: T1600
+  name: Weaken Encryption
+CWE-352:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-400:
+  id: T1499
+  name: Endpoint Denial of Service
+CWE-434:
+  id: T1190
+  name: Exploit Public-Facing Application
+CWE-601:
+  id: T1189
+  name: Drive-by Compromise
+CWE-770:
+  id: T1499
+  name: Endpoint Denial of Service
+CWE-862:
+  id: T1078
+  name: Valid Accounts
+CWE-1021:
+  id: T1189
+  name: Drive-by Compromise

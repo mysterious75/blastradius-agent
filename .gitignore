@@ -10,6 +10,7 @@ build/
 reports/
 .coverage
 benchmarks/results/benchmark-*.json
+benchmarks/results/agent_eval_*.json
 # Report corpora stay LOCAL — never push third-party report content to GitHub.
 learningfromreport/*.json
 learningfromreport/*.md

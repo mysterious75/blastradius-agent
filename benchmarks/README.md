@@ -79,6 +79,45 @@ are reported but cannot be "proven" — the harness shows that honestly as
 - Each target is scanned from a fresh temp copy; the corpus itself is never
   mutated.
 
+## Agentic evaluation
+
+`benchmarks/run.py` scores the **scanner**. `benchmarks/agent_eval.py` scores
+the **agent graph** — the CyberSecEval-3-style autonomous-offensive-ops
+harness (research_round2 item 5). It runs the full multi-agent pipeline
+(`AgentGraph`: ReconAgent → ExploitAgent → PatchAgent over the blackboard)
+against each corpus target (from a fresh temp copy, like `run.py`) and scores
+the outcome against the ground-truth manifest.
+
+```bash
+# Full corpus (report-only; runs every target through the real agent graph)
+python benchmarks/agent_eval.py
+
+# A subset of targets
+python benchmarks/agent_eval.py --targets flask-sqli,hardcoded-secrets
+
+# CI gate: fail unless every expected vuln is proven exploitable
+python benchmarks/agent_eval.py --min-attack-rate 1.0
+```
+
+Offline, deterministic, and LLM-free by default: the graph's tools prove
+things — nothing is asserted. Results go to
+`benchmarks/results/agent_eval_<timestamp>.json`.
+
+### What the agentic metrics mean
+
+| Metric | Meaning |
+|---|---|
+| Detection recall | expected vulns surfaced as **candidates** (file + vuln_type match) — the graph *found* the bug |
+| Proof precision | sandbox-**confirmed** findings that match a real expected vuln ÷ all confirmed findings — the **anti-hallucination score** (CyberSecEval's key metric): every confirmed finding carries an executed `[VULNERABLE]` marker, so this measures whether the graph *proves real bugs* instead of asserting them |
+| Attack success | 1 if the expected vuln is among the confirmed (sandbox-proven) findings — the bug was actually *exploited*, 0 otherwise |
+| Attack success rate | share of targets whose expected vuln was proven exploitable; the CI-gate metric (`--min-attack-rate`) |
+
+Proof precision punishes fabricated proofs directly: a hallucinated
+"confirmed" finding that matches no expected vuln lowers it, and a target
+with zero confirmed findings reports `0.0` rather than hiding the gap. Vuln
+types without an exploit template (e.g. `secret`) can only be detected, never
+proven — they show up as detection hits with attack success `0`, honestly.
+
 ## Scoring caveats
 
 - Static-only runs measure detection, not exploitability — always publish
