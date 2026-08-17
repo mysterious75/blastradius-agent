@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional
 from blastradius.agents.blackboard import Blackboard
 from blastradius.hunter.scanner import CVEHunter, Finding, reconstruct_target_code
 from blastradius.patcher.loop import PatchLoop
+from blastradius.security.agent_guardrails import AgentGuard, validate_agent_output
 from blastradius.tools.sandbox_tool import run_exploit_sandbox
 
 PERSONAS = {
@@ -51,24 +52,54 @@ def _finding_dict(f: Finding) -> Dict[str, Any]:
     }
 
 
+def guarded_post(
+    blackboard: Blackboard, guard: AgentGuard, agent: str, kind: str, payload: Dict[str, Any]
+) -> bool:
+    """Post ``payload`` only if it passes the agent guard.
+
+    Runs ``validate_agent_output`` on the structured payload (via ``repr``)
+    before anything reaches the blackboard. On a violation the artifact is
+    skipped and a ``note`` event with the warning is posted instead, so the
+    run stays auditable and the graph never touches a violating payload.
+
+    Returns True when the artifact was posted, False when it was blocked.
+    """
+    ok, reason = validate_agent_output(agent, repr(payload))
+    if not ok:
+        blackboard.post(agent=agent, kind="note", payload={"warning": reason})
+        return False
+    blackboard.post(agent=agent, kind=kind, payload=payload)
+    return True
+
+
 class ReconAgent:
     """Discovers attack surface and posts candidates to the blackboard."""
 
     name = "recon"
     persona = PERSONAS["recon"]
 
-    def __init__(self, hunter: Optional[CVEHunter] = None, min_confidence: float = 0.7):
+    def __init__(
+        self,
+        hunter: Optional[CVEHunter] = None,
+        min_confidence: float = 0.7,
+        guard: Optional[AgentGuard] = None,
+    ):
         self.hunter = hunter or CVEHunter(min_confidence=min_confidence)
+        self.guard = guard or AgentGuard(self.name)
 
     def run(self, blackboard: Blackboard, repo_path: str) -> int:
+        self.guard.action_risk("scan")
         findings = self.hunter.scan_repo(repo_path)
+        posted = 0
         for finding in findings:
-            blackboard.post(
-                agent=self.name,
-                kind="candidate",
-                payload={**_finding_dict(finding), "files_scanned": self.hunter.files_scanned},
-            )
-        return len(findings)
+            payload = {**_finding_dict(finding), "files_scanned": self.hunter.files_scanned}
+            # Repo content may feed an LLM later -- flag (never block) any
+            # prompt-injection marker found in the candidate evidence.
+            if self.guard.flag_repo_content(payload.get("evidence", "")):
+                payload["injection_flag"] = True
+            if guarded_post(blackboard, self.guard, self.name, "candidate", payload):
+                posted += 1
+        return posted
 
 
 class ExploitAgent:
@@ -77,10 +108,12 @@ class ExploitAgent:
     name = "exploit"
     persona = PERSONAS["exploit"]
 
-    def __init__(self, max_workers: int = 4):
+    def __init__(self, max_workers: int = 4, guard: Optional[AgentGuard] = None):
         self.max_workers = max(1, max_workers)
+        self.guard = guard or AgentGuard(self.name)
 
     def run(self, blackboard: Blackboard) -> int:
+        self.guard.action_risk("exploit-sandbox")
         candidates = blackboard.candidates()
 
         def prove(event) -> None:
@@ -101,10 +134,12 @@ class ExploitAgent:
             except Exception as exc:
                 result = f"ERROR {exc}"
             kind = "confirmed" if result.startswith("CONFIRMED_EXPLOITABLE") else "rejected"
-            blackboard.post(
-                agent=self.name,
-                kind=kind,
-                payload={**payload, "sandbox": result[:300]},
+            guarded_post(
+                blackboard,
+                self.guard,
+                self.name,
+                kind,
+                {**payload, "sandbox": result[:300]},
             )
 
         with ThreadPoolExecutor(max_workers=self.max_workers) as pool:
@@ -140,8 +175,9 @@ class PatchAgent:
     name = "patch"
     persona = PERSONAS["patch"]
 
-    def __init__(self, patch_loop: Optional[PatchLoop] = None):
+    def __init__(self, patch_loop: Optional[PatchLoop] = None, guard: Optional[AgentGuard] = None):
         self.patch_loop = patch_loop or PatchLoop()
+        self.guard = guard or AgentGuard(self.name)
 
     def run(self, blackboard: Blackboard) -> int:
         confirmed = blackboard.confirmed()
@@ -159,12 +195,22 @@ class PatchAgent:
                 )
             except Exception:
                 continue
-            blackboard.post(
-                agent=self.name,
-                kind="patch",
-                payload={
+            guard_flag = bool(payload.get("injection_flag"))
+            # Human-in-the-loop gate: patch application is high risk; force a
+            # human review when the guard flagged the underlying candidate, but
+            # preserve PatchLoop's own needs_human value otherwise.
+            patch_risk = self.guard.action_risk("patch-apply")
+            needs_human = bool(result.needs_human)
+            if patch_risk == "high":
+                needs_human = needs_human or guard_flag
+            guarded_post(
+                blackboard,
+                self.guard,
+                self.name,
+                "patch",
+                {
                     **payload,
-                    "needs_human": result.needs_human,
+                    "needs_human": needs_human,
                     "attempts": result.attempts,
                     "confidence": (result.verification.confidence if result.verification else 0.0),
                     "diff": result.patch.diff if result.patch else "",

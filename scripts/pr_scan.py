@@ -7,22 +7,31 @@ changed files of a pull request, writes:
     <out>/pr-results.json machine-readable summary (for logs/artifacts)
     <out>/pr-scan.sarif   SARIF 2.1.0 for GitHub code scanning
 
-Exit codes (merge gate): 0 = no confirmed exploitable findings; 1 = confirmed
-findings (the Actions job fails -> PR merge is blocked); 2 = tooling error.
+Exit codes (merge gate): 0 = no confirmed exploitable new findings at/above the
+``--fail-on`` severity; 1 = at least one confirmed new finding at/above the
+gate severity (the Actions job fails -> PR merge is blocked); 2 = tooling
+error.
 
 The scan is diff-scoped against ``--base`` when git history is available
-(checkout with ``fetch-depth: 0``). Sandbox verification runs each candidate's
-PoC (Docker ``blastradius-sandbox`` image if present, else the documented
-unsandboxed dev fallback for trusted template PoCs).
+(checkout with ``fetch-depth: 0``). When ``--baseline-ref`` is set, the changed
+files are additionally scanned at that baseline revision and only findings NOT
+already present in the baseline (matched by file+line+vuln_type) are flagged as
+``new_findings``; findings that pre-date the PR stay behind the gate. Sandbox
+verification runs each candidate's PoC (Docker ``blastradius-sandbox`` image if
+present, else the documented unsandboxed dev fallback for trusted template
+PoCs). Only CONFIRMED exploitable new findings count toward the gate.
 
 Usage:
-    python scripts/pr_scan.py --repo . --base origin/main --out /tmp/pr-scan
+    python scripts/pr_scan.py --repo . --base origin/main --baseline-ref origin/main \\
+        --fail-on high --out /tmp/pr-scan
 """
 
 import argparse
 import json
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 _REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -35,6 +44,30 @@ from blastradius.hunter.scanner import CVEHunter, Finding, reconstruct_target_co
 from blastradius.tools.sandbox_tool import run_exploit_sandbox  # noqa: E402
 
 SEVERITY_ORDER = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+_GATE_CHOICES = ("critical", "high", "medium", "low")
+
+
+def _finding_dict(f: Finding) -> dict:
+    return {
+        "file": f.file,
+        "line": f.line,
+        "vuln_type": f.vuln_type,
+        "confidence": f.confidence,
+        "severity": f.severity,
+        "cwe": f.cwe,
+        "description": f.description,
+        "remediation": f.remediation,
+    }
+
+
+def _git(repo: str, *args):
+    """Run git in ``repo``; returns CompletedProcess (never raises)."""
+    return subprocess.run(
+        ["git", "-C", repo, *args],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
 
 
 def _changed_files(repo: str, base: str):
@@ -55,27 +88,87 @@ def _changed_files(repo: str, base: str):
         return None
 
 
-def _finding_dict(f: Finding) -> dict:
-    return {
-        "file": f.file,
-        "line": f.line,
-        "vuln_type": f.vuln_type,
-        "confidence": f.confidence,
-        "severity": f.severity,
-        "cwe": f.cwe,
-        "description": f.description,
-        "remediation": f.remediation,
-    }
+def _baseline_findings(
+    repo: str, baseline_ref: str, changed_files, min_confidence: float
+) -> list[tuple[str, int, str]]:
+    """Scan the changed files at ``baseline_ref`` and return (file, line, vuln_type).
+
+    The baseline content for each changed file is materialized via
+    ``git show <baseline_ref>:<file>`` into a throwaway temp tree, so the real
+    scanners run over it with the same rules. ``file`` is normalized to a POSIX
+    repo-relative path so the keys match PR-scan findings. Returns [] when git
+    history is unavailable, the baseline scan fails, or nothing was scanned.
+    """
+    if not baseline_ref or not changed_files:
+        return []
+    proc = _git(repo, "rev-parse", "--verify", baseline_ref)
+    if proc.returncode != 0:
+        return []
+    tmp = Path(tempfile.mkdtemp(prefix="blastradius-baseline-"))
+    try:
+        for name in changed_files:
+            name = name.replace("\\", "/")
+            show = _git(repo, "show", f"{baseline_ref}:{name}")
+            if show.returncode != 0:
+                continue  # file absent at baseline (added in this PR)
+            path = tmp / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(show.stdout, encoding="utf-8")
+        if not any(tmp.rglob("*")):
+            return []
+        hunter = CVEHunter(min_confidence=min_confidence)
+        base_findings = hunter.scan_repo(str(tmp))
+        return [
+            (_normalise_file(f, str(tmp)), f.line, f.vuln_type)
+            for f in base_findings
+            if _normalise_file(f, str(tmp))
+        ]
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def _normalise_file(f: Finding, repo: str) -> str:
+    """Return the finding's file as a POSIX repo-relative path for matching.
+
+    Falls back to the raw POSIX path when the file lives outside ``repo``
+    (e.g. a throwaway baseline temp tree whose contents mirror the repo).
+    """
+    raw = f.file.replace("\\", "/")
+    try:
+        return Path(raw).resolve().relative_to(Path(repo).resolve()).as_posix()
+    except ValueError:
+        return raw
+
+
+def _severity_meets(sev: str, fail_on: str) -> bool:
+    """True when ``sev`` is at least as severe as ``fail_on``."""
+    return SEVERITY_ORDER.get(str(sev).upper(), 9) <= SEVERITY_ORDER.get(fail_on.upper(), 1)
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description="BlastRadius PR security scan")
     ap.add_argument("--repo", default=".", help="path to the checked-out repo")
     ap.add_argument("--base", default="origin/main", help="base branch ref for diff-scope")
+    ap.add_argument(
+        "--baseline-ref",
+        default="",
+        help=(
+            "git ref to scan for pre-existing findings (e.g. origin/main). When set, "
+            "diff findings already present in the baseline (file+line+vuln_type) are "
+            "excluded; empty keeps all diff findings."
+        ),
+    )
+    ap.add_argument(
+        "--fail-on",
+        default="high",
+        choices=_GATE_CHOICES,
+        help="exit 1 when a CONFIRMED new finding has severity >= this (default high)",
+    )
     ap.add_argument("--min-confidence", type=float, default=0.7)
     ap.add_argument("--out", default="pr-scan", help="output dir (comment/results/sarif)")
     args = ap.parse_args(argv)
 
+    fail_on = args.fail_on.lower()
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -92,8 +185,24 @@ def main(argv=None) -> int:
             or Path(f.file).name in {Path(c).name for c in changed}
         ]
 
+    # Baseline-aware dedup: drop findings that already exist at --baseline-ref.
+    baseline_active = bool(args.baseline_ref)
+    baseline_keys: set = set()
+    if baseline_active:
+        baseline_keys.update(
+            _baseline_findings(
+                args.repo, args.baseline_ref, list(changed or []), args.min_confidence
+            )
+        )
+    new_findings = [
+        f
+        for f in findings
+        if not baseline_active
+        or (_normalise_file(f, args.repo), f.line, f.vuln_type) not in baseline_keys
+    ]
+
     confirmed: list[tuple[Finding, str, dict]] = []
-    for f in findings:
+    for f in new_findings:
         try:
             sandbox_result = run_exploit_sandbox(f.vuln_type, reconstruct_target_code(f))
         except Exception as exc:
@@ -118,23 +227,35 @@ def main(argv=None) -> int:
                 patch = {}
             confirmed.append((f, sandbox_result, patch))
 
-    findings.sort(key=lambda f: SEVERITY_ORDER.get(str(f.severity).upper(), 9))
-    comment = _render_comment(args.repo, findings, confirmed, changed)
+    # Gate: only CONFIRMED new findings at/above --fail-on count.
+    gate_findings = [f for f, _, _ in confirmed if _severity_meets(f.severity, fail_on)]
+    exit_code = 1 if gate_findings else 0
+
+    comment = _render_comment(args.repo, new_findings, confirmed, changed, baseline_active)
     (out_dir / "pr-comment.md").write_text(comment, encoding="utf-8")
 
     summary = {
         "repo": args.repo,
         "base": args.base,
+        "baseline": baseline_active,
+        "baseline_ref": args.baseline_ref,
+        "fail_on": fail_on,
         "diff_scoped": changed is not None,
         "changed_files": len(changed) if changed else None,
         "candidates": len(findings),
+        "new_findings": [_finding_dict(f) for f in new_findings],
         "confirmed": len(confirmed),
-        "findings": [_finding_dict(f) for f in findings],
+        "findings": [_finding_dict(f) for f in new_findings],
         "patches": [
             {**patch, "file": f.file, "line": f.line, "vuln_type": f.vuln_type}
             for f, _, patch in confirmed
             if patch
         ],
+        "gate": {
+            "fail_on": fail_on,
+            "confirmed_meeting_gate": len(gate_findings),
+            "exit_code": exit_code,
+        },
     }
     (out_dir / "pr-results.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
@@ -144,15 +265,21 @@ def main(argv=None) -> int:
         )
 
     display = RichDisplay()
-    if findings:
-        display.print_findings_table(findings)
-    print(f"[*] {len(findings)} candidate(s), {len(confirmed)} confirmed exploitable")
+    if new_findings:
+        display.print_findings_table(new_findings)
+    else:
+        print("[*] no new candidate findings on the diff")
+    print(f"[*] {len(new_findings)} new candidate(s), {len(confirmed)} confirmed exploitable")
+    print(f"[gate] {len(gate_findings)} new confirmed finding(s) >= {fail_on} -> exit {exit_code}")
+    print(
+        f"[*] {'baseline-aware (pre-existing findings suppressed)' if baseline_active else 'diff-only (no baseline)'}"
+    )
     print(f"[*] comment: {out_dir / 'pr-comment.md'}")
 
-    return 1 if confirmed else 0
+    return exit_code
 
 
-def _render_comment(repo: str, findings, confirmed, changed) -> str:
+def _render_comment(repo: str, findings, confirmed, changed, baseline_active: bool) -> str:
     lines = [
         "## 🔴 BlastRadius PR Security Scan",
         "",
@@ -161,7 +288,8 @@ def _render_comment(repo: str, findings, confirmed, changed) -> str:
             f" · **diff-scope:** {len(changed)} changed file(s)"
             if changed
             else " · full-scan (diff unavailable)"
-        ),
+        )
+        + (" · **baseline-aware**" if baseline_active else ""),
         "",
     ]
     if not findings:

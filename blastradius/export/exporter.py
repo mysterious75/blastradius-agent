@@ -1,11 +1,14 @@
-"""FindingsExporter — CSV / JSON / SARIF / HTML / Markdown export (stdlib only)."""
+"""FindingsExporter — CSV / JSON / SARIF 2.1.0 / CycloneDX SBOM / HTML / Markdown export (stdlib only)."""
 
 import csv
+import hashlib
 import html as _html
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Optional
+
+from blastradius.version import __version__
 
 _SARIF_SCHEMA = (
     "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
@@ -16,6 +19,12 @@ _SEVERITY_LEVEL = {
     "MEDIUM": "warning",
     "LOW": "note",
     "INFO": "note",
+}
+_SEVERITY_SCORE = {
+    "CRITICAL": 9.0,
+    "HIGH": 7.5,
+    "MEDIUM": 5.0,
+    "LOW": 2.0,
 }
 
 _CSV_COLUMNS = [
@@ -108,34 +117,88 @@ class FindingsExporter:
     # SARIF 2.1.0
     # ------------------------------------------------------------------
 
+    @staticmethod
+    def _location_line_hash(f) -> str:
+        """Stable SARIF primaryLocationLineHash: sha256(file+line+vuln_type+payload), first 32 hex chars."""
+        raw = "{}{}{}{}".format(
+            _get(f, "file", ""),
+            _get(f, "line", ""),
+            _get(f, "vuln_type", ""),
+            _get(f, "payload", ""),
+        )
+        return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:32]
+
     def export_sarif(self, path: str) -> None:
+        """Export findings as SARIF 2.1.0.
+
+        GitHub code-scanning ingestion limits (not enforced here — see
+        https://docs.github.com/en/code-security/code-scanning/managing-your-code-scanning-results):
+        a single upload supports at most 25,000 results and 25,000 rules.
+        """
         rules = {}
         results = []
         for f in self.findings:
-            rule_id = f"BR-{str(_get(f, 'vuln_type', 'X')).upper()}"
-            rules.setdefault(
-                rule_id,
-                {
+            vuln_type = str(_get(f, "vuln_type", "X"))
+            rule_id = f"BR-{vuln_type.upper()}"
+            description = str(_get(f, "description", ""))
+            severity = str(_get(f, "severity")).upper()
+            if rule_id not in rules:
+                remediation = str(_get(f, "remediation", ""))
+                help_md = description
+                if remediation:
+                    help_md = f"{description}\n\n**Remediation:** {remediation}"
+                try:
+                    confidence = float(_get(f, "confidence", 0.0) or 0.0)
+                except (TypeError, ValueError):
+                    confidence = 0.0
+                rules[rule_id] = {
                     "id": rule_id,
-                    "name": _get(f, "vuln_type"),
-                    "shortDescription": {"text": str(_get(f, "description", ""))[:200]},
-                },
-            )
-            results.append(
-                {
-                    "ruleId": rule_id,
-                    "level": _SEVERITY_LEVEL.get(str(_get(f, "severity")).upper(), "warning"),
-                    "message": {"text": str(_get(f, "description", ""))},
-                    "locations": [
-                        {
-                            "physicalLocation": {
-                                "artifactLocation": {"uri": str(_get(f, "file", "unknown"))},
-                                "region": {"startLine": int(_get(f, "line", 1) or 1)},
-                            }
-                        }
-                    ],
+                    "name": vuln_type,
+                    "shortDescription": {"text": description[:200]},
+                    "fullDescription": {"text": description},
+                    "help": {"text": help_md, "markdown": help_md},
+                    "properties": {
+                        "security-severity": _SEVERITY_SCORE.get(severity, 0.0),
+                        "precision": "high" if confidence >= 0.85 else "medium",
+                        "tags": [vuln_type],
+                    },
                 }
-            )
+            line = int(_get(f, "line", 1) or 1)
+            result = {
+                "ruleId": rule_id,
+                "level": _SEVERITY_LEVEL.get(severity, "warning"),
+                "message": {"text": description},
+                "locations": [
+                    {
+                        "physicalLocation": {
+                            "artifactLocation": {"uri": str(_get(f, "file", "unknown"))},
+                            "region": {"startLine": line},
+                        }
+                    }
+                ],
+                "partialFingerprints": {"primaryLocationLineHash": self._location_line_hash(f)},
+            }
+            patch_diff = _get(f, "patch_diff")
+            if patch_diff:
+                result["fixes"] = [
+                    {
+                        "artifactChanges": [
+                            {
+                                "artifactLocation": {"uri": str(_get(f, "file", "unknown"))},
+                                "replacements": [
+                                    {
+                                        "deletedRegion": {
+                                            "startLine": line,
+                                            "endLine": line,
+                                        },
+                                        "insertedContent": {"text": str(patch_diff)},
+                                    }
+                                ],
+                            }
+                        ]
+                    }
+                ]
+            results.append(result)
         sarif = {
             "$schema": _SARIF_SCHEMA,
             "version": "2.1.0",
@@ -144,7 +207,8 @@ class FindingsExporter:
                     "tool": {
                         "driver": {
                             "name": "BlastRadius",
-                            "version": "1.0.0",
+                            "version": __version__,
+                            "semanticVersion": __version__,
                             "informationUri": "https://github.com/mysterious75/blastradius-agent",
                             "rules": list(rules.values()),
                         }
@@ -155,6 +219,42 @@ class FindingsExporter:
         }
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(sarif, fh, indent=2)
+
+    # ------------------------------------------------------------------
+    # CycloneDX 1.5 SBOM
+    # ------------------------------------------------------------------
+
+    def export_sbom_cyclonedx(self, path: str, deps: Optional[list] = None) -> None:
+        """Export a CycloneDX 1.5 software bill of materials (JSON).
+
+        deps is an optional iterable of (name, version, purl) tuples; when
+        empty/None the BOM carries metadata only (no components list).
+        """
+        bom = {
+            "bomFormat": "CycloneDX",
+            "specVersion": "1.5",
+            "version": 1,
+            "metadata": {
+                "tools": [{"name": "BlastRadius", "version": __version__}],
+                "component": {
+                    "type": "application",
+                    "name": "blastradius-agent",
+                    "version": __version__,
+                },
+            },
+        }
+        if deps:
+            bom["components"] = [
+                {
+                    "type": "library",
+                    "name": str(name),
+                    "version": str(version),
+                    "purl": str(purl),
+                }
+                for name, version, purl in deps
+            ]
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(bom, fh, indent=2)
 
     # ------------------------------------------------------------------
     # HTML report

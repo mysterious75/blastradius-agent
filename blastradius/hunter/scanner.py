@@ -10,17 +10,19 @@ disclosure report is written (see cli.py / disclosure.py).
 
 import fnmatch
 import json
+import math
 import os
 import re
 import shutil
 import subprocess
 import tempfile
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
 
 from blastradius.prometheus_bootstrap import ensure_prometheus_importable
 from blastradius.security.input_validator import validate_github_url, validate_repo_path
+from blastradius.taint import sink_arg_var, trace_sink
 
 # ---------------------------------------------------------------------------
 # Static analysis rules (file-level equivalents of the URL scanners)
@@ -466,6 +468,7 @@ class Finding:
     remediation: str = ""
     description: str = ""
     original_code: str = ""
+    code_flows: list = field(default_factory=list)
 
 
 def _line_references_variable(line: str) -> bool:
@@ -659,16 +662,48 @@ _SECRET_PATTERNS = [
     r"\bxox[baprs]-[A-Za-z0-9\-]{10,}\b",
     r"\bsk_live_[A-Za-z0-9]{20,}\b",
 ]
-_SECRET_PLACEHOLDER = re.compile(
-    r"example|your-|your_|xxxx|placeholder|changeme|sample|demo|<[a-z_]+>", re.I
+# Fixed-prefix token formats whose format alone is precise (github_pat_*, AIza*)
+# are exempt from the entropy gate; generic free-form tokens are not.
+_SECRET_STRUCTURED_PATTERNS = frozenset(
+    {
+        r"\bAIza[0-9A-Za-z\-_]{35}\b",
+        r"\bgithub_pat_[A-Za-z0-9_]{22,}\b",
+    }
 )
+# Placeholder-ish lines AND the inline "blastradius:allow" opt-out are skipped.
+_SECRET_PLACEHOLDER = re.compile(
+    r"example|your-|your_|xxxx|placeholder|changeme|sample|demo|<[a-z_]+>|"
+    r"blastradius:allow",
+    re.I,
+)
+
+
+def _shannon_entropy(s: str) -> float:
+    """Shannon entropy (bits/char). All-repeated chars score ~0."""
+    if not s:
+        return 0.0
+    n = len(s)
+    counts: dict = {}
+    for ch in s:
+        counts[ch] = counts.get(ch, 0) + 1
+    return -sum((c / n) * math.log2(c / n) for c in counts.values())
+
+
+def _longest_alnum_run(line: str) -> str:
+    """Longest [A-Za-z0-9] run in a line — a cheap proxy for the matched token."""
+    return max(re.findall(r"[A-Za-z0-9]+", line), key=len, default="")
 
 
 def _score_secret(line: str, has_source: bool) -> float:
     if _SECRET_PLACEHOLDER.search(line):
         return 0.0
-    if any(re.search(p, line) for p in _SECRET_PATTERNS):
-        return 0.95
+    for pattern in _SECRET_PATTERNS:
+        if not re.search(pattern, line):
+            continue
+        if pattern in _SECRET_STRUCTURED_PATTERNS:
+            return 0.95
+        if _shannon_entropy(_longest_alnum_run(line)) >= 3.5:
+            return 0.95
     return 0.0
 
 
@@ -1276,7 +1311,7 @@ class CVEHunter:
             evidence=finding.evidence,
             description=finding.description,
             remediation=finding.remediation,
-            cvss=VULN_META[finding.vuln_type]["cvss"],
+            cvss=VULN_META.get(finding.vuln_type, {}).get("cvss", 0.0),
             cwe=finding.cwe,
             tool="cve-hunter",
             verified=True,
@@ -1317,7 +1352,7 @@ class CVEHunter:
     def _make_finding(
         self, path: Path, idx: int, lines: list, vuln_type: str, score: float
     ) -> Finding:
-        meta = VULN_META[vuln_type]
+        meta = VULN_META.get(vuln_type, {})  # custom rules may not be in VULN_META
         payload = lines[idx - 1].strip()
         # learned payload weights boost proven patterns (capped at 1.0)
         weights = self.learned_rules.get("payload_weights", {}).get(vuln_type, {})
@@ -1332,10 +1367,12 @@ class CVEHunter:
             confidence=round(score, 2),
             evidence=payload,
             context="\n".join(lines[max(0, idx - 2) : idx + 1]),
-            severity=meta["severity"],
-            cwe=meta["cwe"],
-            remediation=meta["remediation"],
-            description=meta["description"],
+            severity=meta.get("severity", "MEDIUM"),
+            cwe=meta.get("cwe", "CWE-710"),
+            remediation=meta.get(
+                "remediation", "Review the flagged code path and apply a secure fix."
+            ),
+            description=meta.get("description", f"Custom rule matched {vuln_type}."),
         )
 
     def _scan_file(self, path: Path) -> List[Finding]:
@@ -1395,7 +1432,11 @@ class CVEHunter:
                     score = min(score, 0.5)
                 if score < self._learned_threshold(vuln_type):
                     continue
-                findings.append(self._make_finding(path, idx, lines, vuln_type, score))
+                finding = self._make_finding(path, idx, lines, vuln_type, score)
+                if vuln_type in _TAINT_CAP_TYPES:
+                    # intraprocedural taint trace (source -> propagator -> sink)
+                    finding.code_flows = trace_sink(lines, idx - 1, sink_arg_var(line))
+                findings.append(finding)
             if lang == "py":
                 xxe_score = _score_xxe(line, has_source, has_defusedxml)
                 if xxe_score >= self._learned_threshold("xxe"):
@@ -1408,6 +1449,31 @@ class CVEHunter:
                 findings.append(self._make_finding(path, idx, lines, "xss", lang_score))
         if lang in _FUNC_START:
             findings.extend(self._scan_idor(lines, path, lang))
+        # Custom YAML rules (blastradius/rules.py) + inline/.blastradiusignore
+        # suppression. Optional: missing PyYAML or an absent rules/ dir make
+        # match_rules a no-op, so this hook degrades gracefully.
+        try:
+            from blastradius.rules import is_suppressed, match_rules
+        except Exception:
+            return findings
+        for m in match_rules(lines, path):
+            findings.append(
+                Finding(
+                    file=m["file"],
+                    line=m["line"],
+                    vuln_type=m["vuln_type"],
+                    payload=m["payload"],
+                    confidence=m["confidence"],
+                    evidence=m.get("evidence", m["payload"]),
+                    context=m.get("context", m["payload"]),
+                    severity=m.get("severity", ""),
+                    cwe=m.get("cwe", ""),
+                    remediation=m.get("remediation", ""),
+                    description=m.get("description", ""),
+                )
+            )
+        # suppression applies to built-in findings too
+        findings = [f for f in findings if not is_suppressed(f.file, f.line, f.vuln_type)]
         return findings
 
     def _scan_idor(self, lines: list, path: Path, lang: str) -> List[Finding]:

@@ -1,18 +1,21 @@
 """DynamicWebScanner — black-box checks against a live target.
 
 Crawls a target (same-origin links + forms) and runs behavioral checks that
-static analysis cannot: reflected XSS, open redirects, missing security
-headers, wildcard CORS, exposed files, and directory listing. Findings are
-HTTP-response evidence — reported as candidates (no sandbox execution
-marker), with the exact request/response snippet as proof.
+static analysis cannot: reflected XSS, open redirects, missing/weak
+security headers, wildcard/reflected CORS, exposed files, directory
+listing, and subdomain-takeover fingerprints. Findings are HTTP-response
+evidence — reported as candidates (no sandbox execution marker), with the
+exact request/response snippet as proof.
 
 Checks (vuln_type -> CWE):
     xss       CWE-79   payload reflected unescaped
     redirect  CWE-601  open redirect via url/next/return-like params
-    headers   CWE-693  missing security headers
-    cors      CWE-942  Access-Control-Allow-Origin: * + credentials
+    headers   CWE-693  missing/weak security headers (OWASP policy table)
+    cors      CWE-942  Access-Control-Allow-Origin: * + credentials, or
+                       ACAO reflecting the request Origin / null
     exposure  CWE-200  /.git, /.env, /admin probes
     listing   CWE-538  directory listing
+    takeover  CWE-706  dangling third-party service fingerprint (candidate)
 
 Usage:
     scanner = DynamicWebScanner()
@@ -26,18 +29,40 @@ from html.parser import HTMLParser
 from typing import Dict, List, Optional
 
 from blastradius.payloads import xss_payloads
+from blastradius.web import takeover
 from blastradius.web.browser import BrowserSession
 
 # Fallback defaults when the real HackerOne payload corpus is unavailable.
 XSS_PAYLOADS = ("<script>alert(1)</script>", '"><img src=x onerror=alert(1)>')
 REDIRECT_PARAMS = ("url", "redirect", "next", "return", "dest", "goto", "target")
 REDIRECT_HOST = "https://blastradius-evil.invalid"
-REQUIRED_HEADERS = {
-    "x-frame-options": "X-Frame-Options",
-    "content-security-policy": "Content-Security-Policy",
-    "strict-transport-security": "Strict-Transport-Security",
-    "x-content-type-options": "X-Content-Type-Options",
+# OWASP security-header policy: per-header expected value + weak check.
+# `weak` returns True when the header is present but does not meet the
+# OWASP guidance; `None` means presence is sufficient.
+HEADER_POLICY = {
+    "strict-transport-security": {
+        "name": "Strict-Transport-Security",
+        "expected": "Strict-Transport-Security: max-age>=31536000; includeSubDomains (optionally preload)",
+        "weak": lambda v: "includesubdomains" not in v.lower() and "preload" not in v.lower(),
+    },
+    "x-frame-options": {
+        "name": "X-Frame-Options",
+        "expected": "X-Frame-Options: DENY (or SAMEORIGIN)",
+        "weak": lambda v: v.strip().upper() not in ("DENY", "SAMEORIGIN"),
+    },
+    "x-content-type-options": {
+        "name": "X-Content-Type-Options",
+        "expected": "X-Content-Type-Options: nosniff",
+        "weak": lambda v: v.strip().lower() != "nosniff",
+    },
+    "content-security-policy": {
+        "name": "Content-Security-Policy",
+        "expected": "Content-Security-Policy header present with a restrictive policy",
+        "weak": None,
+    },
 }
+# Origin sent by the CORS-reflection probe.
+CORS_PROBE_ORIGIN = "https://evil.example"
 EXPOSED_PATHS = ("/.git/config", "/.git/HEAD", "/.env", "/admin", "/server-status", "/wp-admin/")
 LISTING_MARKERS = ("Index of /", "Directory listing for", "Parent Directory</a>")
 
@@ -61,7 +86,7 @@ class DynamicFinding:
     """A black-box finding with HTTP-response evidence."""
 
     url: str
-    check: str  # xss | redirect | headers | cors | exposure | listing
+    check: str  # xss | redirect | headers | cors | exposure | listing | takeover
     severity: str
     cwe: str
     confidence: float
@@ -109,6 +134,7 @@ class DynamicWebScanner:
         max_urls: int = 20,
         depth: int = 1,
         probe_exposed: bool = True,
+        check_takeover: bool = True,
     ):
         self.browser = browser or BrowserSession()
         # Probe browser never follows redirects (so Location-based checks work).
@@ -116,6 +142,7 @@ class DynamicWebScanner:
         self.max_urls = max_urls
         self.depth = max(1, depth)
         self.probe_exposed = probe_exposed
+        self.check_takeover = check_takeover
         # Real HackerOne payloads (defaults always included) for reflected XSS.
         self.xss_payloads = xss_payloads()
         # Budget guard: total JS fetches allowed per scan() call.
@@ -153,6 +180,8 @@ class DynamicWebScanner:
 
         if self.probe_exposed:
             findings.extend(self._probe_exposed(target))
+        if self.check_takeover:
+            findings.extend(self._check_subdomain_takeover(target))
         return findings
 
     # ------------------------------------------------------------------
@@ -203,24 +232,39 @@ class DynamicWebScanner:
                     )
                 )
                 break
-        # Missing security headers.
-        missing = [
-            REQUIRED_HEADERS[h]
-            for h in REQUIRED_HEADERS
-            if h not in {k.lower() for k in page.headers}
-        ]
-        if missing:
-            findings.append(
-                DynamicFinding(
-                    url=url,
-                    check="headers",
-                    severity="LOW",
-                    cwe="CWE-693",
-                    confidence=0.95,
-                    evidence="missing: " + ", ".join(missing),
-                    remediation="Set X-Frame-Options, CSP, HSTS and X-Content-Type-Options.",
+        # Missing / weak security headers: one LOW finding per header that is
+        # absent or does not meet the OWASP policy table, with the expected
+        # value embedded in the evidence.
+        header_map = {k.lower(): v for k, v in page.headers.items()}
+        for name, policy in HEADER_POLICY.items():
+            value = header_map.get(name)
+            if value is None:
+                findings.append(
+                    DynamicFinding(
+                        url=url,
+                        check="headers",
+                        severity="LOW",
+                        cwe="CWE-693",
+                        confidence=0.95,
+                        evidence=f"missing: {policy['name']} (OWASP expected: {policy['expected']})",
+                        remediation=f"Set {policy['name']} to the OWASP-recommended value.",
+                    )
                 )
-            )
+            elif policy["weak"] is not None and policy["weak"](value):
+                findings.append(
+                    DynamicFinding(
+                        url=url,
+                        check="headers",
+                        severity="LOW",
+                        cwe="CWE-693",
+                        confidence=0.9,
+                        evidence=(
+                            f"weak: {policy['name']}: {value.strip()} "
+                            f"(OWASP expected: {policy['expected']})"
+                        ),
+                        remediation=f"Strengthen {policy['name']} to the OWASP-recommended value.",
+                    )
+                )
         # Wildcard CORS with credentials.
         acao = page.headers.get("Access-Control-Allow-Origin", "")
         acac = page.headers.get("Access-Control-Allow-Credentials", "").lower()
@@ -236,6 +280,29 @@ class DynamicWebScanner:
                     remediation="Restrict CORS to explicit origins; never pair '*' with credentials.",
                 )
             )
+        # CORS reflection: probe with an attacker Origin and flag ACAO echoing
+        # it back (or the null origin), which lets any site read the response.
+        try:
+            probe = self._probe_browser._request("GET", url, headers={"Origin": CORS_PROBE_ORIGIN})
+        except Exception:
+            probe = None
+        if probe is not None:
+            acao_probe = probe.headers.get("Access-Control-Allow-Origin", "")
+            if acao_probe == CORS_PROBE_ORIGIN or acao_probe == "null":
+                findings.append(
+                    DynamicFinding(
+                        url=url,
+                        check="cors",
+                        severity="MEDIUM",
+                        cwe="CWE-942",
+                        confidence=0.9,
+                        evidence=(
+                            "reflected Origin: Access-Control-Allow-Origin echoes "
+                            f"the request Origin ({acao_probe})"
+                        ),
+                        remediation="Restrict CORS to explicit allowlisted origins; never reflect arbitrary Origins.",
+                    )
+                )
         # Directory listing.
         if any(marker in page.text for marker in LISTING_MARKERS):
             findings.append(
@@ -303,6 +370,35 @@ class DynamicWebScanner:
                         remediation="Remove sensitive files from the web root; block access via the server config.",
                     )
                 )
+        return findings
+
+    def _check_subdomain_takeover(self, base_url: str) -> List[DynamicFinding]:
+        """Probe the base URL for dangling third-party service fingerprints.
+
+        Candidate-only: a fingerprint match indicates the host serves an
+        unclaimed provider error page (deregistered bucket, expired app,
+        unused Pages site) that an attacker could claim.
+        """
+        findings = []
+        for match in takeover.check_takeover(base_url, self.browser):
+            findings.append(
+                DynamicFinding(
+                    url=base_url,
+                    check="takeover",
+                    severity="MEDIUM",
+                    cwe="CWE-706",
+                    confidence=0.5,
+                    evidence=match["evidence"],
+                    remediation=(
+                        "Remove the dangling DNS record or reclaim the third-party "
+                        "service account before an attacker registers it."
+                    ),
+                    description=(
+                        f"Subdomain-takeover candidate: unclaimed {match['service']} "
+                        "endpoint serves a provider error page."
+                    ),
+                )
+            )
         return findings
 
     # ------------------------------------------------------------------

@@ -39,6 +39,9 @@ class AgentRunResult:
     files_scanned: int = 0
     elapsed_seconds: float = 0.0
     agents: List[str] = field(default_factory=list)
+    # Security guardrail telemetry (OWASP AI-agent controls).
+    guard_events: List[Dict[str, Any]] = field(default_factory=list)
+    risk_summary: Dict[str, str] = field(default_factory=dict)
 
 
 class AgentGraph:
@@ -82,6 +85,12 @@ class AgentGraph:
             agents=[self.recon.name, self.exploit.name, self.patch.name],
         )
         result.candidates = self._drop_duplicates(result.candidates)
+        result.guard_events = [e.payload for e in blackboard.of_kind("note")]
+        result.risk_summary = {
+            role.name: role.guard.highest_risk
+            for role in (self.recon, self.exploit, self.patch)
+            if getattr(role, "guard", None) is not None
+        }
         return result
 
     # ------------------------------------------------------------------
