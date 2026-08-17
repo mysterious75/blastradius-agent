@@ -16,6 +16,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import textwrap
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Optional
@@ -1104,6 +1105,117 @@ def reconstruct_target_code(finding: Finding) -> str:
             "    return 'matched' if q['username'] else 'denied'\n"
         )
     return f"# {finding.vuln_type}\nresult = process(user_input)\n"
+
+
+# ---------------------------------------------------------------------------
+# REAL-repo target extraction (the "hermes lesson"): prove a finding against
+# the ACTUAL file it points at, not just the reconstructed pattern replica.
+# ---------------------------------------------------------------------------
+
+_FUNC_DEF_RE = re.compile(r"^\s*(?:async\s+)?def\s+([A-Za-z_]\w*)\s*\(")
+
+
+def _resolve_finding_file(file_name: str, repo_path: str) -> Optional[Path]:
+    """Resolve ``finding.file`` (absolute or repo-relative) to a real file.
+
+    Returns None when the file does not exist anywhere it could plausibly
+    live (as given, under ``repo_path``). ``repo_path`` may be absolute or
+    relative; ``finding.file`` is usually the full rglob path.
+    """
+    if not file_name:
+        return None
+    p = Path(file_name)
+    if p.is_absolute() and p.is_file():
+        return p
+    for cand in (Path(repo_path) / p, p):
+        if cand.is_file():
+            return cand
+    return None
+
+
+def _locate_py_function(lines, line_no: int):
+    """Locate the Python function block enclosing 1-based ``line_no``.
+
+    Mirrors the ``_scan_idor`` heuristic: walk upward from the finding line to
+    the last ``def ``/``async def`` start, then collect the body until the
+    first non-blank line dedented to the function's base indentation (closing
+    ``) ] }`` lines stay inside the block). Returns
+    ``(func_name, start_index, end_index)`` or ``(None, -1, -1)`` when no
+    callable function (with at least one parameter) encloses the line.
+    """
+    n = len(lines)
+    start = -1
+    for i in range(min(line_no, n) - 1, -1, -1):
+        if _FUNC_DEF_RE.match(lines[i]):
+            start = i
+            break
+    if start == -1:
+        return None, -1, -1
+    m = _FUNC_DEF_RE.match(lines[start])
+    func_name = m.group(1)
+    # a function with no parameters can't accept the PoC payload — not PoC-able
+    open_paren = lines[start].find("(", m.end(1))
+    if open_paren == -1:
+        return None, -1, -1
+    close_paren = lines[start].find(")", open_paren + 1)
+    if close_paren != -1 and not lines[start][open_paren + 1 : close_paren].strip():
+        return None, -1, -1
+    base = len(lines[start]) - len(lines[start].lstrip())
+    end = start + 1
+    while end < n:
+        l2 = lines[end]
+        if l2.strip() and (len(l2) - len(l2.lstrip())) <= base:
+            if not l2.strip().startswith((")", "]", "}")):
+                break
+        end += 1
+    return func_name, start, end
+
+
+def real_target_code(finding: Finding, repo_path: str) -> str:
+    """Build a sandbox PoC snippet from the REAL repo function the finding hits.
+
+    Resolves ``finding.file`` (absolute or repo-relative), extracts the
+    function/method block containing ``finding.line`` from the actual file
+    (same ``_scan_idor`` heuristic: last ``def `` above the line, collected
+    until dedent, decorators included) and returns::
+
+        import os
+        <function text>
+        TARGET = <function name>
+        target = TARGET
+
+    The ``target`` alias matches the exploit templates' callable contract; the
+    function needs a parameter to accept the payload, otherwise it can't be
+    PoC'd. Returns ``''`` when the file or function can't be resolved (or the
+    extracted block isn't valid Python). The file is read only — never
+    modified.
+    """
+    try:
+        fpath = _resolve_finding_file(finding.file, repo_path)
+        if fpath is None:
+            return ""
+        lines = fpath.read_text(encoding="utf-8", errors="replace").splitlines()
+    except (OSError, TypeError, UnicodeError):
+        return ""
+
+    func_name, start, end = _locate_py_function(lines, finding.line)
+    if func_name is None:
+        return ""
+
+    # include decorators directly above the def line
+    j = start
+    decorators = []
+    while j > 0 and lines[j - 1].strip().startswith(("@", "@@")):
+        decorators.insert(0, lines[j - 1])
+        j -= 1
+
+    func_text = textwrap.dedent("\n".join(decorators + [lines[start]] + lines[start + 1 : end]))
+    snippet = "import os\n" + func_text.rstrip() + f"\nTARGET = {func_name}\ntarget = TARGET\n"
+    try:
+        compile(snippet, "<real-target>", "exec")
+    except SyntaxError:
+        return ""
+    return snippet
 
 
 # ---------------------------------------------------------------------------

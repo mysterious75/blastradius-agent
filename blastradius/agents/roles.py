@@ -37,6 +37,53 @@ PERSONAS = {
     ),
 }
 
+# Capability map: which confirmed primitive enables which downstream finding.
+# Hardcoded, report-derived rules — a directed "from -> to" edge is added for
+# every confirmed pair that matches, so the blackboard carries multi-hop
+# exploit-path chains (NodeZero style) and not just same-file groups.
+CHAIN_RULES: List[Dict[str, Any]] = [
+    {
+        "from": "ssrf",
+        "to": ["secret", "auth_bypass", "idor"],
+        "note": "SSRF can reach internal endpoints that leak secrets or bypass auth",
+    },
+    {
+        "from": "sqli",
+        "to": ["secret", "idor"],
+        "note": "SQLi can extract credentials/other users records",
+    },
+    {
+        "from": "xss",
+        "to": ["auth_bypass"],
+        "note": "Stored XSS can hijack sessions and bypass auth",
+    },
+    {
+        "from": "cmd_injection",
+        "to": ["secret"],
+        "note": "RCE grants full access to stored secrets",
+    },
+    {
+        "from": "deserialization",
+        "to": ["secret", "cmd_injection"],
+        "note": "Deserialization RCE enables command execution",
+    },
+    {
+        "from": "traversal",
+        "to": ["secret"],
+        "note": "File read can disclose secrets",
+    },
+    {
+        "from": "auth_bypass",
+        "to": ["idor", "secret"],
+        "note": "Auth bypass widens access to objects and secrets",
+    },
+    {
+        "from": "crlf",
+        "to": ["auth_bypass"],
+        "note": "Header injection can poison auth/session headers",
+    },
+]
+
 
 def _finding_dict(f: Finding) -> Dict[str, Any]:
     return {
@@ -149,7 +196,17 @@ class ExploitAgent:
         return len(blackboard.confirmed())
 
     def _link_chains(self, blackboard: Blackboard) -> None:
-        """Findings in the same file form a chain (same attack surface)."""
+        """Chain confirmed findings: same-file groups + cross-finding paths.
+
+        Two kinds of links are written to the blackboard:
+
+        1. Same-file chains (``add_chain``): confirmed findings sharing a file
+           form a group — same attack surface, patch together.
+        2. Cross-finding dependency links (``link_findings``): for every
+           confirmed pair whose vuln types match a ``CHAIN_RULES`` capability
+           edge, a directed ``from -> to`` link records the exploit path
+           (NodeZero-style multi-hop chaining). Only confirmed findings chain.
+        """
         confirmed = blackboard.confirmed()
         by_file: Dict[str, List[Any]] = {}
         for event in confirmed:
@@ -167,6 +224,29 @@ class ExploitAgent:
                     ),
                 }
             )
+
+        rules_by_from = {rule["from"]: rule for rule in CHAIN_RULES}
+
+        def _key(evt) -> tuple:
+            p = evt.payload
+            return (p.get("file"), p.get("line"), p.get("vuln_type"))
+
+        linked: set = set()
+        for a_event in confirmed:
+            a_type = a_event.payload.get("vuln_type")
+            rule = rules_by_from.get(a_type)
+            if rule is None:
+                continue
+            for b_event in confirmed:
+                if a_event is b_event:
+                    continue
+                if b_event.payload.get("vuln_type") not in rule["to"]:
+                    continue
+                pair = (_key(a_event), _key(b_event))
+                if pair in linked:
+                    continue
+                linked.add(pair)
+                blackboard.link_findings(a_event, b_event, rule["note"])
 
 
 class PatchAgent:

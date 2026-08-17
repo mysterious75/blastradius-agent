@@ -225,3 +225,91 @@ def test_fail_on_gate_ignores_unconfirmed(sqli_repo, tmp_path, monkeypatch):
     results = json.loads((out / "pr-results.json").read_text(encoding="utf-8"))
     assert results["confirmed"] == 0
     assert results["gate"]["confirmed_meeting_gate"] == 0
+
+
+KEV_XSS = {
+    "vulnerabilities": [
+        {
+            "cveID": "CVE-2021-1111",
+            "vendorProject": "Acme",
+            "product": "Widget",
+            "vulnerabilityName": "Cross-site Scripting (XSS) in Widget",
+            "dateAdded": "2021-01-01",
+            "cwes": ["CWE-79"],
+            "notes": "",
+        }
+    ]
+}
+KEV_UNRELATED = {
+    "vulnerabilities": [
+        {
+            "cveID": "CVE-2021-2222",
+            "vendorProject": "Acme",
+            "product": "Widget",
+            "vulnerabilityName": "SQL Injection in Widget",
+            "dateAdded": "2021-01-01",
+            "cwes": ["CWE-89"],
+            "notes": "",
+        }
+    ]
+}
+
+
+def test_kev_tag_and_gate(xss_repo, tmp_path, confirm_all):
+    """Confirmed XSS vs a CWE-79 KEV snapshot: findings tagged kev; --fail-on-kev
+    blocks regardless of severity, normal gate otherwise passes (HIGH < critical)."""
+    kev_path = tmp_path / "kev.json"
+    kev_path.write_text(json.dumps(KEV_XSS), encoding="utf-8")
+
+    # Normal gate only: HIGH < critical so the scan passes, but the finding is tagged.
+    out = tmp_path / "out"
+    assert _run(xss_repo, out, "--fail-on", "critical", "--kev-file", str(kev_path)) == 0
+
+    results = json.loads((out / "pr-results.json").read_text(encoding="utf-8"))
+    assert results["kev"]["matched_findings"] >= 1
+    tagged = [f for f in results["findings"] if f.get("kev")]
+    assert tagged, "expected at least one KEV-tagged confirmed finding"
+    assert tagged[0]["kev"] == ["CVE-2021-1111"]
+    assert tagged[0]["epss"] == {}  # --epss-online off by default
+    assert results["gate"]["kev_blocked"] is False
+    assert results["gate"]["exit_code"] == 0
+
+    comment = (out / "pr-comment.md").read_text(encoding="utf-8")
+    assert "⚠️ Known-exploited CVE" in comment
+    assert "evidence: `KEV CVE-2021-1111`" in comment
+
+    # --fail-on-kev: a matched KEV CVE always blocks even below the severity gate.
+    out_block = tmp_path / "out_block"
+    assert (
+        _run(
+            xss_repo,
+            out_block,
+            "--fail-on",
+            "critical",
+            "--fail-on-kev",
+            "--kev-file",
+            str(kev_path),
+        )
+        == 1
+    )
+    results = json.loads((out_block / "pr-results.json").read_text(encoding="utf-8"))
+    assert results["gate"]["kev_blocked"] is True
+    assert results["gate"]["exit_code"] == 1
+
+
+def test_kev_no_match(xss_repo, tmp_path, confirm_all):
+    """A KEV snapshot with an unrelated CWE must not tag the XSS finding; the
+    scan falls back to the normal severity gate (HIGH >= high -> exit 1)."""
+    kev_path = tmp_path / "kev.json"
+    kev_path.write_text(json.dumps(KEV_UNRELATED), encoding="utf-8")
+
+    out = tmp_path / "out"
+    assert _run(xss_repo, out, "--kev-file", str(kev_path)) == 1  # normal gate
+
+    results = json.loads((out / "pr-results.json").read_text(encoding="utf-8"))
+    assert results["kev"]["matched_findings"] == 0
+    assert all(not f.get("kev") for f in results["findings"])
+    assert results["gate"]["kev_blocked"] is False
+
+    comment = (out / "pr-comment.md").read_text(encoding="utf-8")
+    assert "⚠️ Known-exploited CVE" not in comment
