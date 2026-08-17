@@ -19,7 +19,7 @@ from blastradius.mcp.server import (
 VULN_CODE = 'def target(user_input):\n    return "SELECT * FROM users WHERE name = \'" + user_input + "\'"\n'
 
 
-def test_seven_tools_registered():
+def test_all_tools_registered():
     names = {fn.__name__ for fn in TOOLS}
     assert names == {
         "scan_repo",
@@ -29,6 +29,7 @@ def test_seven_tools_registered():
         "generate_patch",
         "blast_radius",
         "list_cves",
+        "get_audit_log",
     }
 
 
@@ -121,7 +122,7 @@ def test_main_registers_and_runs(monkeypatch):
     monkeypatch.setattr(builtins, "__import__", fake_import)
     assert main() == 0
     assert called["ran"] is True
-    assert len(called["tools"]) == 7
+    assert len(called["tools"]) == 8
 
 
 def test_main_missing_sdk_prints_instructions(monkeypatch, capsys):

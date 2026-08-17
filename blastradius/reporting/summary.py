@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from blastradius.pipeline import PipelineResult
 
+from blastradius.reporting.attack_map import attack_for
+
 _VULN_LABELS = {"sqli": "SQLi", "xss": "XSS", "ssrf": "SSRF"}
 
 
@@ -54,6 +56,18 @@ class SummaryReporter:
                 blast_lines.append(f"- `{name}` v{version} → {len(affected)} repo(s): {affected}")
         blast_section = "\n".join(blast_lines) or "- none"
 
+        attack_lines = []
+        for finding in result.confirmed:
+            techniques = attack_for(finding)
+            if not techniques:
+                continue
+            label = _VULN_LABELS.get(finding.vuln_type, finding.vuln_type.upper())
+            for technique in techniques:
+                attack_lines.append(
+                    f"- {finding.cwe or ''} ({label}) -> {technique['id']} {technique['name']}".rstrip()
+                )
+        attack_section = "\n".join(attack_lines) or "- none"
+
         date = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         return f"""# BlastRadius Summary
 
@@ -85,6 +99,12 @@ and went through the patch loop.
 Dependency packages and the repos that use them:
 
 {blast_section}
+
+## ATT&CK Techniques
+
+MITRE ATT&CK techniques for confirmed exploitable findings:
+
+{attack_section}
 """
 
     def save_summary(self, result: "PipelineResult", reports_dir: str = "reports") -> Path:

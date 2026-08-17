@@ -10,6 +10,7 @@ Usage:
     blastradius cve list
     blastradius export --format <csv|json|sarif|html|markdown> --output <file>
     blastradius sca --repo . [--online]
+    blastradius cvehunt [--repo .] [--kev-file <saved KEV JSON>]
     blastradius setup
     blastradius version
 """
@@ -192,6 +193,89 @@ def cmd_sca(args) -> int:
     return 0
 
 
+def cmd_cvehunt(args) -> int:
+    """Cross-reference scan findings with known-exploited CVEs (KEV + EPSS).
+
+    Enrichment only — never a gate: returns 0 even when the KEV feed or EPSS
+    API is unreachable. Matched CVEs are candidate signals; the sandbox still
+    owns the ``[VULNERABLE]`` verdict.
+    """
+    import json as _json
+    from datetime import datetime
+
+    from blastradius import cve_hunt
+    from blastradius.hunter.scanner import CVEHunter
+
+    if args.kev_file:
+        try:
+            kev = cve_hunt.load_kev_file(args.kev_file)
+            kev_source = args.kev_file
+        except OSError:
+            print(f"[!] Could not read KEV file {args.kev_file!r} — no enrichment.")
+            return 0
+    else:
+        kev = cve_hunt.fetch_kev()
+        kev_source = cve_hunt.KEV_FEED_URL
+    if not kev:
+        print("[!] KEV catalog empty/unreachable — no enrichment possible.")
+        return 0
+
+    print(f"[*] Scanning {args.repo!r}")
+    hunter = CVEHunter()
+    findings = hunter.scan_repo(args.repo)
+    print(f"[*] {len(findings)} candidate finding(s)")
+
+    matches = cve_hunt.match_findings_to_kev(findings, kev=kev)
+    print(f"[*] {len(matches)} finding(s) cross-referenced to {len(kev)} KEV entries")
+
+    cve_ids = sorted({entry["cveID"] for m in matches for entry in m["kev_cves"]})
+    epss = cve_hunt.fetch_epss(cve_ids)
+
+    if matches:
+        header = f"{'vuln':<18} {'cwe':<10} {'KEV cves':<24} {'EPSS'}"
+        print(header)
+        print("-" * len(header))
+        for m in matches:
+            f = m["finding"]
+            ids = sorted({entry["cveID"] for entry in m["kev_cves"]})
+            epss_str = (
+                ", ".join(f"{cve}={epss[cve]['epss']:.3f}" for cve in ids if cve in epss) or "-"
+            )
+            print(f"{f.vuln_type:<18} {f.cwe:<10} {','.join(ids):<24} {epss_str}")
+    else:
+        print("No findings matched the KEV catalog (candidate-only enrichment).")
+
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    reports_dir = Path(args.reports_dir)
+    reports_dir.mkdir(parents=True, exist_ok=True)
+    report_path = reports_dir / f"{ts}_cvehunt.json"
+    report = {
+        "tool": "blastradius-cvehunt",
+        "repo": str(args.repo),
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "kev_source": kev_source,
+        "kev_entries": len(kev),
+        "network_available": cve_hunt.network_available,
+        "findings_scanned": len(findings),
+        "enrichments": [
+            {
+                "file": m["finding"].file,
+                "line": m["finding"].line,
+                "vuln_type": m["finding"].vuln_type,
+                "cwe": m["finding"].cwe,
+                "kev_cves": [entry["cveID"] for entry in m["kev_cves"]],
+                "kev_details": m["kev_cves"],
+                "epss": {entry["cveID"]: epss.get(entry["cveID"]) for entry in m["kev_cves"]},
+            }
+            for m in matches
+        ],
+    }
+    with report_path.open("w", encoding="utf-8") as fh:
+        _json.dump(report, fh, indent=2)
+    print(f"Report written to {report_path}")
+    return 0
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         prog="blastradius",
@@ -254,6 +338,18 @@ def main(argv=None) -> int:
     sca_p.add_argument("--online", action="store_true", help="allow network queries to OSV")
     sca_p.add_argument("--reports-dir", default="reports")
 
+    cvehunt_p = sub.add_parser(
+        "cvehunt",
+        help="cross-reference findings with known-exploited CVEs (KEV + EPSS enrichment)",
+    )
+    cvehunt_p.add_argument("--repo", default=".", help="path to the project to scan")
+    cvehunt_p.add_argument(
+        "--kev-file",
+        default=None,
+        help="path to a saved KEV JSON snapshot (skips the network fetch)",
+    )
+    cvehunt_p.add_argument("--reports-dir", default="reports")
+
     args = parser.parse_args(argv)
     if args.command == "version":
         return cmd_version(args)
@@ -283,6 +379,8 @@ def main(argv=None) -> int:
         return cmd_export(args)
     if args.command == "sca":
         return cmd_sca(args)
+    if args.command == "cvehunt":
+        return cmd_cvehunt(args)
     return 1
 
 

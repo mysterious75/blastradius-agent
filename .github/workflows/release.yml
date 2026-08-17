@@ -1,0 +1,73 @@
+name: Release
+
+# Tag-push release pipeline (PEP 740 / SLSA / Sigstore supply-chain story).
+# For every `v*` tag: build wheel + sdist, generate a CycloneDX SBOM, sign the
+# artifacts with Sigstore (keyless OIDC), create a SLSA v1 Build Level 3
+# provenance attestation, attach the attestations + SBOM to the GitHub release,
+# and publish to PyPI via Trusted Publishing (OIDC — no password/token).
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    # contents: write    — attach attestation/SBOM assets to the GitHub release
+    # id-token: write    — OIDC for Sigstore keyless signing + PyPI trusted publishing
+    # attestations: write — store SLSA provenance in the repo attestation store
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tooling
+        run: pip install build
+
+      - name: Build wheel + sdist
+        run: python -m build
+
+      # SBOM generation is best-effort: a failure must not block publishing.
+      - name: Generate CycloneDX SBOM
+        continue-on-error: true
+        run: |
+          pip install syft || true
+          syft scan dist/ -o cyclonedx-json > sbom.cdx.json || true
+
+      # Sigstore keyless signing (Fulcio OIDC cert + Rekor log) — produces a
+      # PEP 740-compatible bundle (<artifact>.sigstore). Best-effort.
+      - name: Sigstore sign artifacts
+        continue-on-error: true
+        run: |
+          pip install sigstore || true
+          python -m sigstore sign dist/* || true
+
+      # GitHub-native SLSA v1 Build Level 3 provenance for every artifact.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/*
+
+      - name: Attach SBOM + sigstore bundles to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            sbom.cdx.json
+            dist/*.sigstore
+
+      # Trusted Publishing: PyPI maps the GitHub Actions OIDC identity, so no
+      # password / API token is required (PEP 740 attestations are generated
+      # index-side for every uploaded file).
+      - name: Publish to PyPI (trusted publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
