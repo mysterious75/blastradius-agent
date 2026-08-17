@@ -30,6 +30,7 @@ class Blackboard:
         self._lock = threading.Lock()
         self._events: List[AgentEvent] = []
         self._chains: List[Dict[str, Any]] = []
+        self._directed_chains: List[Dict[str, Any]] = []
 
     # ------------------------------------------------------------------
     # Posting
@@ -44,6 +45,32 @@ class Blackboard:
         with self._lock:
             self._chains.append(chain)
             self._events.append(AgentEvent(agent="exploit", kind="chain", payload=chain))
+
+    def link_findings(self, a_event: AgentEvent, b_event: AgentEvent, note: str) -> None:
+        """Record a directed dependency link from finding ``a_event`` to ``b_event``.
+
+        The link points the way a kill chain travels: an attacker who controls
+        ``a_event``'s primitive (the *from* finding) can reach the consequence
+        at ``b_event`` (the *to* finding). Only confirmed events should be
+        linked (enforced by the caller).
+        """
+        link = {
+            "from": {
+                "vuln_type": a_event.payload.get("vuln_type"),
+                "file": a_event.payload.get("file"),
+                "line": a_event.payload.get("line"),
+            },
+            "to": {
+                "vuln_type": b_event.payload.get("vuln_type"),
+                "file": b_event.payload.get("file"),
+                "line": b_event.payload.get("line"),
+            },
+            "kind": "dependency",
+            "note": note,
+        }
+        with self._lock:
+            self._directed_chains.append(link)
+            self._events.append(AgentEvent(agent="exploit", kind="chain", payload=link))
 
     # ------------------------------------------------------------------
     # Reads (aggregations)
@@ -68,6 +95,11 @@ class Blackboard:
     def chains(self) -> List[Dict[str, Any]]:
         with self._lock:
             return list(self._chains)
+
+    def directed_chains(self) -> List[Dict[str, Any]]:
+        """Cross-finding dependency links (multi-hop exploit paths)."""
+        with self._lock:
+            return list(self._directed_chains)
 
     def events(self) -> List[AgentEvent]:
         with self._lock:

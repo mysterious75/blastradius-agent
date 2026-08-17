@@ -35,6 +35,7 @@ class AgentRunResult:
     rejected: List[Dict[str, Any]] = field(default_factory=list)
     patches: List[Dict[str, Any]] = field(default_factory=list)
     chains: List[Dict[str, Any]] = field(default_factory=list)
+    chains_directed: List[Dict[str, Any]] = field(default_factory=list)
     events: List[AgentEvent] = field(default_factory=list)
     files_scanned: int = 0
     elapsed_seconds: float = 0.0
@@ -79,6 +80,7 @@ class AgentGraph:
             rejected=[e.payload for e in blackboard.rejected()],
             patches=[e.payload for e in blackboard.patches()],
             chains=blackboard.chains(),
+            chains_directed=blackboard.directed_chains(),
             events=blackboard.events(),
             files_scanned=self.recon.hunter.files_scanned,
             elapsed_seconds=round(time.time() - started, 2),

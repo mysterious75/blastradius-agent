@@ -39,6 +39,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))  # allow running without pip install
 
 from blastradius.cli.display import RichDisplay  # noqa: E402
+from blastradius.cve_hunt import kev_enrichment, load_kev_file  # noqa: E402
 from blastradius.export.exporter import FindingsExporter  # noqa: E402
 from blastradius.hunter.scanner import CVEHunter, Finding, reconstruct_target_code  # noqa: E402
 from blastradius.tools.sandbox_tool import run_exploit_sandbox  # noqa: E402
@@ -47,8 +48,8 @@ SEVERITY_ORDER = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
 _GATE_CHOICES = ("critical", "high", "medium", "low")
 
 
-def _finding_dict(f: Finding) -> dict:
-    return {
+def _finding_dict(f: Finding, annotation: dict | None = None) -> dict:
+    d = {
         "file": f.file,
         "line": f.line,
         "vuln_type": f.vuln_type,
@@ -58,6 +59,10 @@ def _finding_dict(f: Finding) -> dict:
         "description": f.description,
         "remediation": f.remediation,
     }
+    if annotation:
+        d["kev"] = annotation.get("kev", [])
+        d["epss"] = annotation.get("epss", {})
+    return d
 
 
 def _git(repo: str, *args):
@@ -165,6 +170,28 @@ def main(argv=None) -> int:
         help="exit 1 when a CONFIRMED new finding has severity >= this (default high)",
     )
     ap.add_argument("--min-confidence", type=float, default=0.7)
+    ap.add_argument(
+        "--kev-file",
+        default="",
+        help=(
+            "path to a CISA KEV JSON snapshot (feed envelope or entry list); "
+            "confirmed findings matching a known-exploited CVE are tagged "
+            "'kev' (+ 'epss' when --epss-online)"
+        ),
+    )
+    ap.add_argument(
+        "--epss-online",
+        action="store_true",
+        help="fetch FIRST EPSS scores for matched KEV CVEs (online, best-effort, offline-safe)",
+    )
+    ap.add_argument(
+        "--fail-on-kev",
+        action="store_true",
+        help=(
+            "exit 1 when a confirmed finding matches the KEV catalog, regardless "
+            "of severity (known-exploited = always block)"
+        ),
+    )
     ap.add_argument("--out", default="pr-scan", help="output dir (comment/results/sarif)")
     args = ap.parse_args(argv)
 
@@ -227,11 +254,39 @@ def main(argv=None) -> int:
                 patch = {}
             confirmed.append((f, sandbox_result, patch))
 
-    # Gate: only CONFIRMED new findings at/above --fail-on count.
-    gate_findings = [f for f, _, _ in confirmed if _severity_meets(f.severity, fail_on)]
-    exit_code = 1 if gate_findings else 0
+    # KEV/EPSS enrichment: tag confirmed findings matching a known-exploited CVE.
+    kev_annotation: dict = {}  # id(finding) -> {"kev": [cve ids], "epss": {cve: score}}
+    if args.kev_file:
+        try:
+            kev_entries = load_kev_file(args.kev_file)
+        except Exception as exc:
+            print(f"[!] could not load --kev-file {args.kev_file}: {exc}")
+            kev_entries = []
+        if kev_entries:
+            for enr in kev_enrichment(
+                [f for f, _, _ in confirmed], kev_entries, epss_online=args.epss_online
+            ):
+                kev_annotation[id(enr["finding"])] = {
+                    "kev": list(enr["kev_cves"]),
+                    "epss": {
+                        cve: row.get("epss", 0.0) for cve, row in (enr.get("epss") or {}).items()
+                    },
+                }
+        if confirmed:
+            print(
+                f"[kev] {len(kev_annotation)}/{len(confirmed)} confirmed finding(s) "
+                f"match known-exploited CVE(s) (epss_online={args.epss_online})"
+            )
 
-    comment = _render_comment(args.repo, new_findings, confirmed, changed, baseline_active)
+    # Gate: only CONFIRMED new findings at/above --fail-on count; --fail-on-kev
+    # blocks on any confirmed finding that matches the KEV catalog.
+    gate_findings = [f for f, _, _ in confirmed if _severity_meets(f.severity, fail_on)]
+    kev_blocked = bool(args.fail_on_kev and kev_annotation)
+    exit_code = 1 if (gate_findings or kev_blocked) else 0
+
+    comment = _render_comment(
+        args.repo, new_findings, confirmed, changed, baseline_active, kev_annotation
+    )
     (out_dir / "pr-comment.md").write_text(comment, encoding="utf-8")
 
     summary = {
@@ -243,17 +298,22 @@ def main(argv=None) -> int:
         "diff_scoped": changed is not None,
         "changed_files": len(changed) if changed else None,
         "candidates": len(findings),
-        "new_findings": [_finding_dict(f) for f in new_findings],
+        "new_findings": [_finding_dict(f, kev_annotation.get(id(f))) for f in new_findings],
         "confirmed": len(confirmed),
-        "findings": [_finding_dict(f) for f in new_findings],
+        "findings": [_finding_dict(f, kev_annotation.get(id(f))) for f in new_findings],
         "patches": [
             {**patch, "file": f.file, "line": f.line, "vuln_type": f.vuln_type}
             for f, _, patch in confirmed
             if patch
         ],
+        "kev": {
+            "matched_findings": len(kev_annotation),
+            "epss_online": args.epss_online,
+        },
         "gate": {
             "fail_on": fail_on,
             "confirmed_meeting_gate": len(gate_findings),
+            "kev_blocked": kev_blocked,
             "exit_code": exit_code,
         },
     }
@@ -271,6 +331,11 @@ def main(argv=None) -> int:
         print("[*] no new candidate findings on the diff")
     print(f"[*] {len(new_findings)} new candidate(s), {len(confirmed)} confirmed exploitable")
     print(f"[gate] {len(gate_findings)} new confirmed finding(s) >= {fail_on} -> exit {exit_code}")
+    if args.fail_on_kev:
+        print(
+            f"[gate] --fail-on-kev: {len(kev_annotation)} confirmed finding(s) match "
+            f"known-exploited CVE(s) -> {'exit 1' if kev_blocked else 'no block'}"
+        )
     print(
         f"[*] {'baseline-aware (pre-existing findings suppressed)' if baseline_active else 'diff-only (no baseline)'}"
     )
@@ -279,7 +344,15 @@ def main(argv=None) -> int:
     return exit_code
 
 
-def _render_comment(repo: str, findings, confirmed, changed, baseline_active: bool) -> str:
+def _render_comment(
+    repo: str,
+    findings,
+    confirmed,
+    changed,
+    baseline_active: bool,
+    kev_annotation: dict | None = None,
+) -> str:
+    kev_annotation = kev_annotation or {}
     lines = [
         "## 🔴 BlastRadius PR Security Scan",
         "",
@@ -303,6 +376,24 @@ def _render_comment(repo: str, findings, confirmed, changed, baseline_active: bo
         mark = "✅ **exploitable**" if key in confirmed_map else "—"
         lines.append(f"| {f.severity} | `{f.file}:{f.line}` | {f.vuln_type} | {f.cwe} | {mark} |")
     lines.append("")
+
+    # Known-exploited (KEV) annotations under the matching findings.
+    kev_lines = []
+    for f, _, _ in confirmed:
+        ann = kev_annotation.get(id(f))
+        if ann:
+            kev_lines.append((f, ann))
+    if kev_lines:
+        lines += ["### ⚠️ Known-exploited CVE", ""]
+        for f, ann in kev_lines:
+            for cve in ann.get("kev") or []:
+                epss = (ann.get("epss") or {}).get(cve)
+                evidence = f"KEV {cve}" + (f" (EPSS {epss:.2f})" if epss is not None else "")
+                lines.append(
+                    f"- ⚠️ Known-exploited CVE — `{f.file}:{f.line}` ({f.vuln_type}): "
+                    f"evidence: `{evidence}`"
+                )
+        lines.append("")
 
     if confirmed:
         lines += [

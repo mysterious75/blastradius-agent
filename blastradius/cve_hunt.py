@@ -308,3 +308,26 @@ def match_findings_to_kev(findings, kev: Optional[List[dict]] = None) -> List[di
         if hits:
             matches.append({"finding": finding, "kev_cves": hits})
     return matches
+
+
+def kev_enrichment(findings, kev, epss_online: bool = False, epss_timeout: int = 30) -> List[dict]:
+    """Annotate findings that match a given KEV snapshot (e.g. from ``--kev-file``).
+
+    Returns one dict per matching finding::
+
+        {"finding": <Finding>, "kev_cves": [cveID, ...],
+         "epss": {cveID: {"epss": float, "percentile": float}}}
+
+    EPSS scores are fetched only when ``epss_online`` is True; any network
+    failure leaves ``epss`` empty (offline-safe, never raises). Passing an
+    empty ``kev`` returns ``[]``.
+    """
+    kev = kev or []
+    enrichment = []
+    for match in match_findings_to_kev(findings, kev):
+        cves = [e.get("cveID") for e in match["kev_cves"] if e.get("cveID")]
+        epss = {}
+        if epss_online and cves:
+            epss = fetch_epss(cves, timeout=epss_timeout)
+        enrichment.append({"finding": match["finding"], "kev_cves": cves, "epss": epss})
+    return enrichment

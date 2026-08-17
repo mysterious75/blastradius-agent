@@ -1,0 +1,5862 @@
+{
+ "counts": {
+  "ghsa_advisories": 34425,
+  "ghsa_unique_repos": 11131,
+  "h1_corpus_rows": 14832,
+  "top_repos": 400
+ },
+ "ghsa_repos": [
+  {
+   "repo": "openclaw/openclaw",
+   "advisories": 2276,
+   "ghsa_ids": [
+    "GHSA-24vr-rprv-67rf",
+    "GHSA-24vr-rprv-67rf",
+    "GHSA-25gx-x37c-7pph",
+    "GHSA-25gx-x37c-7pph",
+    "GHSA-25gx-x37c-7pph"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "friendsofphp/security-advisories",
+   "advisories": 1357,
+   "ghsa_ids": [
+    "GHSA-229x-22xc-2f2w",
+    "GHSA-22pv-7v9j-hqxp",
+    "GHSA-22q7-cg4r-p9mx",
+    "GHSA-237r-r8m4-4q88",
+    "GHSA-24m3-w8g9-jwpq"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "tensorflow/tensorflow",
+   "advisories": 1167,
+   "ghsa_ids": [
+    "GHSA-23hm-7w47-xw72",
+    "GHSA-23hm-7w47-xw72",
+    "GHSA-2475-53vw-vp25",
+    "GHSA-2475-53vw-vp25",
+    "GHSA-2475-53vw-vp25"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "moodle/moodle",
+   "advisories": 907,
+   "ghsa_ids": [
+    "GHSA-22gj-8qj2-fj46",
+    "GHSA-22gj-8qj2-fj46",
+    "GHSA-243v-5pff-qqfj",
+    "GHSA-2563-fp9c-mgm8",
+    "GHSA-25wf-7x6c-wmpf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "xwiki/xwiki-platform",
+   "advisories": 720,
+   "ghsa_ids": [
+    "GHSA-22q5-9phm-744v",
+    "GHSA-22q5-9phm-744v",
+    "GHSA-22q5-9phm-744v",
+    "GHSA-22q5-9phm-744v",
+    "GHSA-2858-8cfx-69m9"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "liferay/liferay-portal",
+   "advisories": 579,
+   "ghsa_ids": [
+    "GHSA-222w-xmc5-jhp3",
+    "GHSA-222w-xmc5-jhp3",
+    "GHSA-22jp-w3cg-gvmm",
+    "GHSA-22jp-w3cg-gvmm",
+    "GHSA-22jp-w3cg-gvmm"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "mattermost/mattermost",
+   "advisories": 543,
+   "ghsa_ids": [
+    "GHSA-247x-7qw8-fp98",
+    "GHSA-2549-xh72-qrpm",
+    "GHSA-2j87-p623-8cc2",
+    "GHSA-2jhx-w3vc-w59g",
+    "GHSA-2v3w-6g35-5f9v"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "chakra-core/chakracore",
+   "advisories": 537,
+   "ghsa_ids": [
+    "GHSA-233h-59m2-qqf2",
+    "GHSA-233h-59m2-qqf2",
+    "GHSA-233h-59m2-qqf2",
+    "GHSA-2452-3rwv-x89c",
+    "GHSA-2452-3rwv-x89c"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "rubysec/ruby-advisory-db",
+   "advisories": 513,
+   "ghsa_ids": [
+    "GHSA-228f-g3h7-3fj3",
+    "GHSA-229r-pqp6-8w6g",
+    "GHSA-24fg-p96v-hxh8",
+    "GHSA-26qj-cr27-r5c4",
+    "GHSA-286v-pcf5-25rc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "n8n-io/n8n",
+   "advisories": 458,
+   "ghsa_ids": [
+    "GHSA-2434-3x6q-8r99",
+    "GHSA-2434-3x6q-8r99",
+    "GHSA-2434-3x6q-8r99",
+    "GHSA-2434-3x6q-8r99",
+    "GHSA-2j5h-858j-5mpf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "wwbn/avideo",
+   "advisories": 457,
+   "ghsa_ids": [
+    "GHSA-2f9h-23f7-8gcx",
+    "GHSA-2f9h-23f7-8gcx",
+    "GHSA-2f9h-23f7-8gcx",
+    "GHSA-2fch-hv74-fgw9",
+    "GHSA-2fch-hv74-fgw9"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apache/tomcat",
+   "advisories": 453,
+   "ghsa_ids": [
+    "GHSA-23hv-mwm6-g8jf",
+    "GHSA-23hv-mwm6-g8jf",
+    "GHSA-23hv-mwm6-g8jf",
+    "GHSA-23hv-mwm6-g8jf",
+    "GHSA-24j9-x2wg-9qv6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apache/airflow",
+   "advisories": 446,
+   "ghsa_ids": [
+    "GHSA-2522-mrjc-m688",
+    "GHSA-2522-mrjc-m688",
+    "GHSA-2522-mrjc-m688",
+    "GHSA-269x-pg5c-5xgm",
+    "GHSA-269x-pg5c-5xgm"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "django/django",
+   "advisories": 445,
+   "ghsa_ids": [
+    "GHSA-2655-q453-22f9",
+    "GHSA-2655-q453-22f9",
+    "GHSA-2655-q453-22f9",
+    "GHSA-296w-6qhq-gf92",
+    "GHSA-296w-6qhq-gf92"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "jenkinsci/jenkins",
+   "advisories": 440,
+   "ghsa_ids": [
+    "GHSA-223m-4rfp-646h",
+    "GHSA-25c5-58xw-hw5q",
+    "GHSA-2632-h32j-6rg9",
+    "GHSA-26wc-3wqp-g3rp",
+    "GHSA-26wc-3wqp-g3rp"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "parse-community/parse-server",
+   "advisories": 438,
+   "ghsa_ids": [
+    "GHSA-2299-ghjr-6vjp",
+    "GHSA-2299-ghjr-6vjp",
+    "GHSA-2299-ghjr-6vjp",
+    "GHSA-2299-ghjr-6vjp",
+    "GHSA-236h-rqv8-8q73"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "open-webui/open-webui",
+   "advisories": 429,
+   "ghsa_ids": [
+    "GHSA-226f-f24g-524w",
+    "GHSA-226f-f24g-524w",
+    "GHSA-24c9-2m8q-qhmh",
+    "GHSA-24c9-2m8q-qhmh",
+    "GHSA-24c9-2m8q-qhmh"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "craftcms/cms",
+   "advisories": 427,
+   "ghsa_ids": [
+    "GHSA-234q-vvw3-mrfq",
+    "GHSA-234q-vvw3-mrfq",
+    "GHSA-234q-vvw3-mrfq",
+    "GHSA-2453-mppf-46cj",
+    "GHSA-2453-mppf-46cj"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "imagemagick/imagemagick",
+   "advisories": 415,
+   "ghsa_ids": [
+    "GHSA-23hg-53q6-hqfg",
+    "GHSA-23hg-53q6-hqfg",
+    "GHSA-23hg-53q6-hqfg",
+    "GHSA-26qp-ffjh-2x4v",
+    "GHSA-26qp-ffjh-2x4v"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "keycloak/keycloak",
+   "advisories": 412,
+   "ghsa_ids": [
+    "GHSA-22rm-wp4x-v5cx",
+    "GHSA-22rm-wp4x-v5cx",
+    "GHSA-22rm-wp4x-v5cx",
+    "GHSA-22rm-wp4x-v5cx",
+    "GHSA-237q-6hjp-pchq"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "pimcore/pimcore",
+   "advisories": 397,
+   "ghsa_ids": [
+    "GHSA-2295-vh28-pphc",
+    "GHSA-2295-vh28-pphc",
+    "GHSA-2295-vh28-pphc",
+    "GHSA-22hc-47cc-7x6f",
+    "GHSA-22hc-47cc-7x6f"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "magento/magento2",
+   "advisories": 392,
+   "ghsa_ids": [
+    "GHSA-2444-8gj8-6fmx",
+    "GHSA-264g-f7v8-q5qq",
+    "GHSA-269w-pqc7-68q9",
+    "GHSA-269w-pqc7-68q9",
+    "GHSA-269w-pqc7-68q9"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "go-gitea/gitea",
+   "advisories": 382,
+   "ghsa_ids": [
+    "GHSA-25gq-j9jx-43pg",
+    "GHSA-25gq-j9jx-43pg",
+    "GHSA-25gq-j9jx-43pg",
+    "GHSA-25gq-j9jx-43pg",
+    "GHSA-25gq-j9jx-43pg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "typo3/typo3",
+   "advisories": 376,
+   "ghsa_ids": [
+    "GHSA-259v-xm34-p7fr",
+    "GHSA-29wr-24h5-95r5",
+    "GHSA-2fx5-pggv-6jjr",
+    "GHSA-2fx5-pggv-6jjr",
+    "GHSA-2fx5-pggv-6jjr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "flowiseai/flowise",
+   "advisories": 361,
+   "ghsa_ids": [
+    "GHSA-2364-jh4q-m9vm",
+    "GHSA-2364-jh4q-m9vm",
+    "GHSA-2364-jh4q-m9vm",
+    "GHSA-2364-jh4q-m9vm",
+    "GHSA-2364-jh4q-m9vm"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "mervinpraison/praisonai",
+   "advisories": 292,
+   "ghsa_ids": [
+    "GHSA-22cj-m4wf-fv2c",
+    "GHSA-22cj-m4wf-fv2c",
+    "GHSA-2763-cj5r-c79m",
+    "GHSA-2763-cj5r-c79m",
+    "GHSA-2763-cj5r-c79m"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "thorsten/phpmyfaq",
+   "advisories": 287,
+   "ghsa_ids": [
+    "GHSA-25c3-7fvj-v45j",
+    "GHSA-25c3-7fvj-v45j",
+    "GHSA-289f-fq7w-6q2w",
+    "GHSA-289f-fq7w-6q2w",
+    "GHSA-289f-fq7w-6q2w"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "netty/netty",
+   "advisories": 281,
+   "ghsa_ids": [
+    "GHSA-269q-hmxg-m83q",
+    "GHSA-269q-hmxg-m83q",
+    "GHSA-269q-hmxg-m83q",
+    "GHSA-269q-hmxg-m83q",
+    "GHSA-272m-gcwp-mpwg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "gogs/gogs",
+   "advisories": 266,
+   "ghsa_ids": [
+    "GHSA-268j-37xf-pp52",
+    "GHSA-268j-37xf-pp52",
+    "GHSA-268j-37xf-pp52",
+    "GHSA-268j-37xf-pp52",
+    "GHSA-26gq-grmh-6xm6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "librenms/librenms",
+   "advisories": 264,
+   "ghsa_ids": [
+    "GHSA-23f2-vgr6-fwv7",
+    "GHSA-23f2-vgr6-fwv7",
+    "GHSA-23f2-vgr6-fwv7",
+    "GHSA-254q-rqmw-vx45",
+    "GHSA-254q-rqmw-vx45"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "fasterxml/jackson-databind",
+   "advisories": 258,
+   "ghsa_ids": [
+    "GHSA-27xj-rqx5-2255",
+    "GHSA-27xj-rqx5-2255",
+    "GHSA-288c-cq4h-88gq",
+    "GHSA-288c-cq4h-88gq",
+    "GHSA-288c-cq4h-88gq"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "rails/rails",
+   "advisories": 251,
+   "ghsa_ids": [
+    "GHSA-24fg-p96v-hxh8",
+    "GHSA-24fg-p96v-hxh8",
+    "GHSA-24fg-p96v-hxh8",
+    "GHSA-2j26-frm8-cmj9",
+    "GHSA-2j26-frm8-cmj9"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "mmaitre314/picklescan",
+   "advisories": 241,
+   "ghsa_ids": [
+    "GHSA-2fh4-gpch-vqv4",
+    "GHSA-2fh4-gpch-vqv4",
+    "GHSA-3329-ghmp-jmv5",
+    "GHSA-3329-ghmp-jmv5",
+    "GHSA-3329-ghmp-jmv5"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "traefik/traefik",
+   "advisories": 239,
+   "ghsa_ids": [
+    "GHSA-3ccp-42pg-hgv6",
+    "GHSA-3ccp-42pg-hgv6",
+    "GHSA-3ccp-42pg-hgv6",
+    "GHSA-3ccp-42pg-hgv6",
+    "GHSA-3ccp-42pg-hgv6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "uutils/coreutils",
+   "advisories": 226,
+   "ghsa_ids": [
+    "GHSA-239g-2685-54x3",
+    "GHSA-239g-2685-54x3",
+    "GHSA-239g-2685-54x3",
+    "GHSA-239g-2685-54x3",
+    "GHSA-2cxp-xq3c-mjxx"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "dolibarr/dolibarr",
+   "advisories": 221,
+   "ghsa_ids": [
+    "GHSA-24q2-6x37-cgcx",
+    "GHSA-24q2-6x37-cgcx",
+    "GHSA-25h3-mw3p-w8r7",
+    "GHSA-25h3-mw3p-w8r7",
+    "GHSA-27hj-48r9-x2vx"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "vercel/next.js",
+   "advisories": 218,
+   "ghsa_ids": [
+    "GHSA-223j-4rm8-mrmf",
+    "GHSA-223j-4rm8-mrmf",
+    "GHSA-25mp-g6fv-mqxx",
+    "GHSA-25mp-g6fv-mqxx",
+    "GHSA-25mp-g6fv-mqxx"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "symfony/symfony",
+   "advisories": 218,
+   "ghsa_ids": [
+    "GHSA-22pv-7v9j-hqxp",
+    "GHSA-29fc-p6c4-24cg",
+    "GHSA-29fc-p6c4-24cg",
+    "GHSA-29fc-p6c4-24cg",
+    "GHSA-2r5h-6r7v-5m7c"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "spring-projects/spring-framework",
+   "advisories": 213,
+   "ghsa_ids": [
+    "GHSA-2m8h-fgr8-2q9w",
+    "GHSA-2m8h-fgr8-2q9w",
+    "GHSA-2m8h-fgr8-2q9w",
+    "GHSA-2m8h-fgr8-2q9w",
+    "GHSA-2rmj-mq67-h97g"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "mantisbt/mantisbt",
+   "advisories": 208,
+   "ghsa_ids": [
+    "GHSA-252r-f55f-ff34",
+    "GHSA-2pm7-q8pc-xhvq",
+    "GHSA-2pm7-q8pc-xhvq",
+    "GHSA-3qv7-98vm-xx2v",
+    "GHSA-3qv7-98vm-xx2v"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "microweber/microweber",
+   "advisories": 198,
+   "ghsa_ids": [
+    "GHSA-232p-59mg-f98p",
+    "GHSA-232p-59mg-f98p",
+    "GHSA-27g3-58v4-fg9w",
+    "GHSA-27g3-58v4-fg9w",
+    "GHSA-2c7x-w3mx-h7p6"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "concretecms/concretecms",
+   "advisories": 190,
+   "ghsa_ids": [
+    "GHSA-2ggc-552c-rmqr",
+    "GHSA-2j26-j953-2rph",
+    "GHSA-2xp7-rpvc-pjwc",
+    "GHSA-36fr-3wg8-q5v8",
+    "GHSA-36fr-3wg8-q5v8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "ansible/ansible",
+   "advisories": 189,
+   "ghsa_ids": [
+    "GHSA-2pfh-q76x-gwvm",
+    "GHSA-2pfh-q76x-gwvm",
+    "GHSA-2pfh-q76x-gwvm",
+    "GHSA-2pfh-q76x-gwvm",
+    "GHSA-32p4-gm2c-wmch"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "python-pillow/pillow",
+   "advisories": 189,
+   "ghsa_ids": [
+    "GHSA-3c5c-7235-994j",
+    "GHSA-3c5c-7235-994j",
+    "GHSA-3c5c-7235-994j",
+    "GHSA-3f63-hfp8-52jq",
+    "GHSA-3wvg-mj6g-m9cv"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "budibase/budibase",
+   "advisories": 187,
+   "ghsa_ids": [
+    "GHSA-2wfh-rcwf-wh23",
+    "GHSA-2wfh-rcwf-wh23",
+    "GHSA-2wfh-rcwf-wh23",
+    "GHSA-2wfh-rcwf-wh23",
+    "GHSA-2xgg-r2wc-c5r2"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "silverstripe/silverstripe-framework",
+   "advisories": 186,
+   "ghsa_ids": [
+    "GHSA-256q-hx8w-xcqx",
+    "GHSA-256q-hx8w-xcqx",
+    "GHSA-256q-hx8w-xcqx",
+    "GHSA-25gq-jvx2-vg9x",
+    "GHSA-25gq-jvx2-vg9x"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "directus/directus",
+   "advisories": 183,
+   "ghsa_ids": [
+    "GHSA-22rr-f3p8-5gf8",
+    "GHSA-22rr-f3p8-5gf8",
+    "GHSA-22rr-f3p8-5gf8",
+    "GHSA-22rr-f3p8-5gf8",
+    "GHSA-2ccr-g2rv-h677"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "kubernetes/kubernetes",
+   "advisories": 182,
+   "ghsa_ids": [
+    "GHSA-2394-5535-8j88",
+    "GHSA-2394-5535-8j88",
+    "GHSA-242m-6h72-7hgp",
+    "GHSA-2575-pghm-6qqx",
+    "GHSA-2575-pghm-6qqx"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "getgrav/grav",
+   "advisories": 182,
+   "ghsa_ids": [
+    "GHSA-2f86-9cp8-6hcf",
+    "GHSA-2f86-9cp8-6hcf",
+    "GHSA-2m7x-c7px-hp58",
+    "GHSA-2m7x-c7px-hp58",
+    "GHSA-2m7x-c7px-hp58"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "vllm-project/vllm",
+   "advisories": 179,
+   "ghsa_ids": [
+    "GHSA-2pc9-4j83-qjmr",
+    "GHSA-2pc9-4j83-qjmr",
+    "GHSA-2pc9-4j83-qjmr",
+    "GHSA-33cg-gxv8-3p8g",
+    "GHSA-33cg-gxv8-3p8g"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "surrealdb/surrealdb",
+   "advisories": 178,
+   "ghsa_ids": [
+    "GHSA-27vq-hv74-7cqp",
+    "GHSA-27vq-hv74-7cqp",
+    "GHSA-27vq-hv74-7cqp",
+    "GHSA-27vq-hv74-7cqp",
+    "GHSA-2cvj-g5r5-jrrg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "siyuan-note/siyuan",
+   "advisories": 173,
+   "ghsa_ids": [
+    "GHSA-25rp-h46x-2hjm",
+    "GHSA-25rp-h46x-2hjm",
+    "GHSA-25w9-wqfq-gwqx",
+    "GHSA-25w9-wqfq-gwqx",
+    "GHSA-25w9-wqfq-gwqx"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "getkirby/kirby",
+   "advisories": 172,
+   "ghsa_ids": [
+    "GHSA-23q2-54qv-rq5x",
+    "GHSA-23q2-54qv-rq5x",
+    "GHSA-23q2-54qv-rq5x",
+    "GHSA-23q2-54qv-rq5x",
+    "GHSA-2ccx-2gf3-8xvv"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "argoproj/argo-cd",
+   "advisories": 168,
+   "ghsa_ids": [
+    "GHSA-274v-mgcv-cm8j",
+    "GHSA-274v-mgcv-cm8j",
+    "GHSA-2f5v-8r3f-8pww",
+    "GHSA-2f5v-8r3f-8pww",
+    "GHSA-2f5v-8r3f-8pww"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "mlflow/mlflow",
+   "advisories": 168,
+   "ghsa_ids": [
+    "GHSA-2cm6-r77w-6g96",
+    "GHSA-2cm6-r77w-6g96",
+    "GHSA-2cm6-r77w-6g96",
+    "GHSA-2cm6-r77w-6g96",
+    "GHSA-3v79-q7ph-j75h"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "electron/electron",
+   "advisories": 167,
+   "ghsa_ids": [
+    "GHSA-2q4g-w47c-4674",
+    "GHSA-2q4g-w47c-4674",
+    "GHSA-2q4g-w47c-4674",
+    "GHSA-3c8v-cfp5-9885",
+    "GHSA-3c8v-cfp5-9885"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "py-pdf/pypdf",
+   "advisories": 165,
+   "ghsa_ids": [
+    "GHSA-248m-82v9-q6g6",
+    "GHSA-248m-82v9-q6g6",
+    "GHSA-248m-82v9-q6g6",
+    "GHSA-248m-82v9-q6g6",
+    "GHSA-2q4j-m29v-hq73"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "zitadel/zitadel",
+   "advisories": 165,
+   "ghsa_ids": [
+    "GHSA-25rw-g6ff-fmg8",
+    "GHSA-25rw-g6ff-fmg8",
+    "GHSA-25rw-g6ff-fmg8",
+    "GHSA-282g-fhmx-xf54",
+    "GHSA-282g-fhmx-xf54"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "aio-libs/aiohttp",
+   "advisories": 164,
+   "ghsa_ids": [
+    "GHSA-27mf-ghqm-j3j8",
+    "GHSA-27mf-ghqm-j3j8",
+    "GHSA-27mf-ghqm-j3j8",
+    "GHSA-2fqr-mr3j-6wp8",
+    "GHSA-2fqr-mr3j-6wp8"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "usememos/memos",
+   "advisories": 164,
+   "ghsa_ids": [
+    "GHSA-2g7r-9xq5-c6hv",
+    "GHSA-2g7r-9xq5-c6hv",
+    "GHSA-33m8-f4hw-wm3q",
+    "GHSA-33m8-f4hw-wm3q",
+    "GHSA-42q2-m54f-jh95"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "grafana/grafana",
+   "advisories": 159,
+   "ghsa_ids": [
+    "GHSA-2x6g-h2hg-rq84",
+    "GHSA-2x6g-h2hg-rq84",
+    "GHSA-3cgw-hfw7-wc7j",
+    "GHSA-3hv4-r2fm-h27f",
+    "GHSA-3j9m-hcv9-rpj8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apache/struts",
+   "advisories": 157,
+   "ghsa_ids": [
+    "GHSA-265r-pp83-gww7",
+    "GHSA-29rm-6752-gvwv",
+    "GHSA-2j39-qcjm-428w",
+    "GHSA-2j39-qcjm-428w",
+    "GHSA-2j39-qcjm-428w"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "shopware/shopware",
+   "advisories": 157,
+   "ghsa_ids": [
+    "GHSA-27c9-vp3w-6ww8",
+    "GHSA-27c9-vp3w-6ww8",
+    "GHSA-27c9-vp3w-6ww8",
+    "GHSA-27gv-mg7w-mm34",
+    "GHSA-27gv-mg7w-mm34"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "mautic/mautic",
+   "advisories": 157,
+   "ghsa_ids": [
+    "GHSA-29v9-2fpx-j5g9",
+    "GHSA-29v9-2fpx-j5g9",
+    "GHSA-29v9-2fpx-j5g9",
+    "GHSA-2jrw-c95w-h43g",
+    "GHSA-2jrw-c95w-h43g"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "honojs/hono",
+   "advisories": 156,
+   "ghsa_ids": [
+    "GHSA-2234-fmw7-43wr",
+    "GHSA-2234-fmw7-43wr",
+    "GHSA-2234-fmw7-43wr",
+    "GHSA-2234-fmw7-43wr",
+    "GHSA-26pp-8wgv-hjvm"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "axios/axios",
+   "advisories": 152,
+   "ghsa_ids": [
+    "GHSA-35jp-ww65-95wh",
+    "GHSA-35jp-ww65-95wh",
+    "GHSA-38gx-cfqf-f652",
+    "GHSA-3g43-6gmg-66jw",
+    "GHSA-3g43-6gmg-66jw"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "patriksimek/vm2",
+   "advisories": 150,
+   "ghsa_ids": [
+    "GHSA-22rr-f3p8-5gf8",
+    "GHSA-248r-7h7q-cr24",
+    "GHSA-248r-7h7q-cr24",
+    "GHSA-248r-7h7q-cr24",
+    "GHSA-248r-7h7q-cr24"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "rancher/rancher",
+   "advisories": 147,
+   "ghsa_ids": [
+    "GHSA-28g7-896h-695v",
+    "GHSA-28g7-896h-695v",
+    "GHSA-2p4g-jrmx-r34m",
+    "GHSA-2p4g-jrmx-r34m",
+    "GHSA-2p4g-jrmx-r34m"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "filebrowser/filebrowser",
+   "advisories": 146,
+   "ghsa_ids": [
+    "GHSA-239w-m3h6-ch8v",
+    "GHSA-239w-m3h6-ch8v",
+    "GHSA-239w-m3h6-ch8v",
+    "GHSA-239w-m3h6-ch8v",
+    "GHSA-3q2p-72cj-682c"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "nocodb/nocodb",
+   "advisories": 146,
+   "ghsa_ids": [
+    "GHSA-2c5x-4jgf-88mj",
+    "GHSA-2c5x-4jgf-88mj",
+    "GHSA-387m-j3p9-3php",
+    "GHSA-387m-j3p9-3php",
+    "GHSA-387m-j3p9-3php"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "dotnet/runtime",
+   "advisories": 140,
+   "ghsa_ids": [
+    "GHSA-23rf-6693-g89p",
+    "GHSA-23rf-6693-g89p",
+    "GHSA-23rf-6693-g89p",
+    "GHSA-266m-wp2v-x7mq",
+    "GHSA-266m-wp2v-x7mq"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "froxlor/froxlor",
+   "advisories": 139,
+   "ghsa_ids": [
+    "GHSA-26xq-m8xw-6373",
+    "GHSA-26xq-m8xw-6373",
+    "GHSA-26xq-m8xw-6373",
+    "GHSA-33mp-8p67-xj7c",
+    "GHSA-33mp-8p67-xj7c"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "admidio/admidio",
+   "advisories": 137,
+   "ghsa_ids": [
+    "GHSA-25cw-98hg-g3cg",
+    "GHSA-25cw-98hg-g3cg",
+    "GHSA-25cw-98hg-g3cg",
+    "GHSA-2v5m-cq9w-fc33",
+    "GHSA-2v5m-cq9w-fc33"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "tryghost/ghost",
+   "advisories": 134,
+   "ghsa_ids": [
+    "GHSA-2gx6-7gx2-wwcf",
+    "GHSA-2gx6-7gx2-wwcf",
+    "GHSA-2gx6-7gx2-wwcf",
+    "GHSA-2gx6-7gx2-wwcf",
+    "GHSA-2gx6-7gx2-wwcf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "vyperlang/vyper",
+   "advisories": 132,
+   "ghsa_ids": [
+    "GHSA-22wc-c9wj-6q2v",
+    "GHSA-22wc-c9wj-6q2v",
+    "GHSA-22wc-c9wj-6q2v",
+    "GHSA-2p94-8669-xg86",
+    "GHSA-2p94-8669-xg86"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "statamic/cms",
+   "advisories": 131,
+   "ghsa_ids": [
+    "GHSA-225x-3jhx-wh4q",
+    "GHSA-225x-3jhx-wh4q",
+    "GHSA-225x-3jhx-wh4q",
+    "GHSA-225x-3jhx-wh4q",
+    "GHSA-225x-3jhx-wh4q"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "withastro/astro",
+   "advisories": 131,
+   "ghsa_ids": [
+    "GHSA-2pvr-wf23-7pc7",
+    "GHSA-2pvr-wf23-7pc7",
+    "GHSA-3rmj-9m5h-8fpv",
+    "GHSA-3rmj-9m5h-8fpv",
+    "GHSA-3rmj-9m5h-8fpv"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "weblateorg/weblate",
+   "advisories": 130,
+   "ghsa_ids": [
+    "GHSA-3382-gw9x-477v",
+    "GHSA-3382-gw9x-477v",
+    "GHSA-3382-gw9x-477v",
+    "GHSA-33fm-6gp7-4p47",
+    "GHSA-33fm-6gp7-4p47"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "cilium/cilium",
+   "advisories": 129,
+   "ghsa_ids": [
+    "GHSA-24m5-r6hv-ccgp",
+    "GHSA-24m5-r6hv-ccgp",
+    "GHSA-24m5-r6hv-ccgp",
+    "GHSA-24qp-4xx8-3jvj",
+    "GHSA-24qp-4xx8-3jvj"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "gradio-app/gradio",
+   "advisories": 128,
+   "ghsa_ids": [
+    "GHSA-26jh-r8g2-6fpr",
+    "GHSA-26jh-r8g2-6fpr",
+    "GHSA-279j-x4gx-hfrh",
+    "GHSA-279j-x4gx-hfrh",
+    "GHSA-34rf-p3r3-58x2"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "pyload/pyload",
+   "advisories": 126,
+   "ghsa_ids": [
+    "GHSA-25pw-q952-x37g",
+    "GHSA-25pw-q952-x37g",
+    "GHSA-2wcm-vx67-3x4q",
+    "GHSA-2wcm-vx67-3x4q",
+    "GHSA-2wvg-62qm-gj33"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "langchain-ai/langchain",
+   "advisories": 123,
+   "ghsa_ids": [
+    "GHSA-2g6r-c272-w58r",
+    "GHSA-2g6r-c272-w58r",
+    "GHSA-2g6r-c272-w58r",
+    "GHSA-2g6r-c272-w58r",
+    "GHSA-2qmj-7962-cjq8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "bytecodealliance/wasmtime",
+   "advisories": 122,
+   "ghsa_ids": [
+    "GHSA-243v-98vx-264h",
+    "GHSA-243v-98vx-264h",
+    "GHSA-243v-98vx-264h",
+    "GHSA-2r75-cxrj-cmph",
+    "GHSA-2r75-cxrj-cmph"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "umbraco/umbraco-cms",
+   "advisories": 122,
+   "ghsa_ids": [
+    "GHSA-2qjj-h6wp-c7h7",
+    "GHSA-2qjj-h6wp-c7h7",
+    "GHSA-2qjj-h6wp-c7h7",
+    "GHSA-2qjj-h6wp-c7h7",
+    "GHSA-335x-5wcm-8jv2"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "jacksongl/npm-vuln-poc",
+   "advisories": 121,
+   "ghsa_ids": [
+    "GHSA-224h-p7p5-rh85",
+    "GHSA-23vf-5g53-hm9q",
+    "GHSA-23wc-v4mf-x7v4",
+    "GHSA-25jw-gcfj-283j",
+    "GHSA-2958-5r4r-wvv6"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "rack/rack",
+   "advisories": 121,
+   "ghsa_ids": [
+    "GHSA-22f2-v57c-j9cx",
+    "GHSA-22f2-v57c-j9cx",
+    "GHSA-22f2-v57c-j9cx",
+    "GHSA-3h57-hmj3-gj3p",
+    "GHSA-3pxh-h8hw-mj8w"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "matrix-org/synapse",
+   "advisories": 121,
+   "ghsa_ids": [
+    "GHSA-22p3-qrh9-cx32",
+    "GHSA-22p3-qrh9-cx32",
+    "GHSA-22p3-qrh9-cx32",
+    "GHSA-246w-56m2-5899",
+    "GHSA-246w-56m2-5899"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "apache/camel",
+   "advisories": 120,
+   "ghsa_ids": [
+    "GHSA-26v6-w6fw-rh94",
+    "GHSA-26v6-w6fw-rh94",
+    "GHSA-26v6-w6fw-rh94",
+    "GHSA-26v6-w6fw-rh94",
+    "GHSA-27vm-5vpj-rp5g"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "denoland/deno",
+   "advisories": 119,
+   "ghsa_ids": [
+    "GHSA-23rx-c3g5-hv9w",
+    "GHSA-23rx-c3g5-hv9w",
+    "GHSA-2x3r-hwv5-p32x",
+    "GHSA-2x3r-hwv5-p32x",
+    "GHSA-2x3r-hwv5-p32x"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "drupal/core",
+   "advisories": 119,
+   "ghsa_ids": [
+    "GHSA-297x-j9pm-xjgg",
+    "GHSA-2p28-5mvp-2j2r",
+    "GHSA-2qph-q8xw-gv7q",
+    "GHSA-3327-jr93-7hq3",
+    "GHSA-39g6-x4x8-5jcm"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "gitpython-developers/gitpython",
+   "advisories": 118,
+   "ghsa_ids": [
+    "GHSA-2f96-g7mh-g2hx",
+    "GHSA-2f96-g7mh-g2hx",
+    "GHSA-2f96-g7mh-g2hx",
+    "GHSA-2f96-g7mh-g2hx",
+    "GHSA-2f96-g7mh-g2hx"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "openstack/nova",
+   "advisories": 115,
+   "ghsa_ids": [
+    "GHSA-22jm-4hxw-35jf",
+    "GHSA-22jm-4hxw-35jf",
+    "GHSA-22jm-4hxw-35jf",
+    "GHSA-22w9-j288-8p9w",
+    "GHSA-22w9-j288-8p9w"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "phpmyadmin/phpmyadmin",
+   "advisories": 113,
+   "ghsa_ids": [
+    "GHSA-222v-cx2c-q2f5",
+    "GHSA-222v-cx2c-q2f5",
+    "GHSA-2h23-c973-x63q",
+    "GHSA-2p7v-jm8m-g3qq",
+    "GHSA-2p7v-jm8m-g3qq"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apache/activemq",
+   "advisories": 111,
+   "ghsa_ids": [
+    "GHSA-23cr-5hr4-rgwv",
+    "GHSA-23cr-5hr4-rgwv",
+    "GHSA-2jp3-2923-9h52",
+    "GHSA-33j4-8vcr-f79v",
+    "GHSA-33j4-8vcr-f79v"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "strapi/strapi",
+   "advisories": 110,
+   "ghsa_ids": [
+    "GHSA-23fp-fmrv-f5px",
+    "GHSA-23fp-fmrv-f5px",
+    "GHSA-24q2-59hm-rh9r",
+    "GHSA-24q2-59hm-rh9r",
+    "GHSA-24q2-59hm-rh9r"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "sparklemotion/nokogiri",
+   "advisories": 110,
+   "ghsa_ids": [
+    "GHSA-242x-7cm6-4w8j",
+    "GHSA-286v-pcf5-25rc",
+    "GHSA-286v-pcf5-25rc",
+    "GHSA-2qc6-mcvw-92cw",
+    "GHSA-2qc6-mcvw-92cw"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "go-vikunja/vikunja",
+   "advisories": 110,
+   "ghsa_ids": [
+    "GHSA-2g7h-7rqr-9p4r",
+    "GHSA-2g7h-7rqr-9p4r",
+    "GHSA-2g7h-7rqr-9p4r",
+    "GHSA-2g7h-7rqr-9p4r",
+    "GHSA-2pv8-4c52-mf8j"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "better-auth/better-auth",
+   "advisories": 109,
+   "ghsa_ids": [
+    "GHSA-2vg6-77g8-24mp",
+    "GHSA-2vg6-77g8-24mp",
+    "GHSA-2vg6-77g8-24mp",
+    "GHSA-36rg-gfq2-3h56",
+    "GHSA-36rg-gfq2-3h56"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "ci4-cms-erp/ci4ms",
+   "advisories": 106,
+   "ghsa_ids": [
+    "GHSA-245j-xjvr-xvm5",
+    "GHSA-245j-xjvr-xvm5",
+    "GHSA-245j-xjvr-xvm5",
+    "GHSA-2m69-jmvh-6chr",
+    "GHSA-2m69-jmvh-6chr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "octobercms/october",
+   "advisories": 106,
+   "ghsa_ids": [
+    "GHSA-3888-q23f-x7qh",
+    "GHSA-3888-q23f-x7qh",
+    "GHSA-3p6c-9xhm-8x7h",
+    "GHSA-3p6c-9xhm-8x7h",
+    "GHSA-3pc2-fm7p-q2vg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "baserproject/basercms",
+   "advisories": 106,
+   "ghsa_ids": [
+    "GHSA-395x-wv32-44v5",
+    "GHSA-395x-wv32-44v5",
+    "GHSA-395x-wv32-44v5",
+    "GHSA-3mcp-6rv6-c69g",
+    "GHSA-4r3m-j6x5-48m3"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "dlemstra/magick.net",
+   "advisories": 105,
+   "ghsa_ids": [
+    "GHSA-273h-m46v-96q4",
+    "GHSA-2hhq-c99x-492r",
+    "GHSA-39h3-g67r-7g3c",
+    "GHSA-3j4x-rwrx-xxj9",
+    "GHSA-3mwp-xqp2-q6ph"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "phpoffice/phpspreadsheet",
+   "advisories": 102,
+   "ghsa_ids": [
+    "GHSA-2mrg-gjxq-2gvr",
+    "GHSA-2mrg-gjxq-2gvr",
+    "GHSA-2mrg-gjxq-2gvr",
+    "GHSA-2mrg-gjxq-2gvr",
+    "GHSA-2mrg-gjxq-2gvr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "moby/moby",
+   "advisories": 101,
+   "ghsa_ids": [
+    "GHSA-232p-vwff-86mp",
+    "GHSA-232p-vwff-86mp",
+    "GHSA-232p-vwff-86mp",
+    "GHSA-232p-vwff-86mp",
+    "GHSA-2mj3-vfvx-fc43"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "nodejs/undici",
+   "advisories": 101,
+   "ghsa_ids": [
+    "GHSA-2mjp-6q6p-2qxm",
+    "GHSA-35p6-xmwp-9g52",
+    "GHSA-35p6-xmwp-9g52",
+    "GHSA-3787-6prv-h9w3",
+    "GHSA-3787-6prv-h9w3"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "nuxt/nuxt",
+   "advisories": 99,
+   "ghsa_ids": [
+    "GHSA-2452-6xj8-jh47",
+    "GHSA-2452-6xj8-jh47",
+    "GHSA-2452-6xj8-jh47",
+    "GHSA-279x-mwfv-vcqv",
+    "GHSA-279x-mwfv-vcqv"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "openbao/openbao",
+   "advisories": 98,
+   "ghsa_ids": [
+    "GHSA-2q8q-8fgw-9p6p",
+    "GHSA-2q8q-8fgw-9p6p",
+    "GHSA-6mwx-4547-5vc9",
+    "GHSA-6mwx-4547-5vc9",
+    "GHSA-6mwx-4547-5vc9"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "pmmp/pocketmine-mp",
+   "advisories": 98,
+   "ghsa_ids": [
+    "GHSA-42qm-8v8m-m78c",
+    "GHSA-42qm-8v8m-m78c",
+    "GHSA-42qm-8v8m-m78c",
+    "GHSA-46c5-pfj8-fv65",
+    "GHSA-46c5-pfj8-fv65"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "prestashop/prestashop",
+   "advisories": 97,
+   "ghsa_ids": [
+    "GHSA-283w-xf3q-788v",
+    "GHSA-283w-xf3q-788v",
+    "GHSA-283w-xf3q-788v",
+    "GHSA-283w-xf3q-788v",
+    "GHSA-2rf5-3fw8-qm47"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "helm/helm",
+   "advisories": 96,
+   "ghsa_ids": [
+    "GHSA-4hfp-h4cw-hj8p",
+    "GHSA-4hfp-h4cw-hj8p",
+    "GHSA-4hfp-h4cw-hj8p",
+    "GHSA-53c4-hhmh-vw5q",
+    "GHSA-53c4-hhmh-vw5q"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "decidim/decidim",
+   "advisories": 95,
+   "ghsa_ids": [
+    "GHSA-2g9c-vf8h-prxx",
+    "GHSA-2g9c-vf8h-prxx",
+    "GHSA-2g9c-vf8h-prxx",
+    "GHSA-3cx6-j9j4-54mp",
+    "GHSA-3cx6-j9j4-54mp"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "free5gc/free5gc",
+   "advisories": 94,
+   "ghsa_ids": [
+    "GHSA-27ph-8q4f-h7m7",
+    "GHSA-27ph-8q4f-h7m7",
+    "GHSA-3258-qmv8-frp3",
+    "GHSA-3258-qmv8-frp3",
+    "GHSA-3j9f-7w24-pcqg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "nilsteampassnet/teampass",
+   "advisories": 93,
+   "ghsa_ids": [
+    "GHSA-2697-96mv-3gfm",
+    "GHSA-2697-96mv-3gfm",
+    "GHSA-2697-96mv-3gfm",
+    "GHSA-2697-96mv-3gfm",
+    "GHSA-28pv-2j2h-fmhc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "openbabel/openbabel",
+   "advisories": 93,
+   "ghsa_ids": [
+    "GHSA-2m54-8m6g-qf93",
+    "GHSA-2m54-8m6g-qf93",
+    "GHSA-2m54-8m6g-qf93",
+    "GHSA-3f56-w4g2-mx64",
+    "GHSA-3f56-w4g2-mx64"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "angular/angular",
+   "advisories": 93,
+   "ghsa_ids": [
+    "GHSA-39pv-4j6c-2g6v",
+    "GHSA-39pv-4j6c-2g6v",
+    "GHSA-39pv-4j6c-2g6v",
+    "GHSA-39pv-4j6c-2g6v",
+    "GHSA-45q2-gjvg-7973"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "paddlepaddle/paddle",
+   "advisories": 92,
+   "ghsa_ids": [
+    "GHSA-275c-w5mq-v5m2",
+    "GHSA-275c-w5mq-v5m2",
+    "GHSA-275c-w5mq-v5m2",
+    "GHSA-2hvc-hwg3-hpvw",
+    "GHSA-2hvc-hwg3-hpvw"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "yeswiki/yeswiki",
+   "advisories": 92,
+   "ghsa_ids": [
+    "GHSA-29cj-cxw4-v4j2",
+    "GHSA-2f8p-qqx2-gwr2",
+    "GHSA-2f8p-qqx2-gwr2",
+    "GHSA-2f8p-qqx2-gwr2",
+    "GHSA-2f8p-qqx2-gwr2"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "backstage/backstage",
+   "advisories": 91,
+   "ghsa_ids": [
+    "GHSA-2fc9-xpp8-2g9h",
+    "GHSA-2fc9-xpp8-2g9h",
+    "GHSA-2fc9-xpp8-2g9h",
+    "GHSA-2fc9-xpp8-2g9h",
+    "GHSA-2g8g-63j4-9w3r"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "langflow-ai/langflow",
+   "advisories": 91,
+   "ghsa_ids": [
+    "GHSA-355v-2rjx-fpx7",
+    "GHSA-355v-2rjx-fpx7",
+    "GHSA-3645-fxcv-hqr4",
+    "GHSA-3645-fxcv-hqr4",
+    "GHSA-3645-fxcv-hqr4"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "geoserver/geoserver",
+   "advisories": 91,
+   "ghsa_ids": [
+    "GHSA-4pm3-f52j-8ggh",
+    "GHSA-4pm3-f52j-8ggh",
+    "GHSA-4pm3-f52j-8ggh",
+    "GHSA-56r3-f536-5gf7",
+    "GHSA-59x6-g4jr-4hxc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "shopware/platform",
+   "advisories": 89,
+   "ghsa_ids": [
+    "GHSA-243q-g9j3-qf6r",
+    "GHSA-2p89-5f22-8qvf",
+    "GHSA-2p89-5f22-8qvf",
+    "GHSA-3pcr-4982-548m",
+    "GHSA-46h7-vj7x-fxg2"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "lxc/incus",
+   "advisories": 89,
+   "ghsa_ids": [
+    "GHSA-2q3f-q5pq-g8wv",
+    "GHSA-2q3f-q5pq-g8wv",
+    "GHSA-3g2j-vm47-x4mj",
+    "GHSA-3g2j-vm47-x4mj",
+    "GHSA-453r-g2pg-cxxq"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "saltstack/salt",
+   "advisories": 88,
+   "ghsa_ids": [
+    "GHSA-29j3-2446-5j4w",
+    "GHSA-29j3-2446-5j4w",
+    "GHSA-2q4g-wfm6-5fpm",
+    "GHSA-2q4g-wfm6-5fpm",
+    "GHSA-2qw3-2wv6-p64x"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "coder/coder",
+   "advisories": 88,
+   "ghsa_ids": [
+    "GHSA-29xf-69gq-m9jx",
+    "GHSA-29xf-69gq-m9jx",
+    "GHSA-29xf-69gq-m9jx",
+    "GHSA-2mg2-p7r7-g27f",
+    "GHSA-2mg2-p7r7-g27f"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "keras-team/keras",
+   "advisories": 87,
+   "ghsa_ids": [
+    "GHSA-26c4-7vv6-867j",
+    "GHSA-26c4-7vv6-867j",
+    "GHSA-26c4-7vv6-867j",
+    "GHSA-26c4-7vv6-867j",
+    "GHSA-28jp-44vh-q42h"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apache/superset",
+   "advisories": 87,
+   "ghsa_ids": [
+    "GHSA-299q-3p96-5898",
+    "GHSA-2cx9-54hp-r698",
+    "GHSA-2cx9-54hp-r698",
+    "GHSA-2q6j-vpvr-6pvj",
+    "GHSA-2q6j-vpvr-6pvj"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "dotnet/announcements",
+   "advisories": 86,
+   "ghsa_ids": [
+    "GHSA-23rf-6693-g89p",
+    "GHSA-242j-2gm6-5rwx",
+    "GHSA-2969-4q4w-w5h3",
+    "GHSA-2c7v-qcjp-4mg2",
+    "GHSA-2m65-m22p-9wjw"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "cure53/dompurify",
+   "advisories": 86,
+   "ghsa_ids": [
+    "GHSA-39q2-94rc-95cp",
+    "GHSA-39q2-94rc-95cp",
+    "GHSA-55q2-fjhq-7xh7",
+    "GHSA-55q2-fjhq-7xh7",
+    "GHSA-55q2-fjhq-7xh7"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "ikus060/rdiffweb",
+   "advisories": 85,
+   "ghsa_ids": [
+    "GHSA-2wpw-cm9w-v4xm",
+    "GHSA-2wpw-cm9w-v4xm",
+    "GHSA-3fhq-72hw-jqwv",
+    "GHSA-3fhq-72hw-jqwv",
+    "GHSA-4wph-9vrm-6v3w"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "star7th/showdoc",
+   "advisories": 84,
+   "ghsa_ids": [
+    "GHSA-2263-jwgm-wv97",
+    "GHSA-2263-jwgm-wv97",
+    "GHSA-3p87-gqw8-4pf2",
+    "GHSA-3pg8-c473-w6rr",
+    "GHSA-3pg8-c473-w6rr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "typo3-cms/core",
+   "advisories": 84,
+   "ghsa_ids": [
+    "GHSA-29m4-mx89-3mjg",
+    "GHSA-29m4-mx89-3mjg",
+    "GHSA-3gjc-mp82-fj4q",
+    "GHSA-3jrg-97f3-rqh9",
+    "GHSA-4459-qrcc-vfcf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "hashicorp/vault",
+   "advisories": 83,
+   "ghsa_ids": [
+    "GHSA-23fq-q7hc-993r",
+    "GHSA-25xj-89g5-fm6h",
+    "GHSA-25xj-89g5-fm6h",
+    "GHSA-25xj-89g5-fm6h",
+    "GHSA-25xj-89g5-fm6h"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "openstack/keystone",
+   "advisories": 83,
+   "ghsa_ids": [
+    "GHSA-23x9-8hxr-978c",
+    "GHSA-23x9-8hxr-978c",
+    "GHSA-23x9-8hxr-978c",
+    "GHSA-2j23-fwqm-mgwr",
+    "GHSA-2j23-fwqm-mgwr"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "x-stream/xstream",
+   "advisories": 83,
+   "ghsa_ids": [
+    "GHSA-2p3x-qw9c-25hh",
+    "GHSA-2p3x-qw9c-25hh",
+    "GHSA-2q8x-2p7f-574v",
+    "GHSA-2q8x-2p7f-574v",
+    "GHSA-3ccq-5vw3-2p6x"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "berriai/litellm",
+   "advisories": 82,
+   "ghsa_ids": [
+    "GHSA-3xr8-qfvj-9p9j",
+    "GHSA-3xr8-qfvj-9p9j",
+    "GHSA-46cm-pfwv-cgf8",
+    "GHSA-46cm-pfwv-cgf8",
+    "GHSA-46cm-pfwv-cgf8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "openfga/openfga",
+   "advisories": 81,
+   "ghsa_ids": [
+    "GHSA-2c64-vmv2-hgfc",
+    "GHSA-2c64-vmv2-hgfc",
+    "GHSA-2c64-vmv2-hgfc",
+    "GHSA-2hm9-h873-pgqh",
+    "GHSA-2hm9-h873-pgqh"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "craftcms/commerce",
+   "advisories": 80,
+   "ghsa_ids": [
+    "GHSA-2h2m-v2mg-656c",
+    "GHSA-2h2m-v2mg-656c",
+    "GHSA-2h2m-v2mg-656c",
+    "GHSA-2h2m-v2mg-656c",
+    "GHSA-3vxg-x5f8-f5qf"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "kimai/kimai",
+   "advisories": 80,
+   "ghsa_ids": [
+    "GHSA-2xgg-2x8h-8xw4",
+    "GHSA-2xgg-2x8h-8xw4",
+    "GHSA-3jp4-mhh4-gcgr",
+    "GHSA-3jp4-mhh4-gcgr",
+    "GHSA-3jp4-mhh4-gcgr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "openmage/magento-lts",
+   "advisories": 79,
+   "ghsa_ids": [
+    "GHSA-26rr-v2j2-25fh",
+    "GHSA-26rr-v2j2-25fh",
+    "GHSA-26rr-v2j2-25fh",
+    "GHSA-26rr-v2j2-25fh",
+    "GHSA-2cwr-gcf9-pvxr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apache/cxf",
+   "advisories": 79,
+   "ghsa_ids": [
+    "GHSA-2g99-c67p-56hm",
+    "GHSA-2g99-c67p-56hm",
+    "GHSA-2hvc-5c6v-f533",
+    "GHSA-2p7x-jcr3-7p2c",
+    "GHSA-3336-h95j-hvvf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "fleetdm/fleet",
+   "advisories": 79,
+   "ghsa_ids": [
+    "GHSA-2rc4-7jc6-qffh",
+    "GHSA-2rc4-7jc6-qffh",
+    "GHSA-2rc4-7jc6-qffh",
+    "GHSA-2rc4-7jc6-qffh",
+    "GHSA-2v6m-6xw3-6467"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "pgadmin-org/pgadmin4",
+   "advisories": 78,
+   "ghsa_ids": [
+    "GHSA-27jx-ffw8-xrqv",
+    "GHSA-27jx-ffw8-xrqv",
+    "GHSA-27jx-ffw8-xrqv",
+    "GHSA-2mvc-557g-5638",
+    "GHSA-2mvc-557g-5638"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "zcashfoundation/zebra",
+   "advisories": 78,
+   "ghsa_ids": [
+    "GHSA-29x4-r6jv-ff4w",
+    "GHSA-29x4-r6jv-ff4w",
+    "GHSA-2gf8-q9rr-jq3h",
+    "GHSA-2gf8-q9rr-jq3h",
+    "GHSA-3vmh-33xr-9cqh"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "ethyca/fides",
+   "advisories": 78,
+   "ghsa_ids": [
+    "GHSA-2h46-8gf5-fmxv",
+    "GHSA-2h46-8gf5-fmxv",
+    "GHSA-3rw2-wfc8-wmj5",
+    "GHSA-3rw2-wfc8-wmj5",
+    "GHSA-3rw2-wfc8-wmj5"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "pnpm/pnpm",
+   "advisories": 78,
+   "ghsa_ids": [
+    "GHSA-2phv-j68v-wwqx",
+    "GHSA-2phv-j68v-wwqx",
+    "GHSA-2phv-j68v-wwqx",
+    "GHSA-379q-355j-w6rj",
+    "GHSA-379q-355j-w6rj"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "nicolargo/glances",
+   "advisories": 78,
+   "ghsa_ids": [
+    "GHSA-3vwc-qwhc-3mj7",
+    "GHSA-3vwc-qwhc-3mj7",
+    "GHSA-3vwc-qwhc-3mj7",
+    "GHSA-49g7-2ww7-3vf5",
+    "GHSA-49g7-2ww7-3vf5"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apache/inlong",
+   "advisories": 77,
+   "ghsa_ids": [
+    "GHSA-22j4-qc48-j8f8",
+    "GHSA-22j4-qc48-j8f8",
+    "GHSA-26m4-qjp9-xmc6",
+    "GHSA-3p9p-59qf-mqwh",
+    "GHSA-3p9p-59qf-mqwh"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "dnnsoftware/dnn.platform",
+   "advisories": 77,
+   "ghsa_ids": [
+    "GHSA-2374-6cvw-qmx6",
+    "GHSA-2374-6cvw-qmx6",
+    "GHSA-2374-6cvw-qmx6",
+    "GHSA-2g5g-hcgh-q3rp",
+    "GHSA-2g5g-hcgh-q3rp"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "rclone/rclone",
+   "advisories": 77,
+   "ghsa_ids": [
+    "GHSA-25qr-6mpr-f7qx",
+    "GHSA-25qr-6mpr-f7qx",
+    "GHSA-25qr-6mpr-f7qx",
+    "GHSA-25qr-6mpr-f7qx",
+    "GHSA-2m8m-jhrm-w6j2"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "frangoteam/fuxa",
+   "advisories": 77,
+   "ghsa_ids": [
+    "GHSA-2r8f-cf6w-x5vq",
+    "GHSA-2r8f-cf6w-x5vq",
+    "GHSA-32cc-x95p-fxcg",
+    "GHSA-32cc-x95p-fxcg",
+    "GHSA-32cc-x95p-fxcg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "plone/plone",
+   "advisories": 76,
+   "ghsa_ids": [
+    "GHSA-22jm-p2vv-j2hc",
+    "GHSA-25jh-5h5r-h33m",
+    "GHSA-38g6-x6jv-jwff",
+    "GHSA-3g6w-4m7x-97v6",
+    "GHSA-3v28-9jjp-4g5w"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "contao/contao",
+   "advisories": 75,
+   "ghsa_ids": [
+    "GHSA-2xmj-8wmq-7475",
+    "GHSA-2xmj-8wmq-7475",
+    "GHSA-2xmj-8wmq-7475",
+    "GHSA-2xpq-xp6c-5mgj",
+    "GHSA-2xpq-xp6c-5mgj"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "containerd/containerd",
+   "advisories": 74,
+   "ghsa_ids": [
+    "GHSA-259w-8hf6-59c2",
+    "GHSA-259w-8hf6-59c2",
+    "GHSA-259w-8hf6-59c2",
+    "GHSA-259w-8hf6-59c2",
+    "GHSA-265r-hfxg-fhmg"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "spring-projects/spring-security",
+   "advisories": 74,
+   "ghsa_ids": [
+    "GHSA-27xw-p8v6-9jjr",
+    "GHSA-27xw-p8v6-9jjr",
+    "GHSA-2jrg-rf5x-568g",
+    "GHSA-2jrg-rf5x-568g",
+    "GHSA-2q7c-5gjm-7q23"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "cloudfoundry/uaa",
+   "advisories": 74,
+   "ghsa_ids": [
+    "GHSA-292x-hjr8-226f",
+    "GHSA-292x-hjr8-226f",
+    "GHSA-292x-hjr8-226f",
+    "GHSA-4m8c-h7fr-gq5c",
+    "GHSA-4m8c-h7fr-gq5c"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "snipe/snipe-it",
+   "advisories": 74,
+   "ghsa_ids": [
+    "GHSA-2cqg-q7jm-j35c",
+    "GHSA-2cqg-q7jm-j35c",
+    "GHSA-33vj-r6p6-x4p8",
+    "GHSA-33vj-r6p6-x4p8",
+    "GHSA-363q-j92x-7543"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "hashicorp/consul",
+   "advisories": 73,
+   "ghsa_ids": [
+    "GHSA-23jv-v6qj-3fhh",
+    "GHSA-25gf-8qrr-g78r",
+    "GHSA-496g-fr33-whrf",
+    "GHSA-496g-fr33-whrf",
+    "GHSA-496g-fr33-whrf"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "fission/fission",
+   "advisories": 73,
+   "ghsa_ids": [
+    "GHSA-3g33-6vg6-27m8",
+    "GHSA-3g33-6vg6-27m8",
+    "GHSA-3g33-6vg6-27m8",
+    "GHSA-3g33-6vg6-27m8",
+    "GHSA-3r8v-2xmj-5c39"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "intelliants/subrion",
+   "advisories": 72,
+   "ghsa_ids": [
+    "GHSA-2cmg-vxvh-8h7h",
+    "GHSA-2cmg-vxvh-8h7h",
+    "GHSA-2cmg-vxvh-8h7h",
+    "GHSA-2x28-c7j7-23gv",
+    "GHSA-2xv7-fwh6-x7fc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "openidentityplatform/openam",
+   "advisories": 72,
+   "ghsa_ids": [
+    "GHSA-2cqq-rpvq-g5qj",
+    "GHSA-2cqq-rpvq-g5qj",
+    "GHSA-2cqq-rpvq-g5qj",
+    "GHSA-2cqq-rpvq-g5qj",
+    "GHSA-2vg8-q4c2-5cw3"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "bcgit/bc-java",
+   "advisories": 72,
+   "ghsa_ids": [
+    "GHSA-2j2x-hx4g-2gf4",
+    "GHSA-4446-656p-f54g",
+    "GHSA-4446-656p-f54g",
+    "GHSA-4446-656p-f54g",
+    "GHSA-4cx2-fc23-5wg6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "openzeppelin/openzeppelin-contracts",
+   "advisories": 72,
+   "ghsa_ids": [
+    "GHSA-4g63-c64m-25w9",
+    "GHSA-4g63-c64m-25w9",
+    "GHSA-4h98-2769-gh6h",
+    "GHSA-4h98-2769-gh6h",
+    "GHSA-4h98-2769-gh6h"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "ethereum/go-ethereum",
+   "advisories": 71,
+   "ghsa_ids": [
+    "GHSA-2gjw-fg97-vg3r",
+    "GHSA-2gjw-fg97-vg3r",
+    "GHSA-2gjw-fg97-vg3r",
+    "GHSA-2gjw-fg97-vg3r",
+    "GHSA-4xc9-8hmq-j652"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "pterodactyl/panel",
+   "advisories": 70,
+   "ghsa_ids": [
+    "GHSA-2497-gp99-2m74",
+    "GHSA-2497-gp99-2m74",
+    "GHSA-24wv-6c99-f843",
+    "GHSA-24wv-6c99-f843",
+    "GHSA-24wv-6c99-f843"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "olivetin/olivetin",
+   "advisories": 69,
+   "ghsa_ids": [
+    "GHSA-228v-wc5r-j8m7",
+    "GHSA-228v-wc5r-j8m7",
+    "GHSA-364q-w7vh-vhpc",
+    "GHSA-364q-w7vh-vhpc",
+    "GHSA-364q-w7vh-vhpc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "twigphp/twig",
+   "advisories": 69,
+   "ghsa_ids": [
+    "GHSA-24x9-r6q4-q93w",
+    "GHSA-24x9-r6q4-q93w",
+    "GHSA-2g2g-8p8h-fgwm",
+    "GHSA-2g2g-8p8h-fgwm",
+    "GHSA-2g2g-8p8h-fgwm"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "sveltejs/kit",
+   "advisories": 69,
+   "ghsa_ids": [
+    "GHSA-29g2-3rmr-qm68",
+    "GHSA-29g2-3rmr-qm68",
+    "GHSA-29g2-3rmr-qm68",
+    "GHSA-29g2-3rmr-qm68",
+    "GHSA-2crg-3p73-43xp"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "lepture/mistune",
+   "advisories": 69,
+   "ghsa_ids": [
+    "GHSA-2hm2-hc3v-44h9",
+    "GHSA-2hm2-hc3v-44h9",
+    "GHSA-2hm2-hc3v-44h9",
+    "GHSA-2hm2-hc3v-44h9",
+    "GHSA-4j32-57v6-6g45"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "vantage6/vantage6",
+   "advisories": 69,
+   "ghsa_ids": [
+    "GHSA-2wgc-48g2-cj5w",
+    "GHSA-2wgc-48g2-cj5w",
+    "GHSA-2wgc-48g2-cj5w",
+    "GHSA-36gx-9q6h-g429",
+    "GHSA-36gx-9q6h-g429"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "apache/nifi",
+   "advisories": 68,
+   "ghsa_ids": [
+    "GHSA-23qf-3jf9-h3q9",
+    "GHSA-23qf-3jf9-h3q9",
+    "GHSA-23qf-3jf9-h3q9",
+    "GHSA-2j9m-25xv-mp6r",
+    "GHSA-2j9m-25xv-mp6r"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "vitejs/vite",
+   "advisories": 68,
+   "ghsa_ids": [
+    "GHSA-2452-6xj8-jh47",
+    "GHSA-353f-5xf4-qw67",
+    "GHSA-353f-5xf4-qw67",
+    "GHSA-353f-5xf4-qw67",
+    "GHSA-353f-5xf4-qw67"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "opencv/opencv",
+   "advisories": 68,
+   "ghsa_ids": [
+    "GHSA-267x-w5hx-8hjr",
+    "GHSA-267x-w5hx-8hjr",
+    "GHSA-33h2-69j3-r336",
+    "GHSA-33h2-69j3-r336",
+    "GHSA-3448-vrgh-85xr"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "pyca/cryptography",
+   "advisories": 68,
+   "ghsa_ids": [
+    "GHSA-39hc-v87j-747x",
+    "GHSA-39hc-v87j-747x",
+    "GHSA-39hc-v87j-747x",
+    "GHSA-39hc-v87j-747x",
+    "GHSA-3ww4-gg4f-jr7f"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "answerdev/answer",
+   "advisories": 68,
+   "ghsa_ids": [
+    "GHSA-4cwh-8w4g-jxxh",
+    "GHSA-4cwh-8w4g-jxxh",
+    "GHSA-52h8-c876-989c",
+    "GHSA-52h8-c876-989c",
+    "GHSA-55vm-3vq3-4jpc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "mermaid-js/mermaid",
+   "advisories": 67,
+   "ghsa_ids": [
+    "GHSA-26gq-grmh-6xm6",
+    "GHSA-26gq-grmh-6xm6",
+    "GHSA-2v8p-3f2j-5mp7",
+    "GHSA-2v8p-3f2j-5mp7",
+    "GHSA-2v8p-3f2j-5mp7"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "nats-io/nats-server",
+   "advisories": 67,
+   "ghsa_ids": [
+    "GHSA-2c64-vj8g-vwrq",
+    "GHSA-2c64-vj8g-vwrq",
+    "GHSA-3f24-pcvm-5jqc",
+    "GHSA-3f24-pcvm-5jqc",
+    "GHSA-4frv-5fj6-4p25"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "remix-run/react-router",
+   "advisories": 67,
+   "ghsa_ids": [
+    "GHSA-2j2x-hqr9-3h42",
+    "GHSA-2j2x-hqr9-3h42",
+    "GHSA-2j2x-hqr9-3h42",
+    "GHSA-2w69-qvjg-hvjx",
+    "GHSA-2w69-qvjg-hvjx"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "kyverno/kyverno",
+   "advisories": 67,
+   "ghsa_ids": [
+    "GHSA-33hq-f2mf-jm3c",
+    "GHSA-33hq-f2mf-jm3c",
+    "GHSA-33hq-f2mf-jm3c",
+    "GHSA-33hq-f2mf-jm3c",
+    "GHSA-3hfq-cx9j-923w"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "juju/juju",
+   "advisories": 66,
+   "ghsa_ids": [
+    "GHSA-245v-p8fj-vwm2",
+    "GHSA-245v-p8fj-vwm2",
+    "GHSA-245v-p8fj-vwm2",
+    "GHSA-24ch-w38v-xmh8",
+    "GHSA-24ch-w38v-xmh8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "dgtlmoon/changedetection.io",
+   "advisories": 66,
+   "ghsa_ids": [
+    "GHSA-25g8-2mcf-fcx9",
+    "GHSA-25g8-2mcf-fcx9",
+    "GHSA-25g8-2mcf-fcx9",
+    "GHSA-25g8-2mcf-fcx9",
+    "GHSA-3c45-4pj5-ch7m"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "protobufjs/protobuf.js",
+   "advisories": 66,
+   "ghsa_ids": [
+    "GHSA-2pr8-phx7-x9h3",
+    "GHSA-2pr8-phx7-x9h3",
+    "GHSA-2pr8-phx7-x9h3",
+    "GHSA-2pr8-phx7-x9h3",
+    "GHSA-66ff-xgx4-vchm"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "nautobot/nautobot",
+   "advisories": 66,
+   "ghsa_ids": [
+    "GHSA-75mc-3pjc-727q",
+    "GHSA-75mc-3pjc-727q",
+    "GHSA-75mc-3pjc-727q",
+    "GHSA-75mc-3pjc-727q",
+    "GHSA-8mfq-f5wj-vw5m"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "liufee/cms",
+   "advisories": 65,
+   "ghsa_ids": [
+    "GHSA-25q6-m425-9fqr",
+    "GHSA-25q6-m425-9fqr",
+    "GHSA-3ppm-fwhm-qqg6",
+    "GHSA-3wrg-6mg5-jg2v",
+    "GHSA-4r4f-jrvw-h727"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "undertow-io/undertow",
+   "advisories": 65,
+   "ghsa_ids": [
+    "GHSA-339q-62wm-c39w",
+    "GHSA-339q-62wm-c39w",
+    "GHSA-339q-62wm-c39w",
+    "GHSA-33hj-rcmx-86mv",
+    "GHSA-33hj-rcmx-86mv"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "nimiq/core-rs-albatross",
+   "advisories": 64,
+   "ghsa_ids": [
+    "GHSA-264v-m8fm-76jm",
+    "GHSA-264v-m8fm-76jm",
+    "GHSA-264v-m8fm-76jm",
+    "GHSA-264v-m8fm-76jm",
+    "GHSA-27w2-87xv-37c6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "octoprint/octoprint",
+   "advisories": 64,
+   "ghsa_ids": [
+    "GHSA-2p75-q37p-f852",
+    "GHSA-2p75-q37p-f852",
+    "GHSA-2vjq-hg5w-5gm7",
+    "GHSA-2vjq-hg5w-5gm7",
+    "GHSA-2vjq-hg5w-5gm7"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "0xjacky/nginx-ui",
+   "advisories": 64,
+   "ghsa_ids": [
+    "GHSA-4pvg-prr3-9cxr",
+    "GHSA-4pvg-prr3-9cxr",
+    "GHSA-4pvg-prr3-9cxr",
+    "GHSA-5hf2-vhj6-gj9m",
+    "GHSA-5hf2-vhj6-gj9m"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "goharbor/harbor",
+   "advisories": 63,
+   "ghsa_ids": [
+    "GHSA-33p6-fx42-7rf5",
+    "GHSA-33p6-fx42-7rf5",
+    "GHSA-3637-v6vq-xqqw",
+    "GHSA-3637-v6vq-xqqw",
+    "GHSA-38r5-34mr-mvm7"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "argoproj/argo-workflows",
+   "advisories": 63,
+   "ghsa_ids": [
+    "GHSA-3775-99mw-8rp4",
+    "GHSA-3775-99mw-8rp4",
+    "GHSA-3775-99mw-8rp4",
+    "GHSA-3775-99mw-8rp4",
+    "GHSA-3wf5-g532-rcrr"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "neorazorx/facturascripts",
+   "advisories": 62,
+   "ghsa_ids": [
+    "GHSA-2267-xqcf-gw2m",
+    "GHSA-2267-xqcf-gw2m",
+    "GHSA-2267-xqcf-gw2m",
+    "GHSA-2p5x-4jr6-x5jg",
+    "GHSA-2p5x-4jr6-x5jg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "cosmos/cosmos-sdk",
+   "advisories": 62,
+   "ghsa_ids": [
+    "GHSA-23px-mw2p-46qm",
+    "GHSA-23px-mw2p-46qm",
+    "GHSA-23px-mw2p-46qm",
+    "GHSA-23px-mw2p-46qm",
+    "GHSA-2557-x9mg-76w8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "wagtail/wagtail",
+   "advisories": 62,
+   "ghsa_ids": [
+    "GHSA-2473-9hgq-j7xw",
+    "GHSA-2473-9hgq-j7xw",
+    "GHSA-33pv-vcgh-jfg9",
+    "GHSA-33pv-vcgh-jfg9",
+    "GHSA-33pv-vcgh-jfg9"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "dompdf/dompdf",
+   "advisories": 62,
+   "ghsa_ids": [
+    "GHSA-3cw5-7cxw-v5qg",
+    "GHSA-3cw5-7cxw-v5qg",
+    "GHSA-3qx2-6f78-w2j2",
+    "GHSA-3qx2-6f78-w2j2",
+    "GHSA-3qx2-6f78-w2j2"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "firefly-iii/firefly-iii",
+   "advisories": 61,
+   "ghsa_ids": [
+    "GHSA-29w6-c52g-m8jc",
+    "GHSA-29w6-c52g-m8jc",
+    "GHSA-356r-77q8-f64f",
+    "GHSA-356r-77q8-f64f",
+    "GHSA-4gm4-c4mh-4p7w"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "harttle/liquidjs",
+   "advisories": 61,
+   "ghsa_ids": [
+    "GHSA-2qv6-9wx5-cwv4",
+    "GHSA-2qv6-9wx5-cwv4",
+    "GHSA-2qv6-9wx5-cwv4",
+    "GHSA-2qv6-9wx5-cwv4",
+    "GHSA-45rm-2893-5f49"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "opencontainers/runc",
+   "advisories": 60,
+   "ghsa_ids": [
+    "GHSA-2cgq-h8xw-2v5j",
+    "GHSA-4g74-7cff-xcv8",
+    "GHSA-5w4j-f78p-4wh9",
+    "GHSA-9493-h29p-rfm2",
+    "GHSA-9493-h29p-rfm2"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "jetty/jetty.project",
+   "advisories": 60,
+   "ghsa_ids": [
+    "GHSA-2fvj-hgj9-j2gr",
+    "GHSA-2fvj-hgj9-j2gr",
+    "GHSA-2fvj-hgj9-j2gr",
+    "GHSA-2fvj-hgj9-j2gr",
+    "GHSA-2fvj-hgj9-j2gr"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "run-llama/llama_index",
+   "advisories": 60,
+   "ghsa_ids": [
+    "GHSA-2jxw-4hm4-6w87",
+    "GHSA-2jxw-4hm4-6w87",
+    "GHSA-2rhq-96q8-4vjq",
+    "GHSA-2rhq-96q8-4vjq",
+    "GHSA-2xxc-73fv-36f7"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "etcd-io/etcd",
+   "advisories": 60,
+   "ghsa_ids": [
+    "GHSA-2xhq-gv6c-p224",
+    "GHSA-3p4g-rcw5-8298",
+    "GHSA-3p4g-rcw5-8298",
+    "GHSA-3p4g-rcw5-8298",
+    "GHSA-3p4g-rcw5-8298"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "dotnet/aspnetcore",
+   "advisories": 59,
+   "ghsa_ids": [
+    "GHSA-25c8-p796-jg6r",
+    "GHSA-25c8-p796-jg6r",
+    "GHSA-25c8-p796-jg6r",
+    "GHSA-2865-hh9g-w894",
+    "GHSA-2865-hh9g-w894"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "hashicorp/nomad",
+   "advisories": 59,
+   "ghsa_ids": [
+    "GHSA-25qx-vfw2-fw8r",
+    "GHSA-2jhh-5xm2-j4gf",
+    "GHSA-2w2v-xcr9-mj4m",
+    "GHSA-2w2v-xcr9-mj4m",
+    "GHSA-2w5v-x29g-jw7j"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "huggingface/transformers",
+   "advisories": 59,
+   "ghsa_ids": [
+    "GHSA-282v-666c-3fvg",
+    "GHSA-282v-666c-3fvg",
+    "GHSA-282v-666c-3fvg",
+    "GHSA-29pf-2h5f-8g72",
+    "GHSA-29pf-2h5f-8g72"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "laravel/framework",
+   "advisories": 59,
+   "ghsa_ids": [
+    "GHSA-297g-xg4h-7w4c",
+    "GHSA-364w-9g92-3grq",
+    "GHSA-364w-9g92-3grq",
+    "GHSA-364w-9g92-3grq",
+    "GHSA-3p32-j457-pg5x"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apostrophecms/apostrophe",
+   "advisories": 59,
+   "ghsa_ids": [
+    "GHSA-34pj-2622-jvxq",
+    "GHSA-34pj-2622-jvxq",
+    "GHSA-34pj-2622-jvxq",
+    "GHSA-34pj-2622-jvxq",
+    "GHSA-4r9c-jghc-cx5m"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "mobsf/mobile-security-framework-mobsf",
+   "advisories": 59,
+   "ghsa_ids": [
+    "GHSA-4hh3-vj32-gr6j",
+    "GHSA-4hh3-vj32-gr6j",
+    "GHSA-4hh3-vj32-gr6j",
+    "GHSA-5jc6-h9w7-jm3p",
+    "GHSA-5jc6-h9w7-jm3p"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "mindsdb/mindsdb",
+   "advisories": 58,
+   "ghsa_ids": [
+    "GHSA-2g5w-29q9-w6hx",
+    "GHSA-2g5w-29q9-w6hx",
+    "GHSA-2g5w-29q9-w6hx",
+    "GHSA-2g5w-29q9-w6hx",
+    "GHSA-34mr-6q8x-g9r6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "sylius/sylius",
+   "advisories": 58,
+   "ghsa_ids": [
+    "GHSA-2hjh-495w-hmxc",
+    "GHSA-2xc6-348p-c2x6",
+    "GHSA-2xc6-348p-c2x6",
+    "GHSA-3r8j-pmch-5j2h",
+    "GHSA-3r8j-pmch-5j2h"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "grokability/snipe-it",
+   "advisories": 58,
+   "ghsa_ids": [
+    "GHSA-33g4-646g-qwmm",
+    "GHSA-33g4-646g-qwmm",
+    "GHSA-33g4-646g-qwmm",
+    "GHSA-4g25-wj72-chxg",
+    "GHSA-4g25-wj72-chxg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "ericcornelissen/shescape",
+   "advisories": 58,
+   "ghsa_ids": [
+    "GHSA-3g7p-8qhx-mc8r",
+    "GHSA-3g7p-8qhx-mc8r",
+    "GHSA-3g7p-8qhx-mc8r",
+    "GHSA-3g7p-8qhx-mc8r",
+    "GHSA-446w-rrm4-r47f"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "dspace/dspace",
+   "advisories": 58,
+   "ghsa_ids": [
+    "GHSA-4m9r-5gqp-7j82",
+    "GHSA-4wm8-c2vv-xrpq",
+    "GHSA-4wm8-c2vv-xrpq",
+    "GHSA-4wm8-c2vv-xrpq",
+    "GHSA-4wm8-c2vv-xrpq"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "isaacs/node-tar",
+   "advisories": 57,
+   "ghsa_ids": [
+    "GHSA-23hp-3jrh-7fpw",
+    "GHSA-23hp-3jrh-7fpw",
+    "GHSA-23hp-3jrh-7fpw",
+    "GHSA-23hp-3jrh-7fpw",
+    "GHSA-29xp-372q-xqph"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "1panel-dev/1panel",
+   "advisories": 57,
+   "ghsa_ids": [
+    "GHSA-26w3-q4j8-4xjp",
+    "GHSA-26w3-q4j8-4xjp",
+    "GHSA-26w3-q4j8-4xjp",
+    "GHSA-26w3-q4j8-4xjp",
+    "GHSA-5grx-v727-qmq6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "caddyserver/caddy",
+   "advisories": 57,
+   "ghsa_ids": [
+    "GHSA-2927-hv3p-f3vp",
+    "GHSA-2927-hv3p-f3vp",
+    "GHSA-2927-hv3p-f3vp",
+    "GHSA-2927-hv3p-f3vp",
+    "GHSA-4xrr-hq4w-6vf4"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "anthropics/claude-code",
+   "advisories": 57,
+   "ghsa_ids": [
+    "GHSA-2jjv-qf24-vfm4",
+    "GHSA-2jjv-qf24-vfm4",
+    "GHSA-4fgq-fpq9-mr3g",
+    "GHSA-4fgq-fpq9-mr3g",
+    "GHSA-4q92-rfm6-2cqx"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "gofiber/fiber",
+   "advisories": 57,
+   "ghsa_ids": [
+    "GHSA-2mr3-m5q5-wgp6",
+    "GHSA-2mr3-m5q5-wgp6",
+    "GHSA-2mr3-m5q5-wgp6",
+    "GHSA-35hp-hqmv-8qg8",
+    "GHSA-35hp-hqmv-8qg8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "jeecgboot/jeecg-boot",
+   "advisories": 56,
+   "ghsa_ids": [
+    "GHSA-23xf-5535-62v5",
+    "GHSA-25gv-mvm7-5h3h",
+    "GHSA-25gv-mvm7-5h3h",
+    "GHSA-25gv-mvm7-5h3h",
+    "GHSA-26hm-r6mg-963c"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "eclipse/jetty.project",
+   "advisories": 56,
+   "ghsa_ids": [
+    "GHSA-26vr-8j45-3r4w",
+    "GHSA-3gh6-v5v9-6v9j",
+    "GHSA-3gh6-v5v9-6v9j",
+    "GHSA-3gh6-v5v9-6v9j",
+    "GHSA-3gh6-v5v9-6v9j"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "quarkusio/quarkus",
+   "advisories": 55,
+   "ghsa_ids": [
+    "GHSA-25w4-hfqg-4r52",
+    "GHSA-25w4-hfqg-4r52",
+    "GHSA-25w4-hfqg-4r52",
+    "GHSA-25w4-hfqg-4r52",
+    "GHSA-29qj-rvv6-qrmv"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "phpmyadmin/composer",
+   "advisories": 55,
+   "ghsa_ids": [
+    "GHSA-2mcj-3r3r-v5wm",
+    "GHSA-3fgq-cmr4-97rr",
+    "GHSA-3hw5-fffc-qrg4",
+    "GHSA-3p87-w3c5-27gf",
+    "GHSA-426q-975p-w5cr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "opennms/opennms",
+   "advisories": 55,
+   "ghsa_ids": [
+    "GHSA-2qc8-r663-v864",
+    "GHSA-2qc8-r663-v864",
+    "GHSA-2qc8-r663-v864",
+    "GHSA-2rq5-68hm-h4j8",
+    "GHSA-2rq5-68hm-h4j8"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "xuxueli/xxl-job",
+   "advisories": 55,
+   "ghsa_ids": [
+    "GHSA-2v42-xp3j-47m4",
+    "GHSA-2v42-xp3j-47m4",
+    "GHSA-2v42-xp3j-47m4",
+    "GHSA-2v42-xp3j-47m4",
+    "GHSA-3w8r-3jh9-89v9"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "authzed/spicedb",
+   "advisories": 55,
+   "ghsa_ids": [
+    "GHSA-3c32-4hq9-6wgj",
+    "GHSA-3c32-4hq9-6wgj",
+    "GHSA-3c32-4hq9-6wgj",
+    "GHSA-4vrg-r928-h5vv",
+    "GHSA-4vrg-r928-h5vv"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "opencast/opencast",
+   "advisories": 55,
+   "ghsa_ids": [
+    "GHSA-44cw-p2hm-gpf6",
+    "GHSA-44cw-p2hm-gpf6",
+    "GHSA-59g4-hpg3-3gcp",
+    "GHSA-59g4-hpg3-3gcp",
+    "GHSA-59g4-hpg3-3gcp"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "guzzle/guzzle",
+   "advisories": 54,
+   "ghsa_ids": [
+    "GHSA-25mq-v84q-4j7r",
+    "GHSA-25mq-v84q-4j7r",
+    "GHSA-25mq-v84q-4j7r",
+    "GHSA-32rq-jhr7-m3hh",
+    "GHSA-3fvr-2jw6-crq4"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "tinymce/tinymce",
+   "advisories": 54,
+   "ghsa_ids": [
+    "GHSA-27gm-ghr9-4v95",
+    "GHSA-27gm-ghr9-4v95",
+    "GHSA-438c-3975-5x3f",
+    "GHSA-438c-3975-5x3f",
+    "GHSA-438c-3975-5x3f"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "zauberzeug/nicegui",
+   "advisories": 54,
+   "ghsa_ids": [
+    "GHSA-2m4f-cg75-76w2",
+    "GHSA-2m4f-cg75-76w2",
+    "GHSA-2m4f-cg75-76w2",
+    "GHSA-72qc-wxch-74mg",
+    "GHSA-72qc-wxch-74mg"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "nltk/nltk",
+   "advisories": 54,
+   "ghsa_ids": [
+    "GHSA-2ww3-fxvq-293j",
+    "GHSA-2ww3-fxvq-293j",
+    "GHSA-2ww3-fxvq-293j",
+    "GHSA-469j-vmhf-r6v7",
+    "GHSA-469j-vmhf-r6v7"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "pimcore/admin-ui-classic-bundle",
+   "advisories": 54,
+   "ghsa_ids": [
+    "GHSA-3qpq-6w89-f7mx",
+    "GHSA-3qpq-6w89-f7mx",
+    "GHSA-3qpq-6w89-f7mx",
+    "GHSA-3rfr-mpfj-2jwq",
+    "GHSA-3rfr-mpfj-2jwq"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "alkacon/opencms-core",
+   "advisories": 53,
+   "ghsa_ids": [
+    "GHSA-2887-f3v6-6rjf",
+    "GHSA-36hf-6hp2-9g4c",
+    "GHSA-36hf-6hp2-9g4c",
+    "GHSA-4fg8-5hwc-wg5v",
+    "GHSA-4fg8-5hwc-wg5v"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "codeigniter4/codeigniter4",
+   "advisories": 53,
+   "ghsa_ids": [
+    "GHSA-2gr4-ppc7-7mhx",
+    "GHSA-2gr4-ppc7-7mhx",
+    "GHSA-2gr4-ppc7-7mhx",
+    "GHSA-39fp-mqmm-gxj6",
+    "GHSA-39fp-mqmm-gxj6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "jupyterlab/jupyterlab",
+   "advisories": 53,
+   "ghsa_ids": [
+    "GHSA-37w4-hwhx-4rc4",
+    "GHSA-37w4-hwhx-4rc4",
+    "GHSA-37w4-hwhx-4rc4",
+    "GHSA-44cc-43rp-5947",
+    "GHSA-44cc-43rp-5947"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "cockpit-hq/cockpit",
+   "advisories": 53,
+   "ghsa_ids": [
+    "GHSA-38vf-35cg-m73w",
+    "GHSA-3vf5-xm2p-6mh5",
+    "GHSA-3vf5-xm2p-6mh5",
+    "GHSA-45g2-r339-pjwf",
+    "GHSA-45g2-r339-pjwf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "bagisto/bagisto",
+   "advisories": 52,
+   "ghsa_ids": [
+    "GHSA-29mf-w486-v3vc",
+    "GHSA-29mf-w486-v3vc",
+    "GHSA-2mwc-h2mg-v6p8",
+    "GHSA-2mwc-h2mg-v6p8",
+    "GHSA-2mwc-h2mg-v6p8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "alextselegidis/easyappointments",
+   "advisories": 52,
+   "ghsa_ids": [
+    "GHSA-2f28-69j7-85hf",
+    "GHSA-2f28-69j7-85hf",
+    "GHSA-347f-rxg8-qgrv",
+    "GHSA-347f-rxg8-qgrv",
+    "GHSA-3wf7-83q3-948c"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "lin-snow/ech0",
+   "advisories": 52,
+   "ghsa_ids": [
+    "GHSA-3v85-fqvh-7rxf",
+    "GHSA-3v85-fqvh-7rxf",
+    "GHSA-3v85-fqvh-7rxf",
+    "GHSA-4h9q-p5j4-xvvh",
+    "GHSA-4h9q-p5j4-xvvh"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "trailofbits/fickling",
+   "advisories": 52,
+   "ghsa_ids": [
+    "GHSA-565g-hwwr-4pp3",
+    "GHSA-565g-hwwr-4pp3",
+    "GHSA-565g-hwwr-4pp3",
+    "GHSA-565g-hwwr-4pp3",
+    "GHSA-5cxw-w2xg-2m8h"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "urllib3/urllib3",
+   "advisories": 51,
+   "ghsa_ids": [
+    "GHSA-2xpw-w6gg-jr37",
+    "GHSA-2xpw-w6gg-jr37",
+    "GHSA-2xpw-w6gg-jr37",
+    "GHSA-34jh-p97f-mpxf",
+    "GHSA-34jh-p97f-mpxf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "nextauthjs/next-auth",
+   "advisories": 51,
+   "ghsa_ids": [
+    "GHSA-4rxr-27mm-mxq9",
+    "GHSA-4rxr-27mm-mxq9",
+    "GHSA-4rxr-27mm-mxq9",
+    "GHSA-5jpx-9hw9-2fx4",
+    "GHSA-5jpx-9hw9-2fx4"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "signalk/signalk-server",
+   "advisories": 51,
+   "ghsa_ids": [
+    "GHSA-7gcj-phff-2884",
+    "GHSA-7gcj-phff-2884",
+    "GHSA-7gcj-phff-2884",
+    "GHSA-7gcj-phff-2884",
+    "GHSA-7rqc-ff8m-7j23"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "zendframework/zendframework",
+   "advisories": 50,
+   "ghsa_ids": [
+    "GHSA-2fhr-8r8r-qp56",
+    "GHSA-2fhr-8r8r-qp56",
+    "GHSA-5gmf-3c43-q73v",
+    "GHSA-5gmf-3c43-q73v",
+    "GHSA-5gmf-3c43-q73v"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apache/dolphinscheduler",
+   "advisories": 50,
+   "ghsa_ids": [
+    "GHSA-2fm6-mv57-p2qh",
+    "GHSA-2fm6-mv57-p2qh",
+    "GHSA-2fm6-mv57-p2qh",
+    "GHSA-37gx-jqx9-fwmg",
+    "GHSA-37gx-jqx9-fwmg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "gotenberg/gotenberg",
+   "advisories": 50,
+   "ghsa_ids": [
+    "GHSA-2mrg-35hw-x3x9",
+    "GHSA-2mrg-35hw-x3x9",
+    "GHSA-2pmr-289p-44r3",
+    "GHSA-2pmr-289p-44r3",
+    "GHSA-3cv5-q585-h563"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "minio/minio",
+   "advisories": 50,
+   "ghsa_ids": [
+    "GHSA-2pxw-r47w-4p8c",
+    "GHSA-2pxw-r47w-4p8c",
+    "GHSA-2pxw-r47w-4p8c",
+    "GHSA-2pxw-r47w-4p8c",
+    "GHSA-3rh2-v3gr-35p9"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "oneuptime/oneuptime",
+   "advisories": 49,
+   "ghsa_ids": [
+    "GHSA-246p-xmg8-wmcq",
+    "GHSA-246p-xmg8-wmcq",
+    "GHSA-246p-xmg8-wmcq",
+    "GHSA-4524-cj9j-g4fj",
+    "GHSA-4524-cj9j-g4fj"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "kubevirt/kubevirt",
+   "advisories": 49,
+   "ghsa_ids": [
+    "GHSA-25mh-hp8x-cgrv",
+    "GHSA-25mh-hp8x-cgrv",
+    "GHSA-2r4r-5x78-mvqf",
+    "GHSA-2r4r-5x78-mvqf",
+    "GHSA-2r4r-5x78-mvqf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "tornadoweb/tornado",
+   "advisories": 49,
+   "ghsa_ids": [
+    "GHSA-3x9g-8vmp-wqvf",
+    "GHSA-3x9g-8vmp-wqvf",
+    "GHSA-753j-mpmx-qq6g",
+    "GHSA-753j-mpmx-qq6g",
+    "GHSA-753j-mpmx-qq6g"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "getsentry/sentry",
+   "advisories": 49,
+   "ghsa_ids": [
+    "GHSA-444r-2whx-3685",
+    "GHSA-444r-2whx-3685",
+    "GHSA-444r-2whx-3685",
+    "GHSA-4xqm-4p72-87h6",
+    "GHSA-4xqm-4p72-87h6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "livehelperchat/livehelperchat",
+   "advisories": 49,
+   "ghsa_ids": [
+    "GHSA-4xww-6h7v-29jg",
+    "GHSA-4xww-6h7v-29jg",
+    "GHSA-54qq-9chj-rxhv",
+    "GHSA-54qq-9chj-rxhv",
+    "GHSA-57qf-82hh-2hmc"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "parallax/jspdf",
+   "advisories": 49,
+   "ghsa_ids": [
+    "GHSA-67pg-wm7f-q7fj",
+    "GHSA-67pg-wm7f-q7fj",
+    "GHSA-67pg-wm7f-q7fj",
+    "GHSA-7x6v-j9x4-qf24",
+    "GHSA-7x6v-j9x4-qf24"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "plone/products.cmfplone",
+   "advisories": 48,
+   "ghsa_ids": [
+    "GHSA-25jh-5h5r-h33m",
+    "GHSA-2c8c-84w2-j38j",
+    "GHSA-2q75-f7cp-w86q",
+    "GHSA-38g6-x6jv-jwff",
+    "GHSA-3g6w-4m7x-97v6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apollographql/router",
+   "advisories": 48,
+   "ghsa_ids": [
+    "GHSA-3j43-9v8v-cp3f",
+    "GHSA-3j43-9v8v-cp3f",
+    "GHSA-3j43-9v8v-cp3f",
+    "GHSA-3j43-9v8v-cp3f",
+    "GHSA-75m2-jhh5-j5g2"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "cometbft/cometbft",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-22qq-3xwm-r5x4",
+    "GHSA-22qq-3xwm-r5x4",
+    "GHSA-22qq-3xwm-r5x4",
+    "GHSA-22qq-3xwm-r5x4",
+    "GHSA-555p-m4v6-cqxv"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "simplesamlphp/simplesamlphp",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-24m3-w8g9-jwpq",
+    "GHSA-24m3-w8g9-jwpq",
+    "GHSA-24m3-w8g9-jwpq",
+    "GHSA-2qfc-48v5-4w5h",
+    "GHSA-2qfc-48v5-4w5h"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "sequelize/sequelize",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-2598-2f59-rmhq",
+    "GHSA-2777-2vq8-c4v4",
+    "GHSA-2777-2vq8-c4v4",
+    "GHSA-2777-2vq8-c4v4",
+    "GHSA-2777-2vq8-c4v4"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "elastic/elasticsearch",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-285m-vhfq-xx4h",
+    "GHSA-2hjr-vmf3-xwvp",
+    "GHSA-4q22-422g-m4pj",
+    "GHSA-56r7-h6mw-rcfv",
+    "GHSA-56r7-h6mw-rcfv"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "nervosnetwork/ckb",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-2969-8hh9-57jc",
+    "GHSA-2969-8hh9-57jc",
+    "GHSA-29c2-65rj-h343",
+    "GHSA-29c2-65rj-h343",
+    "GHSA-29c2-65rj-h343"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "smarty-php/smarty",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-29gp-2c3m-3j6m",
+    "GHSA-29gp-2c3m-3j6m",
+    "GHSA-29gp-2c3m-3j6m",
+    "GHSA-2pmx-6mm6-6v72",
+    "GHSA-3rpf-5rqv-689q"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "dpgaspar/flask-appbuilder",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-2ccw-7px8-vmpf",
+    "GHSA-2ccw-7px8-vmpf",
+    "GHSA-2ccw-7px8-vmpf",
+    "GHSA-2ccw-7px8-vmpf",
+    "GHSA-32ff-4g79-vgfc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "naturalintelligence/fast-xml-parser",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-37qj-frw5-hhjh",
+    "GHSA-37qj-frw5-hhjh",
+    "GHSA-37qj-frw5-hhjh",
+    "GHSA-37qj-frw5-hhjh",
+    "GHSA-45c6-75p6-83cc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "koxudaxi/datamodel-code-generator",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-386q-5hp3-95m9",
+    "GHSA-386q-5hp3-95m9",
+    "GHSA-386q-5hp3-95m9",
+    "GHSA-386q-5hp3-95m9",
+    "GHSA-442q-2j6p-642g"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "composer/composer",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-47f6-5gq3-vx9c",
+    "GHSA-47f6-5gq3-vx9c",
+    "GHSA-47f6-5gq3-vx9c",
+    "GHSA-47f6-5gq3-vx9c",
+    "GHSA-499r-g7pc-vmp9"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "osrg/gobgp",
+   "advisories": 47,
+   "ghsa_ids": [
+    "GHSA-4p9m-8gc4-rw2h",
+    "GHSA-4p9m-8gc4-rw2h",
+    "GHSA-4p9m-8gc4-rw2h",
+    "GHSA-6rqv-5cg7-m4x3",
+    "GHSA-6rqv-5cg7-m4x3"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "pytorch/pytorch",
+   "advisories": 46,
+   "ghsa_ids": [
+    "GHSA-3749-ghw9-m3mg",
+    "GHSA-3749-ghw9-m3mg",
+    "GHSA-3749-ghw9-m3mg",
+    "GHSA-47fc-vmwq-366v",
+    "GHSA-47fc-vmwq-366v"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "cobbler/cobbler",
+   "advisories": 46,
+   "ghsa_ids": [
+    "GHSA-4cfr-gjfx-fj3x",
+    "GHSA-4cfr-gjfx-fj3x",
+    "GHSA-4cfr-gjfx-fj3x",
+    "GHSA-4vc9-4xpq-77vm",
+    "GHSA-5946-mpw5-pqxx"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "digitalbazaar/forge",
+   "advisories": 45,
+   "ghsa_ids": [
+    "GHSA-2328-f5f3-gj25",
+    "GHSA-2328-f5f3-gj25",
+    "GHSA-2328-f5f3-gj25",
+    "GHSA-2r2c-g63r-vccr",
+    "GHSA-2r2c-g63r-vccr"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "sulu/sulu",
+   "advisories": 45,
+   "ghsa_ids": [
+    "GHSA-255w-87rh-rg44",
+    "GHSA-255w-87rh-rg44",
+    "GHSA-255w-87rh-rg44",
+    "GHSA-6784-9c82-vr85",
+    "GHSA-6784-9c82-vr85"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "saltcorn/saltcorn",
+   "advisories": 45,
+   "ghsa_ids": [
+    "GHSA-277h-px4m-62q8",
+    "GHSA-277h-px4m-62q8",
+    "GHSA-277h-px4m-62q8",
+    "GHSA-277h-px4m-62q8",
+    "GHSA-32pv-mpqg-h292"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "patrickhener/goshs",
+   "advisories": 45,
+   "ghsa_ids": [
+    "GHSA-2943-crp8-38xx",
+    "GHSA-2943-crp8-38xx",
+    "GHSA-2943-crp8-38xx",
+    "GHSA-2943-crp8-38xx",
+    "GHSA-3whc-qvhv-xqjp"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "twisted/twisted",
+   "advisories": 45,
+   "ghsa_ids": [
+    "GHSA-32gv-6cf3-wcmq",
+    "GHSA-32gv-6cf3-wcmq",
+    "GHSA-32gv-6cf3-wcmq",
+    "GHSA-3c45-wgjp-7v9r",
+    "GHSA-3gqj-cmxr-p4x2"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "academysoftwarefoundation/openexr",
+   "advisories": 45,
+   "ghsa_ids": [
+    "GHSA-3h9h-qfvw-98hq",
+    "GHSA-3h9h-qfvw-98hq",
+    "GHSA-4r7w-q3jg-ff43",
+    "GHSA-4r7w-q3jg-ff43",
+    "GHSA-4r7w-q3jg-ff43"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "onionshare/onionshare",
+   "advisories": 44,
+   "ghsa_ids": [
+    "GHSA-22p9-r2f5-22mf",
+    "GHSA-22p9-r2f5-22mf",
+    "GHSA-22p9-r2f5-22mf",
+    "GHSA-22p9-r2f5-22mf",
+    "GHSA-68vr-8f46-vc9f"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "scrapy/scrapy",
+   "advisories": 44,
+   "ghsa_ids": [
+    "GHSA-23j4-mw76-5v7h",
+    "GHSA-23j4-mw76-5v7h",
+    "GHSA-23j4-mw76-5v7h",
+    "GHSA-23j4-mw76-5v7h",
+    "GHSA-2qfp-q593-8484"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "louislam/uptime-kuma",
+   "advisories": 44,
+   "ghsa_ids": [
+    "GHSA-23q2-5gf8-gjpp",
+    "GHSA-23q2-5gf8-gjpp",
+    "GHSA-23q2-5gf8-gjpp",
+    "GHSA-23q2-5gf8-gjpp",
+    "GHSA-23q2-5gf8-gjpp"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "pterodactyl/wings",
+   "advisories": 44,
+   "ghsa_ids": [
+    "GHSA-2497-gp99-2m74",
+    "GHSA-2497-gp99-2m74",
+    "GHSA-494h-9924-xww9",
+    "GHSA-494h-9924-xww9",
+    "GHSA-494h-9924-xww9"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "dragonflyoss/dragonfly",
+   "advisories": 44,
+   "ghsa_ids": [
+    "GHSA-255v-qv84-29p5",
+    "GHSA-255v-qv84-29p5",
+    "GHSA-255v-qv84-29p5",
+    "GHSA-2qgr-gfvj-qpcr",
+    "GHSA-2qgr-gfvj-qpcr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "coredns/coredns",
+   "advisories": 44,
+   "ghsa_ids": [
+    "GHSA-2wpx-qpw2-g5h5",
+    "GHSA-2wpx-qpw2-g5h5",
+    "GHSA-2wpx-qpw2-g5h5",
+    "GHSA-2wpx-qpw2-g5h5",
+    "GHSA-44r7-7p62-q3fr"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "9001/copyparty",
+   "advisories": 44,
+   "ghsa_ids": [
+    "GHSA-5662-2rj7-f2v6",
+    "GHSA-5662-2rj7-f2v6",
+    "GHSA-5662-2rj7-f2v6",
+    "GHSA-5662-2rj7-f2v6",
+    "GHSA-62cr-6wp5-q43h"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "centreon/centreon",
+   "advisories": 43,
+   "ghsa_ids": [
+    "GHSA-22v7-v3mj-pm8r",
+    "GHSA-22v7-v3mj-pm8r",
+    "GHSA-22v7-v3mj-pm8r",
+    "GHSA-25gv-wg6f-6frp",
+    "GHSA-25gv-wg6f-6frp"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "rusqlite/rusqlite",
+   "advisories": 43,
+   "ghsa_ids": [
+    "GHSA-28ph-f7gx-fqj8",
+    "GHSA-28ph-f7gx-fqj8",
+    "GHSA-28ph-f7gx-fqj8",
+    "GHSA-3cgf-9m6x-pwwr",
+    "GHSA-3cgf-9m6x-pwwr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "sebhildebrandt/systeminformation",
+   "advisories": 43,
+   "ghsa_ids": [
+    "GHSA-2m8v-572m-ff2v",
+    "GHSA-2m8v-572m-ff2v",
+    "GHSA-2m8v-572m-ff2v",
+    "GHSA-4v2w-h9jm-mqjg",
+    "GHSA-4v2w-h9jm-mqjg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "handlebars-lang/handlebars.js",
+   "advisories": 43,
+   "ghsa_ids": [
+    "GHSA-2qvq-rjwj-gvw9",
+    "GHSA-2qvq-rjwj-gvw9",
+    "GHSA-2w6w-674q-4c4q",
+    "GHSA-2w6w-674q-4c4q",
+    "GHSA-2w6w-674q-4c4q"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "puma/puma",
+   "advisories": 43,
+   "ghsa_ids": [
+    "GHSA-2vqw-3mp8-cgmx",
+    "GHSA-2vqw-3mp8-cgmx",
+    "GHSA-33vf-4xgg-9r58",
+    "GHSA-33vf-4xgg-9r58",
+    "GHSA-33vf-4xgg-9r58"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "wintercms/winter",
+   "advisories": 43,
+   "ghsa_ids": [
+    "GHSA-2x7r-93ww-cxrq",
+    "GHSA-2x7r-93ww-cxrq",
+    "GHSA-2x7r-93ww-cxrq",
+    "GHSA-3fh5-q6fg-w28q",
+    "GHSA-3fh5-q6fg-w28q"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "containers/podman",
+   "advisories": 43,
+   "ghsa_ids": [
+    "GHSA-3cf2-x423-x582",
+    "GHSA-3cf2-x423-x582",
+    "GHSA-4crw-w8pw-2hmf",
+    "GHSA-4crw-w8pw-2hmf",
+    "GHSA-4wjj-jwc9-2x96"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "openrefine/openrefine",
+   "advisories": 43,
+   "ghsa_ids": [
+    "GHSA-3jm4-c6qf-jrh3",
+    "GHSA-3jm4-c6qf-jrh3",
+    "GHSA-3jm4-c6qf-jrh3",
+    "GHSA-3pg4-qwc8-426r",
+    "GHSA-3pg4-qwc8-426r"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apache/zeppelin",
+   "advisories": 43,
+   "ghsa_ids": [
+    "GHSA-4qw8-pgpr-p9mq",
+    "GHSA-6623-c6mr-6737",
+    "GHSA-6623-c6mr-6737",
+    "GHSA-6623-c6mr-6737",
+    "GHSA-66j8-c83m-gj5f"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "sveltejs/svelte",
+   "advisories": 43,
+   "ghsa_ids": [
+    "GHSA-6738-r8g5-qwp3",
+    "GHSA-6738-r8g5-qwp3",
+    "GHSA-6738-r8g5-qwp3",
+    "GHSA-8266-84wp-wv5c",
+    "GHSA-8266-84wp-wv5c"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "vaadin/flow",
+   "advisories": 42,
+   "ghsa_ids": [
+    "GHSA-25xc-jwfq-39jw",
+    "GHSA-25xc-jwfq-39jw",
+    "GHSA-25xc-jwfq-39jw",
+    "GHSA-49r2-73m6-pp8f",
+    "GHSA-49r2-73m6-pp8f"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "apache/kylin",
+   "advisories": 42,
+   "ghsa_ids": [
+    "GHSA-29m8-wh9p-5wc4",
+    "GHSA-29m8-wh9p-5wc4",
+    "GHSA-3v67-545x-ffc3",
+    "GHSA-3v67-545x-ffc3",
+    "GHSA-3vvc-v8c2-43r7"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "pallets/werkzeug",
+   "advisories": 42,
+   "ghsa_ids": [
+    "GHSA-29vq-49wr-vm6x",
+    "GHSA-29vq-49wr-vm6x",
+    "GHSA-29vq-49wr-vm6x",
+    "GHSA-29vq-49wr-vm6x",
+    "GHSA-2g68-c3qc-8985"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "nyariv/sandboxjs",
+   "advisories": 42,
+   "ghsa_ids": [
+    "GHSA-2gg9-6p7w-6cpj",
+    "GHSA-2gg9-6p7w-6cpj",
+    "GHSA-58jh-xv4v-pcx4",
+    "GHSA-58jh-xv4v-pcx4",
+    "GHSA-58jh-xv4v-pcx4"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "microsoft/kiota",
+   "advisories": 42,
+   "ghsa_ids": [
+    "GHSA-2hx3-vp6r-mg3f",
+    "GHSA-2hx3-vp6r-mg3f",
+    "GHSA-3hrf-2gc2-mx32",
+    "GHSA-3hrf-2gc2-mx32",
+    "GHSA-3hrf-2gc2-mx32"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "funadmin/funadmin",
+   "advisories": 42,
+   "ghsa_ids": [
+    "GHSA-2mv8-jjm5-f3hr",
+    "GHSA-2mv8-jjm5-f3hr",
+    "GHSA-5g66-93qv-565j",
+    "GHSA-5g66-93qv-565j",
+    "GHSA-5m2g-4cf6-c3rg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "canonical/lxd",
+   "advisories": 42,
+   "ghsa_ids": [
+    "GHSA-3g2j-vm47-x4mj",
+    "GHSA-3g2j-vm47-x4mj",
+    "GHSA-3g2j-vm47-x4mj",
+    "GHSA-3g72-chj4-2228",
+    "GHSA-3g72-chj4-2228"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "puppetlabs/puppet",
+   "advisories": 42,
+   "ghsa_ids": [
+    "GHSA-574q-fxfj-wv6h",
+    "GHSA-6xxq-j39w-g3f6",
+    "GHSA-6xxq-j39w-g3f6",
+    "GHSA-77hg-g8cc-5r37",
+    "GHSA-8c56-v25w-f89c"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "tinacms/tinacms",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-2238-xc5r-v9hj",
+    "GHSA-2238-xc5r-v9hj",
+    "GHSA-2f24-mg4x-534q",
+    "GHSA-2f24-mg4x-534q",
+    "GHSA-2vcc-5v34-9jc8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "opencv/opencv-python",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-267x-w5hx-8hjr",
+    "GHSA-33h2-69j3-r336",
+    "GHSA-33h2-69j3-r336",
+    "GHSA-3448-vrgh-85xr",
+    "GHSA-5rpc-gwh9-q9fg"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "matrix-org/matrix-rust-sdk",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-275g-g844-73jh",
+    "GHSA-275g-g844-73jh",
+    "GHSA-275g-g844-73jh",
+    "GHSA-275g-g844-73jh",
+    "GHSA-4qg4-cvh2-crgg"
+   ],
+   "max_severity": "MODERATE"
+  },
+  {
+   "repo": "kjur/jsrsasign",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-27fj-mc8w-j9wg",
+    "GHSA-27fj-mc8w-j9wg",
+    "GHSA-27fj-mc8w-j9wg",
+    "GHSA-3fvg-4v2m-98jf",
+    "GHSA-3fvg-4v2m-98jf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "czlonkowski/n8n-mcp",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-2cf7-hpwf-47h9",
+    "GHSA-2cf7-hpwf-47h9",
+    "GHSA-2cf7-hpwf-47h9",
+    "GHSA-2cf7-hpwf-47h9",
+    "GHSA-4ggg-h7ph-26qr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "ellanetworks/core",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-3366-gw57-fcm5",
+    "GHSA-3366-gw57-fcm5",
+    "GHSA-55q8-2gwx-29pc",
+    "GHSA-55q8-2gwx-29pc",
+    "GHSA-55q8-2gwx-29pc"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "bentoml/bentoml",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-33xw-247w-6hmc",
+    "GHSA-33xw-247w-6hmc",
+    "GHSA-33xw-247w-6hmc",
+    "GHSA-564p-rx2q-4c8v",
+    "GHSA-6r62-w2q3-48hf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "jenkinsci/script-security-plugin",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-3pv3-jj4h-p528",
+    "GHSA-3pv3-jj4h-p528",
+    "GHSA-62pm-mgrh-7p69",
+    "GHSA-6q78-6xvr-26fg",
+    "GHSA-72gx-qq2m-6xr2"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "cloudreve/cloudreve",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-49h3-cwhj-4737",
+    "GHSA-49h3-cwhj-4737",
+    "GHSA-49h3-cwhj-4737",
+    "GHSA-49h3-cwhj-4737",
+    "GHSA-8r7f-r8hj-r3rv"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "yiisoft/yii2",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-4c64-w8fg-xcq2",
+    "GHSA-4c64-w8fg-xcq2",
+    "GHSA-4xh9-5vh8-3p58",
+    "GHSA-4xh9-5vh8-3p58",
+    "GHSA-4xh9-5vh8-3p58"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "laurent22/joplin",
+   "advisories": 41,
+   "ghsa_ids": [
+    "GHSA-4jjv-p8x9-rrf7",
+    "GHSA-4jjv-p8x9-rrf7",
+    "GHSA-4jjv-p8x9-rrf7",
+    "GHSA-6r7x-hc8m-985r",
+    "GHSA-6r7x-hc8m-985r"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "rubygems/rubygems",
+   "advisories": 40,
+   "ghsa_ids": [
+    "GHSA-228f-g3h7-3fj3",
+    "GHSA-228f-g3h7-3fj3",
+    "GHSA-5mgj-mvv8-46mw",
+    "GHSA-5mgj-mvv8-46mw",
+    "GHSA-5mgj-mvv8-46mw"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "devcode-it/openstamanager",
+   "advisories": 40,
+   "ghsa_ids": [
+    "GHSA-247v-7cw6-q57v",
+    "GHSA-247v-7cw6-q57v",
+    "GHSA-25fp-8w8p-mx36",
+    "GHSA-25fp-8w8p-mx36",
+    "GHSA-2fr7-cc4f-wh98"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "ckan/ckan",
+   "advisories": 40,
+   "ghsa_ids": [
+    "GHSA-2hvh-cw5c-8q8q",
+    "GHSA-2hvh-cw5c-8q8q",
+    "GHSA-2hvh-cw5c-8q8q",
+    "GHSA-2r4h-8jxv-w2j8",
+    "GHSA-2r4h-8jxv-w2j8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "graylog2/graylog2-server",
+   "advisories": 40,
+   "ghsa_ids": [
+    "GHSA-2q4p-f6gf-mqr5",
+    "GHSA-2q4p-f6gf-mqr5",
+    "GHSA-2q4p-f6gf-mqr5",
+    "GHSA-38hf-xjmx-jrh8",
+    "GHSA-38hf-xjmx-jrh8"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "electerm/electerm",
+   "advisories": 40,
+   "ghsa_ids": [
+    "GHSA-37j4-88rp-2f6h",
+    "GHSA-37j4-88rp-2f6h",
+    "GHSA-38j7-23hf-9mhc",
+    "GHSA-38j7-23hf-9mhc",
+    "GHSA-38j7-23hf-9mhc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "roundcube/roundcubemail",
+   "advisories": 40,
+   "ghsa_ids": [
+    "GHSA-46pv-mj2g-93gh",
+    "GHSA-46pv-mj2g-93gh",
+    "GHSA-46pv-mj2g-93gh",
+    "GHSA-46pv-mj2g-93gh",
+    "GHSA-5hf6-crg4-fg59"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "ckeditor/ckeditor4",
+   "advisories": 40,
+   "ghsa_ids": [
+    "GHSA-4fc4-4p5g-6w89",
+    "GHSA-4fc4-4p5g-6w89",
+    "GHSA-4fc4-4p5g-6w89",
+    "GHSA-4m44-5j2g-xf64",
+    "GHSA-6226-h7ff-ch6c"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "yt-dlp/yt-dlp",
+   "advisories": 39,
+   "ghsa_ids": [
+    "GHSA-22fp-mf44-f2mq",
+    "GHSA-3ch3-jhc6-5r8x",
+    "GHSA-3ch3-jhc6-5r8x",
+    "GHSA-3ch3-jhc6-5r8x",
+    "GHSA-3ch3-jhc6-5r8x"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "matrix-org/matrix-js-sdk",
+   "advisories": 39,
+   "ghsa_ids": [
+    "GHSA-23cm-x6j7-6hq3",
+    "GHSA-23cm-x6j7-6hq3",
+    "GHSA-23cm-x6j7-6hq3",
+    "GHSA-23cm-x6j7-6hq3",
+    "GHSA-4jf8-g8wp-cx7c"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "jupyter-server/jupyter_server",
+   "advisories": 39,
+   "ghsa_ids": [
+    "GHSA-24qx-w28j-9m6p",
+    "GHSA-24qx-w28j-9m6p",
+    "GHSA-24qx-w28j-9m6p",
+    "GHSA-24qx-w28j-9m6p",
+    "GHSA-5789-5fc7-67v3"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "rails/rails-html-sanitizer",
+   "advisories": 39,
+   "ghsa_ids": [
+    "GHSA-2x5m-9ch4-qgrr",
+    "GHSA-2x5m-9ch4-qgrr",
+    "GHSA-2x5m-9ch4-qgrr",
+    "GHSA-59c7-4xj2-hgvw",
+    "GHSA-59c7-4xj2-hgvw"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "go-git/go-git",
+   "advisories": 39,
+   "ghsa_ids": [
+    "GHSA-37cx-329c-33x3",
+    "GHSA-37cx-329c-33x3",
+    "GHSA-37cx-329c-33x3",
+    "GHSA-389r-gv7p-r3rp",
+    "GHSA-389r-gv7p-r3rp"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "onnx/onnx",
+   "advisories": 39,
+   "ghsa_ids": [
+    "GHSA-3r9x-f23j-gc73",
+    "GHSA-3r9x-f23j-gc73",
+    "GHSA-3r9x-f23j-gc73",
+    "GHSA-538c-55jv-c5g9",
+    "GHSA-538c-55jv-c5g9"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "opcfoundation/ua-.netstandard",
+   "advisories": 39,
+   "ghsa_ids": [
+    "GHSA-4cvp-hr63-822j",
+    "GHSA-4cvp-hr63-822j",
+    "GHSA-4cvp-hr63-822j",
+    "GHSA-4q2p-hwmr-qcxc",
+    "GHSA-4q2p-hwmr-qcxc"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "eugeny/russh",
+   "advisories": 39,
+   "ghsa_ids": [
+    "GHSA-4r3c-5hpg-58qr",
+    "GHSA-4r3c-5hpg-58qr",
+    "GHSA-4r3c-5hpg-58qr",
+    "GHSA-5xvq-cp9x-6p6r",
+    "GHSA-5xvq-cp9x-6p6r"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "benoitc/hackney",
+   "advisories": 39,
+   "ghsa_ids": [
+    "GHSA-6cp8-v795-jr2j",
+    "GHSA-6cp8-v795-jr2j",
+    "GHSA-6cp8-v795-jr2j",
+    "GHSA-76v6-f83q-pxvh",
+    "GHSA-76v6-f83q-pxvh"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "micronaut-projects/micronaut-core",
+   "advisories": 38,
+   "ghsa_ids": [
+    "GHSA-2457-2263-mm9f",
+    "GHSA-2457-2263-mm9f",
+    "GHSA-2457-2263-mm9f",
+    "GHSA-2hcp-gjrf-7fhc",
+    "GHSA-2hcp-gjrf-7fhc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "forgekeep/nebula-mesh",
+   "advisories": 38,
+   "ghsa_ids": [
+    "GHSA-2p2f-px33-4vv5",
+    "GHSA-2p2f-px33-4vv5",
+    "GHSA-2p2f-px33-4vv5",
+    "GHSA-2p2f-px33-4vv5",
+    "GHSA-339v-266x-79xr"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "casdoor/casdoor",
+   "advisories": 38,
+   "ghsa_ids": [
+    "GHSA-339w-3hqm-9pjc",
+    "GHSA-3w4h-g9f5-j84p",
+    "GHSA-5m9m-j5p7-m7f9",
+    "GHSA-5m9m-j5p7-m7f9",
+    "GHSA-5m9m-j5p7-m7f9"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "fatfreecrm/fat_free_crm",
+   "advisories": 38,
+   "ghsa_ids": [
+    "GHSA-4p8f-mmfj-r45g",
+    "GHSA-4p8f-mmfj-r45g",
+    "GHSA-4p8f-mmfj-r45g",
+    "GHSA-4xq9-vw89-p5cx",
+    "GHSA-4xq9-vw89-p5cx"
+   ],
+   "max_severity": "MODERATE"
+  },
+  {
+   "repo": "authlib/authlib",
+   "advisories": 38,
+   "ghsa_ids": [
+    "GHSA-7432-952r-cw78",
+    "GHSA-7432-952r-cw78",
+    "GHSA-7432-952r-cw78",
+    "GHSA-7432-952r-cw78",
+    "GHSA-7wc2-qxgw-g8gg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "swagger-api/swagger-ui",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-22q9-hqm5-mhmc",
+    "GHSA-22q9-hqm5-mhmc",
+    "GHSA-388g-jwpg-x6j4",
+    "GHSA-388g-jwpg-x6j4",
+    "GHSA-4f9m-pxwh-68hg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "kubernetes/ingress-nginx",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-242m-6h72-7hgp",
+    "GHSA-242m-6h72-7hgp",
+    "GHSA-242m-6h72-7hgp",
+    "GHSA-2pf9-vr92-6h3v",
+    "GHSA-4g2f-xcph-2335"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "phpseclib/phpseclib",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-2528-jw5q-ww88",
+    "GHSA-2528-jw5q-ww88",
+    "GHSA-2528-jw5q-ww88",
+    "GHSA-2528-jw5q-ww88",
+    "GHSA-2f25-pfq3-c7h8"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "keystonejs/keystone",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-25mx-2mxm-6343",
+    "GHSA-25mx-2mxm-6343",
+    "GHSA-25mx-2mxm-6343",
+    "GHSA-25mx-2mxm-6343",
+    "GHSA-45jq-c8xm-jfw9"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "thephpleague/commonmark",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-29pj-957v-52mc",
+    "GHSA-29pj-957v-52mc",
+    "GHSA-29pj-957v-52mc",
+    "GHSA-29pj-957v-52mc",
+    "GHSA-2q4p-g7hv-5rgv"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "studio-42/elfinder",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-3h9f-mm2x-4j58",
+    "GHSA-3p2q-mh7q-9pxj",
+    "GHSA-3p2q-mh7q-9pxj",
+    "GHSA-3qhm-qfj3-4rrx",
+    "GHSA-3qhm-qfj3-4rrx"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "owen2345/camaleon-cms",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-3hp8-6j24-m5gm",
+    "GHSA-3hp8-6j24-m5gm",
+    "GHSA-438x-2p9v-g8h9",
+    "GHSA-438x-2p9v-g8h9",
+    "GHSA-75j2-9gmc-m855"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "cloudflare/cfrpki",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-3jhm-87m6-x959",
+    "GHSA-3jhm-87m6-x959",
+    "GHSA-3jhm-87m6-x959",
+    "GHSA-3jhm-87m6-x959",
+    "GHSA-3pqh-p72c-fj85"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "ezsystems/ezpublish-kernel",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-3vwr-jj4f-h98x",
+    "GHSA-44m4-9cjp-j587",
+    "GHSA-44m4-9cjp-j587",
+    "GHSA-44m4-9cjp-j587",
+    "GHSA-5x4f-7xgq-r42x"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "ruby/net-imap",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-46q3-7gv7-qmgg",
+    "GHSA-46q3-7gv7-qmgg",
+    "GHSA-46q3-7gv7-qmgg",
+    "GHSA-75xq-5h9v-w6px",
+    "GHSA-75xq-5h9v-w6px"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "openstack/glance",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-479j-jf2p-38pg",
+    "GHSA-479j-jf2p-38pg",
+    "GHSA-479j-jf2p-38pg",
+    "GHSA-4jp4-3c62-r8jv",
+    "GHSA-4jp4-3c62-r8jv"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "nodebb/nodebb",
+   "advisories": 37,
+   "ghsa_ids": [
+    "GHSA-4qcv-qf38-5j3j",
+    "GHSA-4qcv-qf38-5j3j",
+    "GHSA-4qcv-qf38-5j3j",
+    "GHSA-4qcv-qf38-5j3j",
+    "GHSA-5gwx-wf9g-r5mx"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "bishopfox/sliver",
+   "advisories": 36,
+   "ghsa_ids": [
+    "GHSA-2286-hxv5-cmp2",
+    "GHSA-2286-hxv5-cmp2",
+    "GHSA-2286-hxv5-cmp2",
+    "GHSA-2phg-qgmm-r638",
+    "GHSA-2phg-qgmm-r638"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "modxcms/revolution",
+   "advisories": 36,
+   "ghsa_ids": [
+    "GHSA-23gj-x27g-r34f",
+    "GHSA-23gj-x27g-r34f",
+    "GHSA-7hhg-xj2h-5vq9",
+    "GHSA-7hhg-xj2h-5vq9",
+    "GHSA-cgrv-6h2h-6f7v"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apache/openmeetings",
+   "advisories": 36,
+   "ghsa_ids": [
+    "GHSA-2c3p-9j5f-33g3",
+    "GHSA-2q65-xxg6-3qh5",
+    "GHSA-335g-xcjh-ghc2",
+    "GHSA-3r48-3m8r-4r9w",
+    "GHSA-3r48-3m8r-4r9w"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "starcitizentools/mediawiki-skins-citizen",
+   "advisories": 36,
+   "ghsa_ids": [
+    "GHSA-2v3v-3whp-953h",
+    "GHSA-2v3v-3whp-953h",
+    "GHSA-2v3v-3whp-953h",
+    "GHSA-2v3v-3whp-953h",
+    "GHSA-4c2h-67qq-vm87"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "openc3/cosmos",
+   "advisories": 36,
+   "ghsa_ids": [
+    "GHSA-2wvh-87g2-89hr",
+    "GHSA-2wvh-87g2-89hr",
+    "GHSA-4jvx-93h3-f45h",
+    "GHSA-4jvx-93h3-f45h",
+    "GHSA-4jvx-93h3-f45h"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "phpmailer/phpmailer",
+   "advisories": 36,
+   "ghsa_ids": [
+    "GHSA-398j-f7m7-795j",
+    "GHSA-398j-f7m7-795j",
+    "GHSA-4pc3-96mx-wwc8",
+    "GHSA-4pc3-96mx-wwc8",
+    "GHSA-4x5h-cr29-fhp6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "parisneo/lollms",
+   "advisories": 36,
+   "ghsa_ids": [
+    "GHSA-3x47-w4rx-6pm7",
+    "GHSA-3x47-w4rx-6pm7",
+    "GHSA-6h64-g7cj-hj56",
+    "GHSA-6h64-g7cj-hj56",
+    "GHSA-79h8-gxhq-q3jg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "aws/aws-cdk",
+   "advisories": 36,
+   "ghsa_ids": [
+    "GHSA-464c-974j-9xm6",
+    "GHSA-464c-974j-9xm6",
+    "GHSA-464c-974j-9xm6",
+    "GHSA-464c-974j-9xm6",
+    "GHSA-464c-974j-9xm6"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "h2oai/h2o-3",
+   "advisories": 36,
+   "ghsa_ids": [
+    "GHSA-47f6-5p7h-5f3h",
+    "GHSA-47f6-5p7h-5f3h",
+    "GHSA-58m3-rcvp-f9ww",
+    "GHSA-58m3-rcvp-f9ww",
+    "GHSA-5c8j-g96x-cj78"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "eidetic-labs/stigmem",
+   "advisories": 36,
+   "ghsa_ids": [
+    "GHSA-6gqw-jqv7-v88m",
+    "GHSA-6gqw-jqv7-v88m",
+    "GHSA-6gqw-jqv7-v88m",
+    "GHSA-9pc9-4crj-mhpj",
+    "GHSA-9pc9-4crj-mhpj"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "beego/beego",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-28r6-jm5h-mrgg",
+    "GHSA-28r6-jm5h-mrgg",
+    "GHSA-28r6-jm5h-mrgg",
+    "GHSA-2j42-h78h-q4fg",
+    "GHSA-2j42-h78h-q4fg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "rustsec/advisory-db",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-2c6h-4899-wjxr",
+    "GHSA-2xpg-3hx4-fm9r",
+    "GHSA-3288-cwgw-ch86",
+    "GHSA-32v7-ghpr-c8hg",
+    "GHSA-37xq-q42p-rv3p"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "bolt/bolt",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-2g23-qmmp-fvmr",
+    "GHSA-2q66-6cc3-6xm8",
+    "GHSA-2q66-6cc3-6xm8",
+    "GHSA-2q66-6cc3-6xm8",
+    "GHSA-2q66-6cc3-6xm8"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "haxtheweb/issues",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-2m6p-hm3w-6jm3",
+    "GHSA-2m6p-hm3w-6jm3",
+    "GHSA-2vc4-3hx7-v7v7",
+    "GHSA-2vc4-3hx7-v7v7",
+    "GHSA-3fm2-xfq7-7778"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "humansignal/label-studio",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-2mq9-hm29-8qch",
+    "GHSA-2mq9-hm29-8qch",
+    "GHSA-2mq9-hm29-8qch",
+    "GHSA-2mq9-hm29-8qch",
+    "GHSA-6hjj-gq77-j4qw"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "wallabag/wallabag",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-2qxp-xmx6-cq4f",
+    "GHSA-2qxp-xmx6-cq4f",
+    "GHSA-3x2c-87cq-qx49",
+    "GHSA-3x2c-87cq-qx49",
+    "GHSA-56fm-hfp3-x3w3"
+   ],
+   "max_severity": "MODERATE"
+  },
+  {
+   "repo": "xmldom/xmldom",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-2v35-w6hq-6mfw",
+    "GHSA-2v35-w6hq-6mfw",
+    "GHSA-2v35-w6hq-6mfw",
+    "GHSA-2v35-w6hq-6mfw",
+    "GHSA-5fg8-2547-mr8q"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "rustfs/rustfs",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-333v-68xh-8mmq",
+    "GHSA-333v-68xh-8mmq",
+    "GHSA-333v-68xh-8mmq",
+    "GHSA-333v-68xh-8mmq",
+    "GHSA-fc6g-2gcp-2qrq"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "charmbracelet/soft-serve",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-33pr-m977-5w97",
+    "GHSA-33pr-m977-5w97",
+    "GHSA-3fvx-xrxq-8jvv",
+    "GHSA-3fvx-xrxq-8jvv",
+    "GHSA-3fvx-xrxq-8jvv"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "pomerium/pomerium",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-35vc-w93w-75c2",
+    "GHSA-35vc-w93w-75c2",
+    "GHSA-5wjf-62hw-q78r",
+    "GHSA-5wjf-62hw-q78r",
+    "GHSA-cfc2-wjcm-c8fm"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "spree/spree",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-3ghg-3787-w2xr",
+    "GHSA-3ghg-3787-w2xr",
+    "GHSA-3ghg-3787-w2xr",
+    "GHSA-3ghg-3787-w2xr",
+    "GHSA-7h48-m3rw-vr27"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "omec-project/amf",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-3h63-fx68-x5fm",
+    "GHSA-3h63-fx68-x5fm",
+    "GHSA-3h63-fx68-x5fm",
+    "GHSA-3x4g-259h-5p7c",
+    "GHSA-3x4g-259h-5p7c"
+   ],
+   "max_severity": "LOW"
+  },
+  {
+   "repo": "gtsteffaniak/filebrowser",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-3jmg-p96m-m328",
+    "GHSA-3jmg-p96m-m328",
+    "GHSA-3jmg-p96m-m328",
+    "GHSA-525j-95gf-766f",
+    "GHSA-525j-95gf-766f"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "wger-project/wger",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-42cr-w2gr-m54q",
+    "GHSA-42cr-w2gr-m54q",
+    "GHSA-42cr-w2gr-m54q",
+    "GHSA-6f54-qjvm-wwq3",
+    "GHSA-6f54-qjvm-wwq3"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "cakephp/cakephp",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-556q-h4vr-pgh2",
+    "GHSA-556q-h4vr-pgh2",
+    "GHSA-5964-pq8r-4q62",
+    "GHSA-6g8q-qfpv-57wp",
+    "GHSA-6g8q-qfpv-57wp"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "zopefoundation/zope",
+   "advisories": 35,
+   "ghsa_ids": [
+    "GHSA-5pr9-v234-jw36",
+    "GHSA-5pr9-v234-jw36",
+    "GHSA-5r4x-qc7q-vj27",
+    "GHSA-5r4x-qc7q-vj27",
+    "GHSA-5vq5-pg3r-9ph3"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "flavorjones/loofah",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-228g-948r-83gx",
+    "GHSA-228g-948r-83gx",
+    "GHSA-228g-948r-83gx",
+    "GHSA-2j22-pr5w-6gq8",
+    "GHSA-2j22-pr5w-6gq8"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "scriban/scriban",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-24c8-4792-22hx",
+    "GHSA-24c8-4792-22hx",
+    "GHSA-5rpf-x9jg-8j5p",
+    "GHSA-5rpf-x9jg-8j5p",
+    "GHSA-5rpf-x9jg-8j5p"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "pgjdbc/pgjdbc",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-24rp-q3w6-vc56",
+    "GHSA-24rp-q3w6-vc56",
+    "GHSA-24rp-q3w6-vc56",
+    "GHSA-24rp-q3w6-vc56",
+    "GHSA-562r-vg33-8x8h"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "janeczku/calibre-web",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-2647-c639-qv2j",
+    "GHSA-2647-c639-qv2j",
+    "GHSA-2g7m-ph9x-7q7m",
+    "GHSA-4w8p-x6g8-fv64",
+    "GHSA-4w8p-x6g8-fv64"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "treeverse/lakefs",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-26hr-q2wp-rvc5",
+    "GHSA-26hr-q2wp-rvc5",
+    "GHSA-28q9-9c3g-v3f9",
+    "GHSA-28q9-9c3g-v3f9",
+    "GHSA-28q9-9c3g-v3f9"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "kiwitcms/kiwi",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-2fqm-m4r2-fh98",
+    "GHSA-2fqm-m4r2-fh98",
+    "GHSA-2fqm-m4r2-fh98",
+    "GHSA-2fqm-m4r2-fh98",
+    "GHSA-2wcr-87wf-cf9j"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "yetiforcecompany/yetiforcecrm",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-2qf8-h7pr-x2r8",
+    "GHSA-2qf8-h7pr-x2r8",
+    "GHSA-394m-vxwj-363j",
+    "GHSA-394m-vxwj-363j",
+    "GHSA-7g7r-gr46-q4p5"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "envoyproxy/envoy",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-2wmf-p7f8-w42h",
+    "GHSA-2wmf-p7f8-w42h",
+    "GHSA-2wmf-p7f8-w42h",
+    "GHSA-2wmf-p7f8-w42h",
+    "GHSA-3cw6-2j68-868p"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "nukeviet/nukeviet",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-32wr-8wxm-852c",
+    "GHSA-32wr-8wxm-852c",
+    "GHSA-32wr-8wxm-852c",
+    "GHSA-32wr-8wxm-852c",
+    "GHSA-465g-4q99-5x86"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "forkcms/forkcms",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-3374-7h99-xr85",
+    "GHSA-3374-7h99-xr85",
+    "GHSA-4x28-j85r-668q",
+    "GHSA-4x28-j85r-668q",
+    "GHSA-65wf-qm95-6mhm"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "apache/lucene-solr",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-37vr-vmg4-jwpw",
+    "GHSA-37vr-vmg4-jwpw",
+    "GHSA-3gm7-v7vw-866c",
+    "GHSA-3gm7-v7vw-866c",
+    "GHSA-3pph-2595-cgfh"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "navidrome/navidrome",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-4jrx-5w4h-3gpm",
+    "GHSA-4jrx-5w4h-3gpm",
+    "GHSA-58vj-cv5w-v4v6",
+    "GHSA-58vj-cv5w-v4v6",
+    "GHSA-58vj-cv5w-v4v6"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "vega/vega",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-4vq7-882g-wcg4",
+    "GHSA-4vq7-882g-wcg4",
+    "GHSA-4vq7-882g-wcg4",
+    "GHSA-6hwh-rqwf-cxxr",
+    "GHSA-7f2v-3qq3-vvjf"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "basecamp/trix",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-53g2-mvcc-q9x3",
+    "GHSA-53g2-mvcc-q9x3",
+    "GHSA-53g2-mvcc-q9x3",
+    "GHSA-53g2-mvcc-q9x3",
+    "GHSA-53p3-c7vp-4mcc"
+   ],
+   "max_severity": "MODERATE"
+  },
+  {
+   "repo": "igniterealtime/openfire",
+   "advisories": 34,
+   "ghsa_ids": [
+    "GHSA-59h8-h34r-q9cv",
+    "GHSA-59h8-h34r-q9cv",
+    "GHSA-5qfv-rr79-chx5",
+    "GHSA-5qfv-rr79-chx5",
+    "GHSA-5qfv-rr79-chx5"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "h3js/h3",
+   "advisories": 33,
+   "ghsa_ids": [
+    "GHSA-22cc-p3c6-wpvm",
+    "GHSA-22cc-p3c6-wpvm",
+    "GHSA-22cc-p3c6-wpvm",
+    "GHSA-22cc-p3c6-wpvm",
+    "GHSA-26f5-8h2x-34xh"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "axllent/mailpit",
+   "advisories": 33,
+   "ghsa_ids": [
+    "GHSA-28pq-6qxg-wg5r",
+    "GHSA-28pq-6qxg-wg5r",
+    "GHSA-524m-q5m7-79mm",
+    "GHSA-524m-q5m7-79mm",
+    "GHSA-524m-q5m7-79mm"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "gitoxidelabs/gitoxide",
+   "advisories": 33,
+   "ghsa_ids": [
+    "GHSA-2frx-2596-x5r6",
+    "GHSA-2frx-2596-x5r6",
+    "GHSA-2frx-2596-x5r6",
+    "GHSA-5c5j-jmhx-q2gr",
+    "GHSA-6mw6-mj76-grwc"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "litestar-org/litestar",
+   "advisories": 33,
+   "ghsa_ids": [
+    "GHSA-2p2x-hpg8-cqp2",
+    "GHSA-2p2x-hpg8-cqp2",
+    "GHSA-2p2x-hpg8-cqp2",
+    "GHSA-3qmc-cj7q-62hv",
+    "GHSA-3qmc-cj7q-62hv"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "pylons/waitress",
+   "advisories": 33,
+   "ghsa_ids": [
+    "GHSA-3f84-rpwh-47g6",
+    "GHSA-3f84-rpwh-47g6",
+    "GHSA-3f84-rpwh-47g6",
+    "GHSA-3f84-rpwh-47g6",
+    "GHSA-4f7p-27jc-3c36"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "jupyter/notebook",
+   "advisories": 33,
+   "ghsa_ids": [
+    "GHSA-3p4q-x8f3-p7vq",
+    "GHSA-3p4q-x8f3-p7vq",
+    "GHSA-3p4q-x8f3-p7vq",
+    "GHSA-49qr-xh3w-h436",
+    "GHSA-49qr-xh3w-h436"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "indico/indico",
+   "advisories": 33,
+   "ghsa_ids": [
+    "GHSA-3wg7-r7q5-r2jf",
+    "GHSA-4269-mcfh-cp7q",
+    "GHSA-4269-mcfh-cp7q",
+    "GHSA-4269-mcfh-cp7q",
+    "GHSA-67cx-rhhq-mfhq"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "open-telemetry/opentelemetry-ebpf-instrumentation",
+   "advisories": 33,
+   "ghsa_ids": [
+    "GHSA-43g7-cwr8-q3jh",
+    "GHSA-43g7-cwr8-q3jh",
+    "GHSA-43g7-cwr8-q3jh",
+    "GHSA-89c6-vpcj-7vj4",
+    "GHSA-89c6-vpcj-7vj4"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "portainer/portainer",
+   "advisories": 33,
+   "ghsa_ids": [
+    "GHSA-5fxq-qcf3-244w",
+    "GHSA-5fxq-qcf3-244w",
+    "GHSA-5fxq-qcf3-244w",
+    "GHSA-5fxq-qcf3-244w",
+    "GHSA-7fw3-x4r2-g7wc"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "flarum/framework",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-22m9-m3ww-53h3",
+    "GHSA-22m9-m3ww-53h3",
+    "GHSA-22m9-m3ww-53h3",
+    "GHSA-22m9-m3ww-53h3",
+    "GHSA-3c4m-j3g4-hh25"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "opensearch-project/security",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-22vx-2x23-98w6",
+    "GHSA-22vx-2x23-98w6",
+    "GHSA-2rjv-cv85-xhgm",
+    "GHSA-2rjv-cv85-xhgm",
+    "GHSA-72q2-gwwf-6hrv"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "gravitl/netmaker",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-256m-j5qw-38f4",
+    "GHSA-256m-j5qw-38f4",
+    "GHSA-256m-j5qw-38f4",
+    "GHSA-256m-j5qw-38f4",
+    "GHSA-4hgg-c4rr-6h7f"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "esm-dev/esm.sh",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-2657-3c98-63jq",
+    "GHSA-2657-3c98-63jq",
+    "GHSA-2657-3c98-63jq",
+    "GHSA-2657-3c98-63jq",
+    "GHSA-3636-h3vx-6465"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "nodemailer/nodemailer",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-268h-hp4c-crq3",
+    "GHSA-268h-hp4c-crq3",
+    "GHSA-46j5-6fg5-4gv3",
+    "GHSA-46j5-6fg5-4gv3",
+    "GHSA-48ww-j4fc-435p"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "spring-projects/spring-ai",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-26gg-9gv2-v27j",
+    "GHSA-44f4-gvwj-6qg3",
+    "GHSA-44f4-gvwj-6qg3",
+    "GHSA-44f4-gvwj-6qg3",
+    "GHSA-44f4-gvwj-6qg3"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "payloadcms/payload",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-26rv-h2hf-3fw4",
+    "GHSA-26rv-h2hf-3fw4",
+    "GHSA-35jj-vqcf-f2jf",
+    "GHSA-35jj-vqcf-f2jf",
+    "GHSA-35jj-vqcf-f2jf"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "stealjs/steal",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-28v4-jf82-jvj8",
+    "GHSA-28v4-jf82-jvj8",
+    "GHSA-28v4-jf82-jvj8",
+    "GHSA-28v4-jf82-jvj8",
+    "GHSA-7f3x-2wcx-hww8"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "apollographql/apollo-server",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-2fvv-qxrq-7jq6",
+    "GHSA-2fvv-qxrq-7jq6",
+    "GHSA-2fvv-qxrq-7jq6",
+    "GHSA-2p3c-p3qw-69r4",
+    "GHSA-2p3c-p3qw-69r4"
+   ],
+   "max_severity": "HIGH"
+  },
+  {
+   "repo": "lobehub/lobe-chat",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-2xcc-vm3f-m8rw",
+    "GHSA-2xcc-vm3f-m8rw",
+    "GHSA-2xcc-vm3f-m8rw",
+    "GHSA-3fc8-2r3f-8wrg",
+    "GHSA-3fc8-2r3f-8wrg"
+   ],
+   "max_severity": "CRITICAL"
+  },
+  {
+   "repo": "nezhahq/nezha",
+   "advisories": 32,
+   "ghsa_ids": [
+    "GHSA-39g2-8x68-pmx8",
+    "GHSA-39g2-8x68-pmx8",
+    "GHSA-4g6j-g789-rghm",
+    "GHSA-4g6j-g789-rghm",
+    "GHSA-4g6j-g789-rghm"
+   ],
+   "max_severity": "CRITICAL"
+  }
+ ],
+ "hackerone_top_programs": [
+  {
+   "program": "Shopify",
+   "title": "Takeover an account that doesn't have a Shopify ID and more",
+   "upvotes": 2991,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/867513"
+  },
+  {
+   "program": "PayPal",
+   "title": "Bypass for #488147 enables stored XSS on https://paypal.com/signin again",
+   "upvotes": 2679,
+   "bounty": "20000.0",
+   "link": "hackerone.com/reports/510152"
+  },
+  {
+   "program": "Shopify",
+   "title": "Email Confirmation Bypass in myshop.myshopify.com that Leads to Full Privilege Escalation to Any Shop Owner by Taking Advantage of the Shopify SSO",
+   "upvotes": 1913,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/791775"
+  },
+  {
+   "program": "HackerOne",
+   "title": "Account takeover via leaked session cookie",
+   "upvotes": 1631,
+   "bounty": "20000.0",
+   "link": "hackerone.com/reports/745324"
+  },
+  {
+   "program": "Shopify",
+   "title": "Github access token exposure",
+   "upvotes": 1544,
+   "bounty": "50000.0",
+   "link": "hackerone.com/reports/1087489"
+  },
+  {
+   "program": "GitLab",
+   "title": "Arbitrary file read via the UploadsRewriter when moving and issue",
+   "upvotes": 1500,
+   "bounty": "20000.0",
+   "link": "hackerone.com/reports/827052"
+  },
+  {
+   "program": "PayPal",
+   "title": "Token leak in security challenge flow allows retrieving victim's PayPal email and plain text password",
+   "upvotes": 1408,
+   "bounty": "15300.0",
+   "link": "hackerone.com/reports/739737"
+  },
+  {
+   "program": "Valve",
+   "title": "RCE on Steam Client via buffer overflow in Server Info",
+   "upvotes": 1287,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/470520"
+  },
+  {
+   "program": "X / xAI",
+   "title": "Potential pre-auth RCE on Twitter VPN",
+   "upvotes": 1239,
+   "bounty": "20160.0",
+   "link": "hackerone.com/reports/591295"
+  },
+  {
+   "program": "Snapchat",
+   "title": "Exposed Kubernetes API - RCE/Exposed Creds",
+   "upvotes": 1185,
+   "bounty": "25000.0",
+   "link": "hackerone.com/reports/455645"
+  },
+  {
+   "program": "HackerOne",
+   "title": "Confidential data of users and limited metadata of programs and reports accessible via GraphQL",
+   "upvotes": 1032,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/489146"
+  },
+  {
+   "program": "Snapchat",
+   "title": "Improper Authentication - any user can login as other user with otp/logout & otp/login",
+   "upvotes": 968,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/921780"
+  },
+  {
+   "program": "GitLab",
+   "title": "Account Takeover via Password Reset without user interactions",
+   "upvotes": 942,
+   "bounty": "35000.0",
+   "link": "hackerone.com/reports/2293343"
+  },
+  {
+   "program": "PayPal",
+   "title": "RCE via npm misconfig -- installing internal libraries from the public registry",
+   "upvotes": 933,
+   "bounty": "30000.0",
+   "link": "hackerone.com/reports/925585"
+  },
+  {
+   "program": "Shopify",
+   "title": "[Part II] Email Confirmation Bypass in myshop.myshopify.com that Leads to Full Privilege Escalation",
+   "upvotes": 894,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/796808"
+  },
+  {
+   "program": "Slack",
+   "title": "Mass account takeovers using HTTP Request Smuggling on https://slackb.com/ to steal session cookies",
+   "upvotes": 866,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/737140"
+  },
+  {
+   "program": "PayPal",
+   "title": "DoS on PayPal via web cache poisoning",
+   "upvotes": 850,
+   "bounty": "9700.0",
+   "link": "hackerone.com/reports/622122"
+  },
+  {
+   "program": "Shopify",
+   "title": "H1514 Remote Code Execution on kitcrm using bulk customer update of Priority Products",
+   "upvotes": 830,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/422944"
+  },
+  {
+   "program": "Semrush",
+   "title": "Remote Code Execution on www.semrush.com/my_reports on Logo upload",
+   "upvotes": 822,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/403417"
+  },
+  {
+   "program": "HackerOne",
+   "title": "WannaCrypt \u201cKillswitch\u201d",
+   "upvotes": 808,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/228648"
+  },
+  {
+   "program": "Starbucks",
+   "title": "SQL Injection Extracts Starbucks Enterprise Accounting, Financial, Payroll Database",
+   "upvotes": 793,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/531051"
+  },
+  {
+   "program": "Snapchat",
+   "title": "Delete anyone's content spotlight remotely.",
+   "upvotes": 789,
+   "bounty": "15000.0",
+   "link": "hackerone.com/reports/1819832"
+  },
+  {
+   "program": "PayPal",
+   "title": "IDOR to add secondary users in www.paypal.com/businessmanage/users/api/v1/users",
+   "upvotes": 786,
+   "bounty": "10500.0",
+   "link": "hackerone.com/reports/415081"
+  },
+  {
+   "program": "Roblox",
+   "title": "Subdomain Takeover to Authentication bypass ",
+   "upvotes": 780,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/335330"
+  },
+  {
+   "program": "PlayStation",
+   "title": "Websites Can Run Arbitrary Code on Machines Running the 'PlayStation Now' Application",
+   "upvotes": 777,
+   "bounty": "15000.0",
+   "link": "hackerone.com/reports/873614"
+  },
+  {
+   "program": "GitLab",
+   "title": "Git flag injection - local file overwrite to remote code execution",
+   "upvotes": 777,
+   "bounty": "12000.0",
+   "link": "hackerone.com/reports/658013"
+  },
+  {
+   "program": "GitLab",
+   "title": "Exfiltrate and mutate repository and project data through injected templated service",
+   "upvotes": 758,
+   "bounty": "11000.0",
+   "link": "hackerone.com/reports/446585"
+  },
+  {
+   "program": "PlayStation",
+   "title": "Use-After-Free In IPV6_2292PKTOPTIONS leading To Arbitrary Kernel R/W Primitives",
+   "upvotes": 741,
+   "bounty": "10000.0",
+   "link": "hackerone.com/reports/826026"
+  },
+  {
+   "program": "Starbucks",
+   "title": "JumpCloud API Key leaked via Open Github Repository.",
+   "upvotes": 737,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/716292"
+  },
+  {
+   "program": "GSA Bounty",
+   "title": "SQL injection in https://labs.data.gov/dashboard/datagov/csv_to_json via User-agent ",
+   "upvotes": 698,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/297478"
+  },
+  {
+   "program": "Starbucks",
+   "title": "Webshell via File Upload on ecjobs.starbucks.com.cn",
+   "upvotes": 686,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/506646"
+  },
+  {
+   "program": "Glassdoor",
+   "title": "Reflected XSS on https://www.glassdoor.com/employers/sem-dual-lp/",
+   "upvotes": 684,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/846338"
+  },
+  {
+   "program": "PayPal",
+   "title": "Stored XSS on https://paypal.com/signin via cache poisoning",
+   "upvotes": 683,
+   "bounty": "18900.0",
+   "link": "hackerone.com/reports/488147"
+  },
+  {
+   "program": "Razer",
+   "title": "\ud83d\udc1e OS Command Injection at https://sea-web.gold.razer.com/lab/ws-lookup via IP parameter",
+   "upvotes": 676,
+   "bounty": "2000.0",
+   "link": "hackerone.com/reports/821962"
+  },
+  {
+   "program": "HackerOne",
+   "title": "Email address of any user can be queried on Report Invitation GraphQL type when username is known",
+   "upvotes": 670,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/792927"
+  },
+  {
+   "program": "Lyft",
+   "title": "My Expense Report resulted in a Server-Side Request Forgery (SSRF) on Lyft",
+   "upvotes": 653,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/885975"
+  },
+  {
+   "program": "Uber",
+   "title": "Sensitive user information disclosure at bonjour.uber.com/marketplace/_rpc via the 'userUuid' parameter",
+   "upvotes": 642,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/542340"
+  },
+  {
+   "program": "Valve",
+   "title": "Getting all the CD keys of any game",
+   "upvotes": 635,
+   "bounty": "20000.0",
+   "link": "hackerone.com/reports/391217"
+  },
+  {
+   "program": "Upserve ",
+   "title": "Ability to reset password for account",
+   "upvotes": 633,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/322985"
+  },
+  {
+   "program": "Mail.ru",
+   "title": "Time-Based SQL injection at city-mobil.ru",
+   "upvotes": 631,
+   "bounty": "15000.0",
+   "link": "hackerone.com/reports/868436"
+  },
+  {
+   "program": "GitLab",
+   "title": "Stored XSS in Wiki pages",
+   "upvotes": 627,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/526325"
+  },
+  {
+   "program": "HackerOne",
+   "title": "The /reports/:id.json endpoint discloses potentially sensitive user attributes when reporter summary is present",
+   "upvotes": 623,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/3000510"
+  },
+  {
+   "program": "X / xAI",
+   "title": "Bypassing Digits origin validation which leads to account takeover",
+   "upvotes": 616,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/129873"
+  },
+  {
+   "program": "Imgur",
+   "title": "Stored XSS on imgur profile",
+   "upvotes": 612,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/484434"
+  },
+  {
+   "program": "Pornhub",
+   "title": "[phpobject in cookie] Remote shell/command execution",
+   "upvotes": 607,
+   "bounty": "20000.0",
+   "link": "hackerone.com/reports/141956"
+  },
+  {
+   "program": "HackerOne",
+   "title": "Customer private program can disclose email any users through invited via username",
+   "upvotes": 588,
+   "bounty": "7500.0",
+   "link": "hackerone.com/reports/807448"
+  },
+  {
+   "program": "Snapchat",
+   "title": "Github Token Leaked publicly for https://github.sc-corp.net",
+   "upvotes": 581,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/396467"
+  },
+  {
+   "program": "Razer",
+   "title": "SQL injection at https://sea-web.gold.razer.com/ajax-get-status.php via txid parameter",
+   "upvotes": 580,
+   "bounty": "2000.0",
+   "link": "hackerone.com/reports/819738"
+  },
+  {
+   "program": "Shopify",
+   "title": "SSRF in Exchange leads to ROOT access in all instances",
+   "upvotes": 577,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/341876"
+  },
+  {
+   "program": "Starbucks",
+   "title": "RCE and Complete Server Takeover of http://www.\u2588\u2588\u2588\u2588\u2588.starbucks.com.sg/",
+   "upvotes": 571,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/502758"
+  },
+  {
+   "program": "Rockstar Games",
+   "title": "The return of the \uff1c",
+   "upvotes": 569,
+   "bounty": "1000.0",
+   "link": "hackerone.com/reports/639684"
+  },
+  {
+   "program": "LY Corporation",
+   "title": "Request smuggling on admin-official.line.me could lead to account takeover",
+   "upvotes": 563,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/740037"
+  },
+  {
+   "program": "Snapchat",
+   "title": "Publicly accessible Continuous Integration Tool",
+   "upvotes": 562,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/313457"
+  },
+  {
+   "program": "Shopify",
+   "title": "Email Confirmation Bypass in your-store.myshopify.com which leads to privilege escalation",
+   "upvotes": 559,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/910300"
+  },
+  {
+   "program": "Eternal",
+   "title": "Stealing Zomato X-Access-Token: in Bulk using HTTP Request Smuggling on api.zomato.com",
+   "upvotes": 559,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/771666"
+  },
+  {
+   "program": "Ubiquiti Inc.",
+   "title": "Privilege Escalation From user to SYSTEM via unauthenticated command execution ",
+   "upvotes": 553,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/544928"
+  },
+  {
+   "program": "Grab",
+   "title": "[Grab Android/iOS] Insecure deeplink leads to sensitive information disclosure",
+   "upvotes": 547,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/401793"
+  },
+  {
+   "program": "Paragon Initiative Enterprises",
+   "title": "BAD Code ! ",
+   "upvotes": 546,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/180074"
+  },
+  {
+   "program": "GitLab",
+   "title": "Local files could be overwritten in GitLab, leading to remote command execution",
+   "upvotes": 542,
+   "bounty": "12000.0",
+   "link": "hackerone.com/reports/587854"
+  },
+  {
+   "program": "Razer",
+   "title": "SQL Injection in https://api-my.pay.razer.com/inviteFriend/getInviteHistoryLog",
+   "upvotes": 528,
+   "bounty": "2000.0",
+   "link": "hackerone.com/reports/811111"
+  },
+  {
+   "program": "Shopify",
+   "title": "Shopify Stocky App OAuth Misconfiguration",
+   "upvotes": 525,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/740989"
+  },
+  {
+   "program": "HackerOne",
+   "title": "Server Side Request Forgery (SSRF) via Analytics Reports",
+   "upvotes": 515,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/2262382"
+  },
+  {
+   "program": "Slack",
+   "title": "Remote Code Execution in Slack desktop apps + bonus",
+   "upvotes": 507,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/783877"
+  },
+  {
+   "program": "Reddit",
+   "title": "One-click account hijack for anyone using Apple sign-in with Reddit, due to response-type switch + leaking href to XSS on www.redditmedia.com",
+   "upvotes": 505,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1567186"
+  },
+  {
+   "program": "GitLab",
+   "title": "RCE when removing metadata with ExifTool",
+   "upvotes": 504,
+   "bounty": "20000.0",
+   "link": "hackerone.com/reports/1154542"
+  },
+  {
+   "program": "Valve",
+   "title": "XSS in steam react chat client",
+   "upvotes": 493,
+   "bounty": "7500.0",
+   "link": "hackerone.com/reports/409850"
+  },
+  {
+   "program": "LY Corporation",
+   "title": "Able to Become Admin for Any LINE Official Account",
+   "upvotes": 492,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/698579"
+  },
+  {
+   "program": "New Relic",
+   "title": "Password theft login.newrelic.com via Request Smuggling",
+   "upvotes": 490,
+   "bounty": "3000.0",
+   "link": "hackerone.com/reports/498052"
+  },
+  {
+   "program": "LY Corporation",
+   "title": "Reflected XSS in OAUTH2 login flow ",
+   "upvotes": 487,
+   "bounty": "1989.5",
+   "link": "hackerone.com/reports/697099"
+  },
+  {
+   "program": "QIWI",
+   "title": "SQL injection on contactws.contact-sys.com in TScenObject action ScenObjects leads to remote code execution",
+   "upvotes": 475,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/816254"
+  },
+  {
+   "program": "HackerOne",
+   "title": "profile-picture name parameter with large value lead to DoS for other users and programs on the platform",
+   "upvotes": 475,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/764434"
+  },
+  {
+   "program": "HackerOne",
+   "title": "How the Bug stole hacking",
+   "upvotes": 471,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/762510"
+  },
+  {
+   "program": "TikTok",
+   "title": "Cross-Site-Scripting on www.tiktok.com and m.tiktok.com leading to Data Exfiltration",
+   "upvotes": 470,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/968082"
+  },
+  {
+   "program": "BlockDev Sp. Z o.o",
+   "title": "Steal ALL collateral during liquidation by exploiting lack of validation in `flip.kick`",
+   "upvotes": 466,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/684092"
+  },
+  {
+   "program": "Snapchat",
+   "title": "Access to multiple production Grafana dashboards",
+   "upvotes": 463,
+   "bounty": "10000.0",
+   "link": "hackerone.com/reports/663628"
+  },
+  {
+   "program": "GitLab",
+   "title": "Project Template functionality can be used to copy private project data, such as repository, confidential issues, snippets, and merge requests",
+   "upvotes": 455,
+   "bounty": "12000.0",
+   "link": "hackerone.com/reports/689314"
+  },
+  {
+   "program": "Slack",
+   "title": "XSS vulnerable parameter in a location hash",
+   "upvotes": 454,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/146336"
+  },
+  {
+   "program": "CS Money",
+   "title": "Blind XSS on image upload",
+   "upvotes": 445,
+   "bounty": "1000.0",
+   "link": "hackerone.com/reports/1010466"
+  },
+  {
+   "program": "Uber",
+   "title": "[Pre-Submission][H1-4420-2019] API access to Phabricator on code.uberinternal.com from leaked certificate in git repo",
+   "upvotes": 443,
+   "bounty": "39999.99",
+   "link": "hackerone.com/reports/591813"
+  },
+  {
+   "program": "X / xAI",
+   "title": "CRLF injection",
+   "upvotes": 439,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/446271"
+  },
+  {
+   "program": "Mattermost",
+   "title": "Reset password link sent over unsecured http protocol",
+   "upvotes": 438,
+   "bounty": "750.0",
+   "link": "hackerone.com/reports/1888915"
+  },
+  {
+   "program": "Flickr",
+   "title": "Flickr Account Takeover using AWS Cognito API",
+   "upvotes": 437,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1342088"
+  },
+  {
+   "program": "Valve",
+   "title": "Modify in-flight data to payment provider Smart2Pay",
+   "upvotes": 437,
+   "bounty": "7500.0",
+   "link": "hackerone.com/reports/1295844"
+  },
+  {
+   "program": "Snapchat",
+   "title": "Open prod Jenkins instance",
+   "upvotes": 436,
+   "bounty": "15000.0",
+   "link": "hackerone.com/reports/231460"
+  },
+  {
+   "program": "InnoGames",
+   "title": "Blind SQL Injection ",
+   "upvotes": 432,
+   "bounty": "2000.0",
+   "link": "hackerone.com/reports/758654"
+  },
+  {
+   "program": "GitLab",
+   "title": "RCE via unsafe inline Kramdown options when rendering certain Wiki pages",
+   "upvotes": 426,
+   "bounty": "20000.0",
+   "link": "hackerone.com/reports/1125425"
+  },
+  {
+   "program": "HackerOne",
+   "title": "An attacker can can view any hacker email via  /SaveCollaboratorsMutation operation name ",
+   "upvotes": 425,
+   "bounty": "12500.0",
+   "link": "hackerone.com/reports/2032716"
+  },
+  {
+   "program": "Uber",
+   "title": "Chained Bugs to Leak Victim's Uber's FB Oauth Token",
+   "upvotes": 424,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/202781"
+  },
+  {
+   "program": "HackerOne",
+   "title": "June 2022 Incident Report",
+   "upvotes": 423,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1622449"
+  },
+  {
+   "program": "Snapchat",
+   "title": "Server-Side Request Forgery using Javascript allows to exfill data from Google Metadata",
+   "upvotes": 417,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/530974"
+  },
+  {
+   "program": "Valve",
+   "title": "Panorama UI XSS leads to Remote Code Execution via Kick/Disconnect Message",
+   "upvotes": 417,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/631956"
+  },
+  {
+   "program": "Basecamp",
+   "title": "Remote code execution on Basecamp.com",
+   "upvotes": 415,
+   "bounty": "5000.0",
+   "link": "hackerone.com/reports/365271"
+  },
+  {
+   "program": "GitLab",
+   "title": "gitlab-workhorse bypass in Gitlab::Middleware::Multipart allowing files in `allowed_paths` to be read",
+   "upvotes": 409,
+   "bounty": "10000.0",
+   "link": "hackerone.com/reports/850447"
+  },
+  {
+   "program": "Reverb.com",
+   "title": "Full account takeover",
+   "upvotes": 409,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/314808"
+  },
+  {
+   "program": "Mail.ru",
+   "title": "touch.mail.ru / e.mail.ru memory content disclosure",
+   "upvotes": 409,
+   "bounty": "10000.0",
+   "link": "hackerone.com/reports/513236"
+  },
+  {
+   "program": "Shopify",
+   "title": "H1514 Server Side Template Injection in Return Magic email templates?",
+   "upvotes": 408,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/423541"
+  },
+  {
+   "program": "Automattic",
+   "title": "Denial of service to WP-JSON API by cache poisoning the CORS allow origin header",
+   "upvotes": 405,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/591302"
+  },
+  {
+   "program": "Superhuman (formerly Grammarly)",
+   "title": "Employee's GitHub Token Found In Travis CI Build Logs",
+   "upvotes": 405,
+   "bounty": "5000.0",
+   "link": "hackerone.com/reports/496937"
+  },
+  {
+   "program": "Mail.ru",
+   "title": "Unrestricted file upload on [ambassador.mail.ru] ",
+   "upvotes": 404,
+   "bounty": "3000.0",
+   "link": "hackerone.com/reports/854032"
+  },
+  {
+   "program": "Valve",
+   "title": "SQL Injection in report_xml.php through countryFilter[] parameter",
+   "upvotes": 404,
+   "bounty": "25000.0",
+   "link": "hackerone.com/reports/383127"
+  },
+  {
+   "program": "WordPress",
+   "title": "Stored XSS Vulnerability",
+   "upvotes": 402,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/643908"
+  },
+  {
+   "program": "X / xAI",
+   "title": "Read-only application can publish/delete fleets",
+   "upvotes": 398,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1032468"
+  },
+  {
+   "program": "Reddit",
+   "title": "[accounts.reddit.com] Redirect parameter allows for XSS",
+   "upvotes": 394,
+   "bounty": "5000.0",
+   "link": "hackerone.com/reports/1962645"
+  },
+  {
+   "program": "Mail.ru",
+   "title": "Account Takeover worki.ru",
+   "upvotes": 391,
+   "bounty": "1700.0",
+   "link": "hackerone.com/reports/744662"
+  },
+  {
+   "program": "HackerOne",
+   "title": "IDOR - Delete all Licenses and certifications from users account using CreateOrUpdateHackerCertification GraphQL query",
+   "upvotes": 388,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/2122671"
+  },
+  {
+   "program": "HackerOne",
+   "title": "Reflected XSS on www.hackerone.com and resources.hackerone.com",
+   "upvotes": 387,
+   "bounty": "500.0",
+   "link": "hackerone.com/reports/840759"
+  },
+  {
+   "program": "Nord Security",
+   "title": "IDOR allow access to payments data of any user",
+   "upvotes": 387,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/751577"
+  },
+  {
+   "program": "GitLab",
+   "title": "Remote Command Execution via Github import",
+   "upvotes": 384,
+   "bounty": "33510.0",
+   "link": "hackerone.com/reports/1679624"
+  },
+  {
+   "program": "Ed",
+   "title": "Physical Laptop Takeover",
+   "upvotes": 378,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/393615"
+  },
+  {
+   "program": "GitLab",
+   "title": "RCE via the DecompressedArchiveSizeValidator and Project BulkImports (behind feature flag)",
+   "upvotes": 377,
+   "bounty": "33510.0",
+   "link": "hackerone.com/reports/1609965"
+  },
+  {
+   "program": "Uber",
+   "title": "Reflected XSS and sensitive data exposure, including payment details, on lioncityrentals.com.sg",
+   "upvotes": 376,
+   "bounty": "4000.0",
+   "link": "hackerone.com/reports/340431"
+  },
+  {
+   "program": "Chrome",
+   "title": "CVE-2019-5765: 1-click HackerOne account takeover on all Android devices",
+   "upvotes": 375,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/563870"
+  },
+  {
+   "program": "Mail.ru",
+   "title": "Cross-organization data access in city-mobil.ru",
+   "upvotes": 374,
+   "bounty": "8000.0",
+   "link": "hackerone.com/reports/863983"
+  },
+  {
+   "program": "Mail.ru",
+   "title": "SQL injection at fleet.city-mobil.ru",
+   "upvotes": 372,
+   "bounty": "10000.0",
+   "link": "hackerone.com/reports/881901"
+  },
+  {
+   "program": "Shopify",
+   "title": "H1514 Ability to MiTM Shopify PoS Session to Takeover Communications",
+   "upvotes": 372,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/423467"
+  },
+  {
+   "program": "HackerOne",
+   "title": "[CVE-2022-44268] Arbitrary Remote Leak via ImageMagick",
+   "upvotes": 371,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1858574"
+  },
+  {
+   "program": "TikTok",
+   "title": "Multiple bugs leads to RCE on TikTok for Android",
+   "upvotes": 370,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1065500"
+  },
+  {
+   "program": "Yelp",
+   "title": "RCE on build server via misconfigured pip install",
+   "upvotes": 366,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/946409"
+  },
+  {
+   "program": "TikTok",
+   "title": "[CSRF] TikTok Careers Portal Account Takeover",
+   "upvotes": 366,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1010522"
+  },
+  {
+   "program": "GitLab",
+   "title": "JSON serialization of any Project model results in all Runner tokens being exposed through Quick Actions",
+   "upvotes": 365,
+   "bounty": "12000.0",
+   "link": "hackerone.com/reports/509924"
+  },
+  {
+   "program": "Slack",
+   "title": "URL link spoofing",
+   "upvotes": 362,
+   "bounty": "250.0",
+   "link": "hackerone.com/reports/481472"
+  },
+  {
+   "program": "GitLab",
+   "title": "Bypass of GitLab CI runner slash fix in YAML validation",
+   "upvotes": 362,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/409395"
+  },
+  {
+   "program": "Dropbox",
+   "title": "Server Side Request Forgery (SSRF) at app.hellosign.com leads to AWS private keys disclosure",
+   "upvotes": 360,
+   "bounty": "4913.0",
+   "link": "hackerone.com/reports/923132"
+  },
+  {
+   "program": "Basecamp",
+   "title": "HEY.com email stored XSS",
+   "upvotes": 359,
+   "bounty": "5000.0",
+   "link": "hackerone.com/reports/982291"
+  },
+  {
+   "program": "Mail.ru",
+   "title": "Account TakeOver at my.33slona.ru",
+   "upvotes": 359,
+   "bounty": "1700.0",
+   "link": "hackerone.com/reports/773519"
+  },
+  {
+   "program": "Mail.ru",
+   "title": "RCE on shared.mail.ru due to \"widget\" plugin",
+   "upvotes": 359,
+   "bounty": "10000.0",
+   "link": "hackerone.com/reports/518637"
+  },
+  {
+   "program": "X / xAI",
+   "title": "Blind XSS on Twitter's internal Big Data panel at \u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588\u2588",
+   "upvotes": 357,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1207040"
+  },
+  {
+   "program": "TikTok",
+   "title": "Reflected XSS in TikTok endpoints",
+   "upvotes": 356,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1350887"
+  },
+  {
+   "program": "HackerOne",
+   "title": "Hackerone is not properly deleting user id",
+   "upvotes": 356,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1133118"
+  },
+  {
+   "program": "CS Money",
+   "title": "[cs.money] Open Redirect Leads to Account Takeover",
+   "upvotes": 356,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/905607"
+  },
+  {
+   "program": "GitLab",
+   "title": "SSRF on project import via the remote_attachment_url on a Note",
+   "upvotes": 356,
+   "bounty": "10000.0",
+   "link": "hackerone.com/reports/826361"
+  },
+  {
+   "program": "Automattic",
+   "title": "Stored XSS in wordpress.com",
+   "upvotes": 356,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/733248"
+  },
+  {
+   "program": "HackerOne",
+   "title": "Partial disclosure of report activity through new \"Export as .zip\" feature",
+   "upvotes": 354,
+   "bounty": "10000.0",
+   "link": "hackerone.com/reports/182358"
+  },
+  {
+   "program": "GitLab",
+   "title": "Attacker is able to access commit title and team member comments which are supposed to be private",
+   "upvotes": 350,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/502593"
+  },
+  {
+   "program": "GitLab",
+   "title": "Server Side Request Forgery mitigation bypass",
+   "upvotes": 347,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/632101"
+  },
+  {
+   "program": "HackerOne",
+   "title": "Insecure Direct Object Reference (IDOR) - Delete Campaigns  ",
+   "upvotes": 346,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/1969141"
+  },
+  {
+   "program": "X / xAI",
+   "title": "Private list members disclosure via GraphQL",
+   "upvotes": 345,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/885539"
+  },
+  {
+   "program": "Semrush",
+   "title": "Github information leaked",
+   "upvotes": 344,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/676212"
+  },
+  {
+   "program": "Mail.ru",
+   "title": "SSRF & LFR via on city-mobil.ru",
+   "upvotes": 343,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/748123"
+  },
+  {
+   "program": "Postmates",
+   "title": "Web cache poisoning attack leads to user information and more",
+   "upvotes": 343,
+   "bounty": "500.0",
+   "link": "hackerone.com/reports/492841"
+  },
+  {
+   "program": "Internet Bug Bounty",
+   "title": "CRLF Injection in urllib",
+   "upvotes": 341,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/590020"
+  },
+  {
+   "program": "Shopify",
+   "title": "XSS while logging using Google",
+   "upvotes": 341,
+   "bounty": "1750.0",
+   "link": "hackerone.com/reports/691611"
+  },
+  {
+   "program": "Flickr",
+   "title": "Arbitrary file read via ffmpeg HLS parser at https://www.flickr.com/photos/upload",
+   "upvotes": 340,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/487008"
+  },
+  {
+   "program": "Mail.ru",
+   "title": "[ RCE ] Through stopping the redirect in /admin/* the attacker able to bypass Authentication And Upload Malicious File",
+   "upvotes": 340,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/683957"
+  },
+  {
+   "program": "Reddit",
+   "title": "Blind SSRF to internal services in matrix preview_link API",
+   "upvotes": 339,
+   "bounty": "6000.0",
+   "link": "hackerone.com/reports/1960765"
+  },
+  {
+   "program": "Razer",
+   "title": "OTP token bypass in accessing user settings",
+   "upvotes": 339,
+   "bounty": "1000.0",
+   "link": "hackerone.com/reports/699082"
+  },
+  {
+   "program": "WordPress",
+   "title": "Stored XSS in Private Message component (BuddyPress)",
+   "upvotes": 337,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/487081"
+  },
+  {
+   "program": "HackerOne",
+   "title": "Attachment disclosure via summary report ",
+   "upvotes": 335,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/2442008"
+  },
+  {
+   "program": "Nord Security",
+   "title": "Connection informaton is sent to a third-party service",
+   "upvotes": 332,
+   "bounty": "0.0",
+   "link": "hackerone.com/reports/752402"
+  },
+  {
+   "program": "Visma Public",
+   "title": "HTML-injection in PDF-export leads to LFI",
+   "upvotes": 330,
+   "bounty": "500.0",
+   "link": "hackerone.com/reports/809819"
+  }
+ ]
+}
