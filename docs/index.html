@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BlastRadius — pre-deployment contagion risk for DeFi</title>
+<meta name="description" content="Know how much TVL goes down with a token before you list it as collateral. Pre-deployment contagion scoring and cross-chain configuration audit for DeFi.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="dot"></span> BlastRadius</a>
+    <nav class="site">
+      <a href="calculator.html">Calculator</a>
+      <a href="#how">How it works</a>
+      <a href="#case">Case study</a>
+      <a href="deck.html">Deck</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <span class="eyebrow">Pre-deployment · DeFi contagion risk</span>
+      <h1>Know the <span class="grad">blast radius</span><br>before you list the collateral.</h1>
+      <p class="lede">
+        One token fails. Which markets go insolvent? Which protocols carry
+        unliquidatable bad debt? Which chains are left holding a wrapper with
+        nothing behind it? Answer that <em>before</em> the listing goes live,
+        not in the post-mortem.
+      </p>
+      <div class="actions">
+        <a class="btn primary" href="calculator.html">Run the calculator &rarr;</a>
+        <a class="btn ghost" href="#case">Read the case study</a>
+      </div>
+
+      <div class="stats" id="stats">
+        <div class="stat"><div class="v" data-k="markets">—</div><div class="k">Live lending markets</div></div>
+        <div class="stat"><div class="v" data-k="tokens">—</div><div class="k">Collateral tokens</div></div>
+        <div class="stat"><div class="v" data-k="protocols">—</div><div class="k">Protocols</div></div>
+        <div class="stat"><div class="v" data-k="chains">—</div><div class="k">Chains</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="what">
+    <div class="wrap">
+      <h2>Three questions, asked before deployment</h2>
+      <p class="sub">
+        Most tooling in this space is retrospective — it tells you what already
+        happened. These are the questions that only make sense <em>before</em>
+        a listing goes live.
+      </p>
+      <div class="grid3">
+        <div class="card">
+          <div class="tag">01 · Reachability</div>
+          <h3>How far does the damage travel?</h3>
+          <p>Token &rarr; markets that accept it &rarr; protocols hosting them &rarr;
+             every chain they touch. Mapped transitively, with the TVL at each hop.</p>
+        </div>
+        <div class="card">
+          <div class="tag">02 · Solvency</div>
+          <h3>What survives liquidation?</h3>
+          <p>When collateral goes to zero the debt borrowed against it does not.
+             Liquidators cannot liquidate a position with nothing to seize. We project
+             that gap per market.</p>
+        </div>
+        <div class="card">
+          <div class="tag">03 · Redundancy</div>
+          <h3>Can one compromised signer sign it all away?</h3>
+          <p>Cross-chain verification stacks, multisig thresholds, oracle redundancy,
+             backstops. Under-redundant configuration is flagged before it ships.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="case">
+    <div class="wrap">
+      <h2>Case study: one signer, $292M</h2>
+      <p class="sub">
+        On 18 April 2026 a cross-chain messaging pathway released 116,500 rsETH
+        to an attacker. No smart contract was exploited. Every contract behaved
+        exactly as designed. The failure was a <em>configuration</em>: the receive
+        pathway required a single verifier.
+      </p>
+
+      <div class="case">
+        <div class="flow">pathway config            requiredDVNCount = 1, optionalDVNCount = 0
+                                       |
+                                       v
+<b>1 forged cross-chain packet</b>       source transaction never existed
+                                       |
+                                       v
+<b>116,500 rsETH released</b>          (~$292M)  -- no contract bug involved
+                                       |
+           +---------------------------+---------------------------+
+           v                           v                           v
+   posted as collateral         borrowed against it        second packet (40k)
+   on a lending market          -> nothing to seize         blocked 46 min later
+           |                           |                     by the pause role
+           v                           v
+   market frozen              <b>unliquidatable bad debt</b>
+   across protocols           absorbed by the pool's own reserves
+           |
+           v
+   wrapped copies on 20+ chains questioned</div>
+        <p class="cite">
+          Facts summarised from the public incident write-up and on-chain record.
+          Source: <a href="https://blockaid.io/blog/how-a-single-layerzero-dvn-compromise-drained-292m-from-kelpdao" rel="noopener">Blockaid's post-mortem</a> (19 Apr 2026).
+          Figures are that incident's; nothing from that write-up is reproduced beyond the factual outline above.
+        </p>
+      </div>
+
+      <p class="sub" style="margin-top:28px">
+        BlastRadius reports both halves of that failure: the
+        <strong>configuration</strong> (<code>requiredDVNCount &lt; 2</code>) and the
+        <strong>contagion</strong> (which markets and chains inherit the loss).
+        Run the shipped config snapshot through the auditor to see it catch the
+        exact misconfiguration.
+      </p>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <p class="sub">
+        Open source. The same code that produced these numbers runs in your terminal,
+        so you can verify every figure instead of trusting a black box.
+      </p>
+      <table>
+        <thead><tr><th>Layer</th><th>What it does</th><th>Command</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Ingestion</strong></td>
+            <td>Real collateral listings and lending books, joined by pool id</td>
+            <td class="mono">contagion ingest</td>
+          </tr>
+          <tr>
+            <td><strong>Contagion graph</strong></td>
+            <td>Token &rarr; Market &rarr; Protocol &rarr; Chain, damage flows along edges</td>
+            <td class="mono">contagion map</td>
+          </tr>
+          <tr>
+            <td><strong>Solvency</strong></td>
+            <td>Bad debt a liquidation cannot clear, per market</td>
+            <td class="mono">contagion baddebt</td>
+          </tr>
+          <tr>
+            <td><strong>Config audit</strong></td>
+            <td>17 rules over verifier stacks, multisigs, oracles, backstops</td>
+            <td class="mono">contagion audit</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="card" style="text-align:center; padding:44px">
+        <h2 style="margin-bottom:10px">Paste a token. See the cascade.</h2>
+        <p class="sub" style="margin:0 auto 26px">
+          No sign-up, no wallet, nothing to install. Runs entirely in your browser
+          on a published dataset you can audit.
+        </p>
+        <a class="btn primary" href="calculator.html">Open the blast radius calculator &rarr;</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="cols">
+      <div>
+        <h4>About</h4>
+        <p><strong>BlastRadius</strong> is an open-source, research-stage toolkit for
+        pre-deployment contagion risk in decentralised finance. It reads published
+        configuration and market data and reports risk estimates.</p>
+        <p><strong>Not financial, legal or investment advice.</strong> Figures are
+        point-in-time estimates and stale the moment they are written.</p>
+      </div>
+      <div>
+        <h4>Data</h4>
+        <p>Market figures are from <a href="https://defillama.com" rel="noopener">DeFiLlama</a>'s
+        free public APIs, attributed and unmodified except for a documented join.</p>
+        <p>Derived figures (bad debt, uncovered loss, blast radius scores) are computed
+        locally and are <em>not</em> DeFiLlama figures. See <code>DATA_ATTRIBUTION.md</code>.</p>
+      </div>
+      <div>
+        <h4>Independence</h4>
+        <p>No affiliation with, and no endorsement by, any protocol, company or
+        incident party named here. All names are used for identification only.
+        No third-party logos or marks are used.</p>
+        <p>Incident figures belong to their respective parties and are summarised
+        with source attribution.</p>
+      </div>
+    </div>
+    <div class="notice">
+      Configurations are reported so that they can be fixed before deployment. This
+      toolkit produces risk findings only — it generates no payloads, runs no traffic
+      against third-party systems, and is intended solely for assets and systems you
+      own or are authorised to assess. Licensed under the repository's MIT licence.
+    </div>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  /* Fill the stat strip from the published dataset so it can never go stale. */
+  BlastRadius.loadGraph().then(function (g) {
+    var raw = g.raw || {};
+    var nodes = raw.nodes || [];
+    var count = function (kind) {
+      return nodes.filter(function (n) { return n.kind === kind; }).length;
+    };
+    var markets = count("Market");
+    var tokens = count("Token");
+    var protocols = {};
+    var chains = {};
+    nodes.forEach(function (n) {
+      if (n.kind === "Protocol") protocols[n.name] = true;
+      if (n.kind === "Chain") chains[n.name] = true;
+    });
+    var set = {
+      markets: BlastRadius.fmt(markets),
+      tokens: BlastRadius.fmt(tokens),
+      protocols: BlastRadius.fmt(Object.keys(protocols).length),
+      chains: BlastRadius.fmt(Object.keys(chains).length)
+    };
+    document.querySelectorAll("#stats .v").forEach(function (el) {
+      el.textContent = set[el.getAttribute("data-k")] || "—";
+    });
+    var stamp = (g.provenance && g.provenance.generated_at_utc) || "unknown";
+    var note = document.createElement("p");
+    note.className = "cite";
+    note.style.marginTop = "14px";
+    note.textContent = "Dataset snapshot generated " + stamp + " from DeFiLlama. See DATA_ATTRIBUTION.md.";
+    document.getElementById("stats").parentNode.appendChild(note);
+  }).catch(function (e) {
+    document.querySelectorAll("#stats .v").forEach(function (el) { el.textContent = "n/a"; });
+  });
+})();
+</script>
+
+</body>
+</html>

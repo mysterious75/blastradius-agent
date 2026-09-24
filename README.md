@@ -90,7 +90,10 @@ Exit code `1` jab config ship karne layak na ho — CI mein seedha gate.
 ### Ingestion — collateral whitelists + live TVL
 
 ```bash
-# live (DeFiLlama public yields API, no key)
+# live (DeFiLlama public APIs, no key) — real lending markets with supply/borrow/LTV
+python3 scripts/ingest_live.py --projects aave-v3 compound-v3 morpho-blue sparklend fluid
+
+# ya module se
 python -m blastradius.contagion ingest --source defillama --project aave-v3 --out graph.json
 
 # deterministic (protocol ki apni declared collateral listing)
@@ -99,6 +102,35 @@ python -m blastradius.contagion ingest --source whitelist --data listing.json --
 # phir usi graph pe
 python -m blastradius.contagion map --token *** --data graph.json
 ```
+
+`scripts/ingest_live.py` DeFiLlama ke **`/pools` + `/lendBorrow`** ko pool-id se
+join karta hai — isliye graph mein real `token_supplied_usd`,
+`debt_against_token_usd`, `ltv`, `borrowable`, `debt_ceiling_usd` aate hain.
+Snapshot `docs/data/blast-graph.json` mein likha jaata hai, **provenance block
+ke saath** (source URLs, timestamp, aur kya derived hai).
+
+> **Known limitation (hamesha disclosed):** safety-module / backstop balances
+> koi free API publish nahi karta. Live markets mein `backstop_buffer_usd = 0`
+> hota hai — isliye `uncovered_loss_usd` ek **upper bound** hai, forecast nahi.
+> `backstop_buffers={...}` se on-chain reads se bhar sakte ho.
+
+Data sources, attribution aur legal notes: [`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md).
+
+### 🌐 Public site (GitHub Pages)
+
+`docs/` ek static site hai — koi build step nahi, koi framework nahi, koi
+third-party font/logo nahi:
+
+| Page | Kya hai |
+|---|---|
+| [`docs/index.html`](docs/index.html) | Landing page + KelpDAO case study |
+| [`docs/calculator.html`](docs/calculator.html) | **Free blast-radius calculator** — poora computation browser mein, same formulas as `scoring.py` |
+| [`docs/deck.html`](docs/deck.html) | 8-slide pitch deck |
+
+Deploy: repo **Settings → Pages → Source: GitHub Actions**. Workflow
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) `main` pe har
+`docs/` change pe auto-deploy karta hai (least-privilege permissions,
+koi external request nahi).
 
 Design notes, aur har decision ka *kyun*: [`research/04-DESIGN-DECISIONS.md`](research/04-DESIGN-DECISIONS.md).
 Competitive research + market valuations: [`research/00-README.md`](research/00-README.md).

@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blast Radius Calculator — DeFi contagion map</title>
+<meta name="description" content="Pick a collateral token and see which markets, protocols and chains inherit the loss if it fails. Runs in your browser on a published dataset.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="dot"></span> BlastRadius</a>
+    <nav class="site">
+      <a href="calculator.html">Calculator</a>
+      <a href="index.html#how">How it works</a>
+      <a href="index.html#case">Case study</a>
+      <a href="deck.html">Deck</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section style="padding:56px 0 32px; border-bottom:none">
+    <div class="wrap">
+      <span class="eyebrow">Free tool · runs in your browser</span>
+      <h2 style="font-size:clamp(28px,4.4vw,44px); margin-bottom:10px">Blast radius calculator</h2>
+      <p class="sub">
+        Pick a collateral token. The graph below is built from real lending
+        markets and real supply/borrow figures. Everything is computed locally
+        in your browser — no request leaves the page, no wallet, no sign-up.
+      </p>
+
+      <div class="controls">
+        <div class="field">
+          <label for="token">Collateral token</label>
+          <select id="token"><option value="">loading dataset…</option></select>
+        </div>
+        <div class="field">
+          <label for="depth">Max hop depth</label>
+          <input id="depth" type="number" min="1" max="8" value="5">
+        </div>
+        <div class="field">
+          <label for="ratio">Post-collapse price ratio (0 = total loss)</label>
+          <input id="ratio" type="number" min="0" max="1" step="0.05" value="0">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <button class="btn primary" id="run" type="button">Compute &rarr;</button>
+        </div>
+      </div>
+
+      <div id="out">
+        <div class="empty">Loading the published dataset…</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:36px">
+    <div class="wrap">
+      <h3 style="margin-bottom:10px">Formulas</h3>
+      <p class="sub" style="margin-bottom:16px">
+        Shown so you can check the arithmetic rather than take it on faith. These
+        mirror <code>blastradius/contagion/scoring.py</code> exactly.
+      </p>
+      <div class="card mono" style="font-size:13.2px; line-height:2">
+        blast_radius(token)&nbsp;&nbsp; = all nodes reachable along damage edges (hop &le; depth)<br>
+        reachable_tvl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = &Sigma; TVL of affected nodes (deduplicated)<br>
+        decayed_tvl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = &Sigma; TVL &times; 0.65<sup>hop</sup><br>
+        bad_debt&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = debt_against_token &times; (1 &minus; price_ratio)<br>
+        uncovered_loss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = max(0, bad_debt &minus; backstop_buffer)<br>
+        liquidatable&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = bad_debt &le; 0
+      </div>
+      <div class="notice" style="margin-top:18px">
+        <strong>Known limitation, stated plainly:</strong> safety-module / backstop
+        balances are not published by any free API, so every live-ingested market
+        carries <code>backstop_buffer_usd = 0</code>. That makes
+        <code>uncovered_loss</code> an <strong>upper bound</strong>, not a forecast.
+        <br><br>
+        <strong>Not financial, legal or investment advice.</strong> Estimates are
+        point-in-time and stale the moment they are written. Market data:
+        <a href="https://defillama.com" rel="noopener">DeFiLlama</a> (see
+        <code>DATA_ATTRIBUTION.md</code>). Derived figures are computed locally.
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="notice">
+      No affiliation with, and no endorsement by, any protocol or company named in
+      the output. Names are used for identification only. This tool reports risk so
+      it can be fixed before deployment — it generates no payloads and runs no
+      traffic against third-party systems.
+    </div>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+<script>
+(function () {
+  var G = null;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  function tokenKey(name) { return "Token:" + name; }
+
+  function render(tokenName) {
+    var depth = parseInt($("depth").value, 10) || 5;
+    var ratio = parseFloat($("ratio").value);
+    if (isNaN(ratio)) ratio = 0;
+
+    var seed = tokenKey(tokenName);
+    var s = BlastRadius.score(G, seed, depth);
+    var rows = BlastRadius.badDebt(G, seed, ratio);
+    var totalUncovered = rows.reduce(function (a, r) { return a + r.uncovered_loss_usd; }, 0);
+
+    var html = "";
+
+    html += '<div class="stats" style="margin:0 0 24px">' +
+      '<div class="stat"><div class="v"><span class="pill ' + esc(s.severity) + '">' + esc(s.severity) + '</span></div><div class="k">Severity (derived)</div></div>' +
+      '<div class="stat"><div class="v">' + s.market_count + '</div><div class="k">Markets affected</div></div>' +
+      '<div class="stat"><div class="v">' + s.protocol_count + ' / ' + s.chain_count + '</div><div class="k">Protocols / chains</div></div>' +
+      '<div class="stat"><div class="v">' + esc(BlastRadius.usd(s.reachable_tvl_usd)) + '</div><div class="k">Reachable TVL</div></div>' +
+      '</div>';
+
+    html += '<h3 style="margin:0 0 10px">Contagion map</h3>' +
+      '<pre class="tree">' + esc(BlastRadius.asciiMap(s.radius, seed)) + '</pre>';
+
+    html += '<h3 style="margin:32px 0 10px">Bad debt if ' + esc(tokenName) + ' &rarr; ' + ratio.toFixed(2) + '</h3>';
+    if (!rows.length) {
+      html += '<div class="empty">No lending market in this dataset lists ' + esc(tokenName) + ' as collateral.</div>';
+    } else {
+      html += '<table><thead><tr><th>Market</th><th>Protocol</th><th>Supplied</th><th>Borrowed</th><th>Backstop</th><th>Uncovered (derived)</th><th>Outcome</th></tr></thead><tbody>';
+      rows.forEach(function (r) {
+        html += '<tr>' +
+          '<td>' + esc(r.market_name) + '</td>' +
+          '<td>' + esc(r.protocol) + '</td>' +
+          '<td class="mono">' + esc(BlastRadius.usd(r.collateral_at_risk_usd)) + '</td>' +
+          '<td class="mono">' + esc(BlastRadius.usd(r.debt_against_token_usd)) + '</td>' +
+          '<td class="mono">' + esc(BlastRadius.usd(r.backstop_buffer_usd)) + '</td>' +
+          '<td class="mono">' + esc(BlastRadius.usd(r.uncovered_loss_usd)) + '</td>' +
+          '<td><span class="pill ' + esc(r.outcome) + '">' + esc(r.outcome) + '</span></td>' +
+          '</tr>';
+      });
+      html += '</tbody></table>';
+      html += '<p class="cite" style="margin-top:12px">Total uncovered (derived, upper bound): <strong class="mono">' +
+        esc(BlastRadius.usd(totalUncovered)) + '</strong> — backstop figures are 0 because no free API publishes them.</p>';
+    }
+
+    html += '<p class="cite" style="margin-top:22px">Supplied / borrowed are DeFiLlama figures. ' +
+      'Severity, reachable TVL, bad debt and uncovered loss are computed locally in your browser. ' +
+      'Verify with <code>python3 -m blastradius.contagion</code> against the same snapshot.</p>';
+
+    $("out").innerHTML = html;
+  }
+
+  BlastRadius.loadGraph().then(function (g) {
+    G = g;
+    var tokens = BlastRadius.namesOfKind(
+      { entries: (g.raw.nodes || []).map(function (n) {
+          return { kind: n.kind, name: n.name }; }) },
+      "Token"
+    );
+    var sel = $("token");
+    sel.innerHTML = "";
+    tokens.forEach(function (t) {
+      var o = document.createElement("option");
+      o.value = t; o.textContent = t;
+      sel.appendChild(o);
+    });
+    if (tokens.indexOf("WETH") >= 0) sel.value = "WETH";
+    $("out").innerHTML = '<div class="empty">Choose a token and press Compute.</div>';
+  }).catch(function (e) {
+    $("out").innerHTML = '<div class="empty">Could not load the dataset: ' + esc(e.message) + '</div>';
+  });
+
+  $("run").addEventListener("click", function () {
+    if (!G || !$("token").value) return;
+    render($("token").value);
+  });
+  $("token").addEventListener("change", function () {
+    if (G && $("token").value) render($("token").value);
+  });
+})();
+</script>
+
+</body>
+</html>
