@@ -31,6 +31,80 @@ auto-generates and verifies patches, and tracks the whole lifecycle — from
 target discovery to CVE disclosure — in a local SQLite database with a web
 dashboard, multi-channel notifications, and a self-improving scanner.
 
+## 🔴 DeFi Contagion & Config Audit (Phase 6)
+
+Supply-chain blast radius (`blastradius/blast_radius`, Package → Repo) ka
+on-chain counterpart: **`blastradius/contagion/`** — `Token → Market → Protocol → Chain`.
+
+Do sawaal jo deploy se pehle aane chahiye, aur jinka jawab abhi market mein
+koi product nahi deta:
+
+> **1.** *Agar ye token fail ho jaye to kitna TVL, kitne protocols, kitni chains jaayengi?*
+> **2.** *Kya ye cross-chain/protocol config ek compromised signer survive kar sakta hai?*
+
+### Contagion graph + bad-debt simulation
+
+```bash
+# cascade map (the KelpDAO shape)
+python -m blastradius.contagion map --token *** --data data/seed_kelpdao_case.json --ascii
+
+# reachability + exposure score
+python -m blastradius.contagion score --token *** --data data/seed_kelpdao_case.json
+
+# "token -> 0" pe kitna bad debt liquidation clear nahi kar sakta
+python -m blastradius.contagion baddebt --token *** --data data/seed_kelpdao_case.json
+```
+
+Bad-debt model wahi mechanic hai jo KelpDAO ke baad Aave ke WETH reserve ko
+unliquidatable bad debt mein chhod gaya: collateral to jaata hai, uske against
+liya gaya debt nahi jaata, aur liquidators ke paas seize karne ko kuch nahi
+bachta. `backstop_buffer_usd` batata hai safety module / umbrella kitna absorb
+kar payega.
+
+### Config auditor
+
+```bash
+python -m blastradius.contagion audit --config data/seed_kelpdao_config.json
+```
+
+Anchor case **KelpDAO / LayerZero (18 Apr 2026)** — ek `1-of-1` DVN config,
+$k292M drain. Koi contract bug nahi tha; saare contracts as-designed chale.
+Ye auditor wahi class of misconfiguration **deploy se pehle** pakadta hai:
+
+| Rule | Severity | Kya pakadta hai |
+|---|---|---|
+| `DVN-INSUFFICIENT-REDUNDANCY` | CRITICAL | attestors < 2 — **KelpDAO yahin phasa** |
+| `DVN-THRESHOLD-UNREACHABLE` | CRITICAL | `optional_dvn_threshold > optional_dvn_count` |
+| `MULTISIG-THRESHOLD-UNREACHABLE` | CRITICAL | threshold > signers — emergency action dead |
+| `DVN-CORRELATED-PATHWAYS` | HIGH | ek operator kai pathways secure kare |
+| `DVN-DUPLICATE-OPERATOR` | HIGH | redundancy ka illusion (same signer repeat) |
+| `MULTISIG-THRESHOLD-ONE` | HIGH | `1-of-N` multisig = single key |
+| `ORACLE-SINGLE-FEED` | HIGH | ek hi price feed = single point of failure |
+| `NO-BACKSTOP-BUFFER` | HIGH | borrowing on, buffer zero |
+| `ADMIN-NOT-A-MULTISIG` | HIGH | admin EOA hai |
+| `ADMIN-NO-TIMELOCK` / oracle limits / `LOW-CONFIRMATIONS` | MEDIUM | |
+| `NO-EMERGENCY-PAUSER` / `NO-LIVE-SENTINEL` | MEDIUM/LOW | brake nahi hai |
+
+Exit code `1` jab config ship karne layak na ho — CI mein seedha gate.
+
+### Ingestion — collateral whitelists + live TVL
+
+```bash
+# live (DeFiLlama public yields API, no key)
+python -m blastradius.contagion ingest --source defillama --project aave-v3 --out graph.json
+
+# deterministic (protocol ki apni declared collateral listing)
+python -m blastradius.contagion ingest --source whitelist --data listing.json --out graph.json
+
+# phir usi graph pe
+python -m blastradius.contagion map --token *** --data graph.json
+```
+
+Design notes, aur har decision ka *kyun*: [`research/04-DESIGN-DECISIONS.md`](research/04-DESIGN-DECISIONS.md).
+Competitive research + market valuations: [`research/00-README.md`](research/00-README.md).
+
+---
+
 ## Installation
 
 ### Prerequisites
