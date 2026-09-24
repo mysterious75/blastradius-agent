@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BlastRadius — deck</title>
+<meta name="description" content="BlastRadius: pre-deployment contagion risk for decentralised finance.">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="dot"></span> BlastRadius</a>
+    <nav class="site">
+      <a href="calculator.html">Calculator</a>
+      <a href="index.html">Site</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="slide">
+    <div class="num">01 / 08</div>
+    <h2>Pre-deployment <span class="grad">contagion risk</span><br>for decentralised finance.</h2>
+    <p class="lede">Know how much TVL goes down with a token before you list it as collateral.</p>
+  </div>
+
+  <div class="slide">
+    <div class="num">02 / 08 · The problem</div>
+    <h2>DeFi is composable.<br>So is its failure.</h2>
+    <p class="lede">
+      Every protocol that whitelists a token makes an implicit assumption: that
+      the token stays backed. When that assumption breaks, the loss does not stay
+      in one protocol. It cascades through every market holding it, every protocol
+      hosting those markets, and every chain carrying a wrapper.
+    </p>
+  </div>
+
+  <div class="slide">
+    <div class="num">03 / 08 · The incident</div>
+    <div class="big-num crit">$292M</div>
+    <h2 style="margin-top:18px">One verifier. Zero contract bugs.</h2>
+    <p class="lede">
+      18 April 2026: a cross-chain receive pathway configured with a single
+      required verifier accepted a forged packet and released 116,500 rsETH.
+      Every contract behaved exactly as designed. Downstream: frozen markets,
+      unliquidatable bad debt in a major lending pool, wrapped copies on 20+
+      chains left questioning their backing.
+    </p>
+    <p class="cite">Figures and sequence summarised from the public post-mortem
+      (<a href="https://blockaid.io/blog/how-a-single-layerzero-dvn-compromise-drained-292m-from-kelpdao" rel="noopener">source</a>).
+      Used with attribution for factual reference.</p>
+  </div>
+
+  <div class="slide">
+    <div class="num">04 / 08 · The gap</div>
+    <h2>Nobody sells the answer.</h2>
+    <table>
+      <thead><tr><th>Who</th><th>What they do</th><th>When</th></tr></thead>
+      <tbody>
+        <tr><td>Runtime monitoring</td><td>alerts on suspicious activity</td><td>during</td></tr>
+        <tr><td>Post-mortem research</td><td>root cause + reproducible proof</td><td>after</td></tr>
+        <tr><td>Economic risk vendors</td><td>parameter tuning for yields and liquidations</td><td>before, but not exploit contagion</td></tr>
+        <tr><td>Audit firms</td><td>code review per contract</td><td>before, but per-contract</td></tr>
+        <tr><td><strong>BlastRadius</strong></td><td><strong>contagion + solvency + config redundancy</strong></td><td><strong>before, across protocols</strong></td></tr>
+      </tbody>
+    </table>
+    <p class="cite" style="margin-top:14px">Categories described from publicly available positioning of the relevant vendors. No vendor is named or endorsed.</p>
+  </div>
+
+  <div class="slide">
+    <div class="num">05 / 08 · Product</div>
+    <h2>Three outputs per listing.</h2>
+    <div class="grid3">
+      <div class="card"><div class="tag">Reachability</div><h3>Contagion map</h3>
+        <p>Token &rarr; markets &rarr; protocols &rarr; chains, with TVL at every hop.</p></div>
+      <div class="card"><div class="tag">Solvency</div><h3>Bad-debt projection</h3>
+        <p>Debt a liquidation cannot clear, per market, given a price collapse.</p></div>
+      <div class="card"><div class="tag">Redundancy</div><h3>Config audit</h3>
+        <p>17 rules over verifier stacks, multisigs, oracles, backstops. Exits non-zero on CRITICAL/HIGH so it gates CI.</p></div>
+    </div>
+    <p class="lede" style="margin-top:26px">Open source. The same code runs in your terminal so every figure is verifiable.</p>
+  </div>
+
+  <div class="slide">
+    <div class="num">06 / 08 · Moat</div>
+    <h2>The asset is the graph,<br>not the tool.</h2>
+    <p class="lede">
+      Tool-only products in this market get acqui-hired or sunset. What compounds
+      is a continuously maintained dependency graph: which token is listed as
+      collateral where, how much is supplied, how much is borrowed against it,
+      which chains carry a wrapper, which verifier stack stands behind the bridge.
+    </p>
+    <p class="lede">That graph is what makes the next listing's answer instant instead of a research project.</p>
+  </div>
+
+  <div class="slide">
+    <div class="num">07 / 08 · Go to market</div>
+    <h2>Free calculator, then the listing review.</h2>
+    <table>
+      <thead><tr><th>Step</th><th>Offer</th><th>Buyer</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Free browser calculator on a published dataset</td><td>anyone — distribution</td></tr>
+        <tr><td>2</td><td>Listing review: contagion report + config audit for a specific asset</td><td>risk &amp; governance teams</td></tr>
+        <tr><td>3</td><td>Continuous monitoring of whitelists and verifier configs</td><td>protocol ops</td></tr>
+        <tr><td>4</td><td>Risk scores for underwriters</td><td>on-chain insurance</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="slide">
+    <div class="num">08 / 08 · Ask</div>
+    <h2>Run it on your next listing.</h2>
+    <p class="lede">
+      Point it at one asset you are considering. If the report does not surface
+      something your current process missed, there is nothing to talk about.
+    </p>
+    <div class="actions">
+      <a class="btn primary" href="calculator.html">Open the calculator &rarr;</a>
+      <a class="btn ghost" href="index.html">Read the case study</a>
+    </div>
+  </div>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="notice">
+      <strong>Not financial, legal or investment advice.</strong> Estimates are
+      point-in-time. Market data attributed to
+      <a href="https://defillama.com" rel="noopener">DeFiLlama</a>; derived figures
+      computed locally. Incident figures belong to their respective parties and are
+      summarised with source attribution. No affiliation with or endorsement by any
+      protocol or company named here; all names are used for identification only.
+      No third-party logos or marks are used in this deck.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

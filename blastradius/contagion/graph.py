@@ -236,10 +236,15 @@ class DeFiContagionGraph:
     def from_dict(cls, payload: dict) -> "DeFiContagionGraph":
         """Build a graph from a snapshot dict.
 
+        Accepts either a bare ``{nodes, edges}`` dict or the wrapped form
+        written by ``scripts/ingest_live.py`` (``{provenance, graph}``).
+
         Ids are taken verbatim from ``id`` / ``src`` / ``dst`` so that snapshots
         may use stable slugs (``Market:aave-v3-eth-pool``) whose display names
         differ from the id (``Aave V3 Ethereum pool (rsETH listing)``).
         """
+        if isinstance(payload.get("graph"), dict):
+            payload = payload["graph"]
         graph = cls()
         for raw in payload.get("nodes", []):
             kind = NodeKind(raw["kind"])
