@@ -1,0 +1,154 @@
+{
+  "case": "KelpDAO / LayerZero DVN compromise - 18 Apr 2026",
+  "case_ref": "https://blockaid.io/blog/how-a-single-layerzero-dvn-compromise-drained-292m-from-kelpdao",
+  "_edge_convention": "Edges run in the direction damage travels: if `src` breaks, `dst` is damaged. Same as blastradius.blast_radius ((Package)-[:USED_IN]->(Repo)).",
+  "_note": "Graph shape and incident facts are real (116,500 rsETH / ~$292M drained via a 1-of-1 DVN config; Aave V3+V4, SparkLend, Fluid frozen; Upshift paused; rsETH live on 20+ chains). Market-level supplied/borrow/buffer figures are ILLUSTRATIVE sizing used to exercise the model - replace with live DeFiLlama / on-chain reads before shipping scores to a customer.",
+  "nodes": [
+    {
+      "id": "Token:rsETH",
+      "kind": "Token",
+      "name": "rsETH",
+      "tvl_usd": 1070000000,
+      "meta": { "category": "LRT", "issuer": "KelpDAO", "backing": "EigenLayer restaked ETH" }
+    },
+    {
+      "id": "Token:rsETH-Base",
+      "kind": "Token",
+      "name": "rsETH (Base)",
+      "tvl_usd": 41000000,
+      "meta": { "wrapped": true, "bridge": "LayerZero OFT" }
+    },
+    {
+      "id": "Token:rsETH-Arbitrum",
+      "kind": "Token",
+      "name": "rsETH (Arbitrum)",
+      "tvl_usd": 33000000,
+      "meta": { "wrapped": true, "bridge": "LayerZero OFT" }
+    },
+    {
+      "id": "Token:rsETH-Scroll",
+      "kind": "Token",
+      "name": "rsETH (Scroll)",
+      "tvl_usd": 12000000,
+      "meta": { "wrapped": true, "bridge": "LayerZero OFT" }
+    },
+
+    {
+      "id": "Market:aave-v3-eth-pool",
+      "kind": "Market",
+      "name": "Aave V3 Ethereum pool (rsETH listing)",
+      "tvl_usd": 5200000000,
+      "meta": {
+        "token_supplied_usd": 292000000,
+        "debt_against_token_usd": 240000000,
+        "backstop_buffer_usd": 60000000,
+        "borrow_asset": "WETH",
+        "_real_event": "attacker posted 116,500 drained rsETH as collateral and borrowed WETH against it"
+      }
+    },
+    {
+      "id": "Market:aave-v4-eth-pool",
+      "kind": "Market",
+      "name": "Aave V4 Ethereum pool (rsETH listing)",
+      "tvl_usd": 1800000000,
+      "meta": {
+        "token_supplied_usd": 85000000,
+        "debt_against_token_usd": 41000000,
+        "backstop_buffer_usd": 30000000,
+        "borrow_asset": "WETH"
+      }
+    },
+    {
+      "id": "Market:sparklend-eth",
+      "kind": "Market",
+      "name": "SparkLend Ethereum (rsETH listing)",
+      "tvl_usd": 940000000,
+      "meta": {
+        "token_supplied_usd": 58000000,
+        "debt_against_token_usd": 22000000,
+        "backstop_buffer_usd": 5000000,
+        "borrow_asset": "DAI"
+      }
+    },
+    {
+      "id": "Market:fluid-rseth",
+      "kind": "Market",
+      "name": "Fluid rsETH market",
+      "tvl_usd": 310000000,
+      "meta": {
+        "token_supplied_usd": 34000000,
+        "debt_against_token_usd": 12000000,
+        "backstop_buffer_usd": 0,
+        "borrow_asset": "USDC"
+      }
+    },
+    {
+      "id": "Market:upshift-vaults",
+      "kind": "Market",
+      "name": "Upshift Finance vaults (High Growth ETH, Kelp Gain)",
+      "tvl_usd": 74000000,
+      "meta": {
+        "token_supplied_usd": 19000000,
+        "debt_against_token_usd": 0,
+        "backstop_buffer_usd": 0,
+        "borrow_asset": null
+      }
+    },
+
+    { "id": "Protocol:KelpDAO", "kind": "Protocol", "name": "KelpDAO", "tvl_usd": 1070000000, "meta": { "category": "LRT" } },
+    { "id": "Protocol:Aave", "kind": "Protocol", "name": "Aave", "tvl_usd": 7000000000, "meta": { "category": "Lending" } },
+    { "id": "Protocol:SparkLend", "kind": "Protocol", "name": "SparkLend", "tvl_usd": 940000000, "meta": { "category": "Lending" } },
+    { "id": "Protocol:Fluid", "kind": "Protocol", "name": "Fluid", "tvl_usd": 310000000, "meta": { "category": "Lending" } },
+    { "id": "Protocol:Upshift", "kind": "Protocol", "name": "Upshift Finance", "tvl_usd": 74000000, "meta": { "category": "Vaults" } },
+    { "id": "Protocol:LayerZero", "kind": "Protocol", "name": "LayerZero (OFT bridge)", "tvl_usd": 0, "meta": { "category": "Bridge", "role": "message verification" } },
+
+    { "id": "Chain:Ethereum", "kind": "Chain", "name": "Ethereum", "tvl_usd": 0 },
+    { "id": "Chain:Base", "kind": "Chain", "name": "Base", "tvl_usd": 0 },
+    { "id": "Chain:Arbitrum", "kind": "Chain", "name": "Arbitrum", "tvl_usd": 0 },
+    { "id": "Chain:Linea", "kind": "Chain", "name": "Linea", "tvl_usd": 0 },
+    { "id": "Chain:Blast", "kind": "Chain", "name": "Blast", "tvl_usd": 0 },
+    { "id": "Chain:Mantle", "kind": "Chain", "name": "Mantle", "tvl_usd": 0 },
+    { "id": "Chain:Scroll", "kind": "Chain", "name": "Scroll", "tvl_usd": 0 },
+
+    {
+      "id": "Oracle:Chainlink-rsETH-ETH",
+      "kind": "Oracle",
+      "name": "Chainlink rsETH/ETH",
+      "tvl_usd": 0,
+      "meta": { "_failure_mode": "stale or manipulated feed misprices every market it feeds" }
+    }
+  ],
+  "edges": [
+    { "src": "Token:rsETH", "dst": "Market:aave-v3-eth-pool", "kind": "COLLATERAL_IN" },
+    { "src": "Token:rsETH", "dst": "Market:aave-v4-eth-pool", "kind": "COLLATERAL_IN" },
+    { "src": "Token:rsETH", "dst": "Market:sparklend-eth", "kind": "COLLATERAL_IN" },
+    { "src": "Token:rsETH", "dst": "Market:fluid-rseth", "kind": "COLLATERAL_IN" },
+    { "src": "Token:rsETH", "dst": "Market:upshift-vaults", "kind": "COLLATERAL_IN" },
+
+    { "src": "Market:aave-v3-eth-pool", "dst": "Protocol:Aave", "kind": "PART_OF" },
+    { "src": "Market:aave-v4-eth-pool", "dst": "Protocol:Aave", "kind": "PART_OF" },
+    { "src": "Market:sparklend-eth", "dst": "Protocol:SparkLend", "kind": "PART_OF" },
+    { "src": "Market:fluid-rseth", "dst": "Protocol:Fluid", "kind": "PART_OF" },
+    { "src": "Market:upshift-vaults", "dst": "Protocol:Upshift", "kind": "PART_OF" },
+
+    { "src": "Protocol:Aave", "dst": "Chain:Ethereum", "kind": "DEPLOYED_ON" },
+    { "src": "Protocol:Aave", "dst": "Chain:Base", "kind": "DEPLOYED_ON" },
+    { "src": "Protocol:Aave", "dst": "Chain:Arbitrum", "kind": "DEPLOYED_ON" },
+    { "src": "Protocol:SparkLend", "dst": "Chain:Ethereum", "kind": "DEPLOYED_ON" },
+    { "src": "Protocol:Fluid", "dst": "Chain:Ethereum", "kind": "DEPLOYED_ON" },
+    { "src": "Protocol:Upshift", "dst": "Chain:Ethereum", "kind": "DEPLOYED_ON" },
+    { "src": "Protocol:LayerZero", "dst": "Chain:Ethereum", "kind": "DEPLOYED_ON" },
+    { "src": "Protocol:LayerZero", "dst": "Chain:Base", "kind": "DEPLOYED_ON" },
+
+    { "src": "Token:rsETH", "dst": "Token:rsETH-Base", "kind": "BACKS" },
+    { "src": "Token:rsETH", "dst": "Token:rsETH-Arbitrum", "kind": "BACKS" },
+    { "src": "Token:rsETH", "dst": "Token:rsETH-Scroll", "kind": "BACKS" },
+    { "src": "Token:rsETH-Base", "dst": "Chain:Base", "kind": "WRAPPED_ON" },
+    { "src": "Token:rsETH-Arbitrum", "dst": "Chain:Arbitrum", "kind": "WRAPPED_ON" },
+    { "src": "Token:rsETH-Scroll", "dst": "Chain:Scroll", "kind": "WRAPPED_ON" },
+
+    { "src": "Oracle:Chainlink-rsETH-ETH", "dst": "Market:aave-v3-eth-pool", "kind": "PRICES" },
+    { "src": "Oracle:Chainlink-rsETH-ETH", "dst": "Market:aave-v4-eth-pool", "kind": "PRICES" },
+    { "src": "Oracle:Chainlink-rsETH-ETH", "dst": "Market:sparklend-eth", "kind": "PRICES" }
+  ]
+}
