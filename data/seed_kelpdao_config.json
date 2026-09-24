@@ -1,0 +1,72 @@
+{
+  "_note": "Configuration snapshot for the KelpDAO / LayerZero OFTAdapter pathway that was exploited on 18 Apr 2026. Values reflect the publicly documented 1-of-1 DVN configuration on the Unichain -> Ethereum receive pathway. This file exists so ConfigAuditor has a real, worked regression case: it must flag DVN-INSUFFICIENT-REDUNDANCY as CRITICAL. Do NOT treat it as a template - run the auditor against it to see what a bad config looks like.",
+  "_source": "https://blockaid.io/blog/how-a-single-layerzero-dvn-compromise-drained-292m-from-kelpdao",
+  "target": "KelpDAO OFTAdapter 0x85d456B2...Ef3 (Unichain -> Ethereum)",
+  "pathways": [
+    {
+      "id": "unichain->ethereum",
+      "chain": "Ethereum",
+      "endpoint": "LayerZero EndpointV2",
+      "receive_library": "ReceiveUln302",
+      "confirmations": 15,
+      "required_dvn_count": 1,
+      "optional_dvn_count": 0,
+      "optional_dvn_threshold": 0,
+      "required_dvns": ["0x589dedbd617e0cbcb916a9223f4d1300c294236b"],
+      "optional_dvns": [],
+      "_incident": "A forged packet claiming a Unichain source transaction (which never existed) was attested by this single compromised DVN and released 116,500 rsETH (~$292M)."
+    },
+    {
+      "id": "ethereum->unichain",
+      "chain": "Unichain",
+      "endpoint": "LayerZero EndpointV2",
+      "receive_library": "ReceiveUln302",
+      "confirmations": 15,
+      "required_dvn_count": 1,
+      "optional_dvn_count": 0,
+      "optional_dvn_threshold": 0,
+      "required_dvns": ["0x589dedbd617e0cbcb916a9223f4d1300c294236b"],
+      "optional_dvns": []
+    }
+  ],
+  "oracles": [
+    {
+      "market": "aave-v3-eth-pool",
+      "feeds": ["chainlink-rsETH/ETH"],
+      "max_staleness_seconds": null,
+      "max_deviation_bps": null
+    }
+  ],
+  "multisigs": [
+    {
+      "id": "emergency-pauser",
+      "threshold": 1,
+      "signers": 5,
+      "_incident": "This pauser stopped the second forged packet (40,000 rsETH, ~$100M) 46 minutes in - but at 1-of-5 any single signer can halt transfers."
+    }
+  ],
+  "admin": {
+    "address": "0xKelpDAO-ops",
+    "type": "multisig",
+    "timelock_seconds": 0
+  },
+  "roles": {
+    "pauser": true,
+    "guardian": false,
+    "sentinel": false
+  },
+  "markets": [
+    {
+      "id": "aave-v3-eth-pool",
+      "name": "Aave V3 Ethereum pool (rsETH listing)",
+      "debt_against_token_usd": 240000000,
+      "backstop_buffer_usd": 60000000
+    },
+    {
+      "id": "fluid-rseth",
+      "name": "Fluid rsETH market",
+      "debt_against_token_usd": 12000000,
+      "backstop_buffer_usd": 0
+    }
+  ]
+}
