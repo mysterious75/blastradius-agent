@@ -1,0 +1,64 @@
+# BlastRadius contagion config gate — CI template.
+#
+# Gates merges on pre-deployment DeFi config quality: runs the config auditor
+# and fails the check when CRITICAL findings ship (exit code 1).
+#
+# TEMPLATE: adjust the two paths below to your repo layout.
+name: blast-check
+
+on:
+  pull_request:
+    paths:
+      - "configs/**"          # TEMPLATE: your config dir
+      - "data/**"             # TEMPLATE: your graph/case data dir
+      - ".github/workflows/blast-check.yml"
+  push:
+    branches: [main]
+    paths:
+      - "configs/**"
+      - "data/**"
+      - ".github/workflows/blast-check.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"       # weekly re-audit (drift catches new rule releases)
+
+permissions:
+  contents: read
+
+env:
+  CONFIG_PATH: data/seed_kelpdao_config.json   # TEMPLATE: your config path
+  GRAPH_PATH: data/seed_kelpdao_case.json      # TEMPLATE: your graph/case data
+  TOKEN: rsETH                                 # TEMPLATE: token symbol to score
+
+jobs:
+  config-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -e "."
+
+      - name: Contagion config audit (merge gate)
+        # Exit code 1 when the config is not ship-ready (CRITICAL findings),
+        # e.g. insufficient DVN redundancy / unreachable multisig thresholds.
+        run: python -m blastradius.contagion audit --config "$CONFIG_PATH"
+
+      - name: Blast-radius score summary
+        # Informational: reachable TVL + exposure land in the job summary.
+        if: always()
+        run: |
+          {
+            echo "## Blast radius score"
+            echo '```'
+            python -m blastradius.contagion score --token "$TOKEN" --data "$GRAPH_PATH" || true
+            echo '```'
+            echo "## Bad debt if token -> 0"
+            echo '```'
+            python -m blastradius.contagion baddebt --token "$TOKEN" --data "$GRAPH_PATH" || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

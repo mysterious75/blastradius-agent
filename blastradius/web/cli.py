@@ -11,6 +11,7 @@ Usage:
 import argparse
 import json
 import time
+import urllib.error
 from pathlib import Path
 
 from blastradius.cli.display import RichDisplay
@@ -49,6 +50,15 @@ def main(argv=None) -> int:
     scanner.browser.timeout = args.timeout
 
     print(f"[*] Dynamic scan of {args.target}")
+    # Reachability probe: a dead target must fail loudly instead of reporting
+    # a clean "0 findings" scan (HTTP error answers mean the host IS reachable).
+    try:
+        scanner.browser.get(args.target)
+    except urllib.error.HTTPError:
+        pass
+    except Exception as exc:
+        print(f"[!] target unreachable: {args.target} ({exc.__class__.__name__}: {exc})")
+        return 2
     findings = scanner.scan(args.target)
     rows = [_to_finding(f) for f in findings]
     rows.sort(key=lambda f: (f.severity, f.file))

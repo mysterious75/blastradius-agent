@@ -145,3 +145,30 @@ def test_cli_from_db(tmp_path, monkeypatch, capsys):
     text = out.read_text(encoding="utf-8")
     assert "sqli" in text and "a.py" in text
     assert "exported 1 finding(s)" in capsys.readouterr().out
+
+
+def test_export_creates_missing_directories(exporter, tmp_path):
+    """Exports must create the output directory instead of crashing."""
+    sarif = tmp_path / "nested" / "deep" / "out.sarif"
+    exporter.export_sarif(str(sarif))
+    assert sarif.exists()
+
+    md = tmp_path / "a" / "b" / "out.md"
+    exporter.export_markdown(str(md))
+    assert md.exists()
+
+    html = tmp_path / "x" / "y" / "out.html"
+    exporter.export_html_report(str(html))
+    assert html.exists()
+
+    csv_out = tmp_path / "p" / "q" / "out.csv"
+    exporter.export_csv(str(csv_out))
+    assert csv_out.exists()
+
+    json_out = tmp_path / "m" / "n" / "out.json"
+    exporter.export_json(str(json_out))
+    assert json_out.exists()
+
+    sbom = tmp_path / "s" / "t" / "bom.json"
+    exporter.export_sbom_cyclonedx(str(sbom))
+    assert sbom.exists()

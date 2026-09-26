@@ -11,6 +11,11 @@ from typing import List, Optional
 from blastradius.reporting.attack_map import attack_for
 from blastradius.version import __version__
 
+
+def _ensure_parent(path: str) -> None:
+    """Create the output directory when missing so exports never crash on paths."""
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+
 _SARIF_SCHEMA = (
     "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
 )
@@ -61,6 +66,7 @@ class FindingsExporter:
     # ------------------------------------------------------------------
 
     def export_csv(self, path: str) -> None:
+        _ensure_parent(path)
         with open(path, "w", newline="", encoding="utf-8") as fh:
             writer = csv.writer(fh)
             writer.writerow(_CSV_COLUMNS)
@@ -87,6 +93,7 @@ class FindingsExporter:
     # ------------------------------------------------------------------
 
     def export_json(self, path: str) -> None:
+        _ensure_parent(path)
         data = []
         for f in self.findings:
             entry = (
@@ -136,6 +143,7 @@ class FindingsExporter:
         https://docs.github.com/en/code-security/code-scanning/managing-your-code-scanning-results):
         a single upload supports at most 25,000 results and 25,000 rules.
         """
+        _ensure_parent(path)
         rules = {}
         results = []
         for f in self.findings:
@@ -234,6 +242,7 @@ class FindingsExporter:
         deps is an optional iterable of (name, version, purl) tuples; when
         empty/None the BOM carries metadata only (no components list).
         """
+        _ensure_parent(path)
         bom = {
             "bomFormat": "CycloneDX",
             "specVersion": "1.5",
@@ -265,6 +274,7 @@ class FindingsExporter:
     # ------------------------------------------------------------------
 
     def export_html_report(self, path: str) -> None:
+        _ensure_parent(path)
         rows = []
         for idx, f in enumerate(self.findings, 1):
             rows.append(
@@ -312,6 +322,7 @@ new Chart(document.getElementById('sev'), {{ type:'doughnut',
     # ------------------------------------------------------------------
 
     def export_markdown(self, path: str) -> None:
+        _ensure_parent(path)
         lines = [
             "# BlastRadius Findings",
             "",

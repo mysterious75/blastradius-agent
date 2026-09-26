@@ -191,6 +191,15 @@ def test_test_connection():
 def test_patch_generator_uses_provider_config(monkeypatch):
     captured = {}
 
+    # Capture the REAL method's source BEFORE monkeypatching. Inspecting after
+    # the patch would return the fake's source (a tautology that can never
+    # catch a hardcoded URL in the generator).
+    import inspect
+
+    from blastradius.patcher.generator import PatchGenerator
+
+    orig_source = inspect.getsource(PatchGenerator._http_post)
+
     def fake_http(self, payload):
         captured["payload"] = payload
         return {
@@ -210,7 +219,6 @@ def test_patch_generator_uses_provider_config(monkeypatch):
 
     monkeypatch.setattr("blastradius.patcher.generator.PatchGenerator._http_post", fake_http)
     from blastradius.hunter.scanner import Finding
-    from blastradius.patcher.generator import PatchGenerator
 
     gen = PatchGenerator(api_key="sk-test", provider="deepseek", model="deepseek-reasoner")
     finding = Finding(file="a.py", line=1, vuln_type="sqli", payload="x", confidence=1.0)
@@ -218,7 +226,5 @@ def test_patch_generator_uses_provider_config(monkeypatch):
 
     assert patch.source == "api"
     assert captured["payload"]["model"] == "deepseek-reasoner"
-    # no hardcoded OpenCode URL anywhere in the generator
-    import inspect
-
-    assert "opencode.ai" not in inspect.getsource(PatchGenerator._http_post)
+    # no hardcoded OpenCode URL anywhere in the real generator method
+    assert "opencode.ai" not in orig_source
