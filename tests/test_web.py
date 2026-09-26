@@ -158,3 +158,12 @@ def test_scanner_exposed_probe(server_url):
     findings = DynamicWebScanner(probe_exposed=True).scan(server_url)
     exposed = [f for f in findings if f.check == "exposure"]
     assert any("/.git" in f.url or "/.env" in f.url or "/admin" in f.url for f in exposed)
+
+
+def test_web_cli_unreachable_target_exits_nonzero(capsys):
+    """A dead target must fail loudly, not report a clean 0-finding scan."""
+    from blastradius.web.cli import main
+
+    rc = main(["--target", "http://127.0.0.1:1"])
+    assert rc == 2
+    assert "unreachable" in capsys.readouterr().out
