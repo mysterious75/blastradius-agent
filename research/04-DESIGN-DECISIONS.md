@@ -160,6 +160,43 @@ Fix: `from_dict` ab `id` / `src` / `dst` ko **verbatim** use karta hai, aur
 
 ---
 
+## D8. Calculator headline score — `22 · log10(1 + decayed/1M)` (2026-09-27)
+
+**Decision:** free public calculator (`blastradius/web/calculator.py`) mein
+`blast_radius_score` = `clamp(0..100, round(22 · log10(1 + decayed_tvl_usd / 1e6)))`.
+~22 points per order of magnitude of decayed exposure.
+
+**Kyun:** engine ki `severity` (CRITICAL/HIGH/…) machine-readable contract
+hai — wo change nahi kiya. Lekin warranty bands (A+ 0-30 … C 71+) aur forum
+posts ke liye ek **0-100 headline** chahiye tha jo monotonic, explainable aur
+stable ho. Log scale isliye kyunki exposure 6 orders of magnitude span karta
+hai ($1M vault → $10T ecosystem); linear scale pe sab kuch 0 ya 100 ho jaata.
+
+**Calibration check:** seed case rsETH → `22 · log10(1 + 8983.39) = 87` ✓ —
+wahi number jo calculator JSON contract (`content/blog/…`, governance template)
+mein published hai. `risk_level` engine severity se aata hai (single source of
+truth), score se **nahi** — bands drift na ho.
+
+**Rejected:** score ko engine ke andar daalna (core ko `mat todo` guardrail),
+percentile-based score (abhi corpus nahi hai), depth-weighted ad-hoc sums
+(scam factor high).
+
+---
+
+## D9. Calculator ka placement — `web/calculator.py`, API mein mount (2026-09-27)
+
+**Decision:** module `blastradius/web/calculator.py` (MASTER_PROMPT ka mandated
+path), router `blastradius/api/server.py` mein `include_router` — lekin
+**Bearer-auth wall ke bahar**.
+
+**Kyun:** calculator lead magnet hai, signup/keys nahi. Paid API ka auth
+enforcement untouched (`/api/v1/scan`, `/api/v1/findings` etc. waise ke waise).
+Standalone bhi chalta hai: `build_calculator_app()` factory +
+`uvicorn blastradius.web.calculator:build_calculator_app --factory` (Fly/Railway
+ke liye). Data source = `BLASTRADIUS_CONTAGION_DATA` env, default seed snapshot.
+
+---
+
 ## 📌 Agla kadam (priority order)
 
 Research §10 ke hisaab se asli moat **data asset** hai, tool nahi.
@@ -170,7 +207,9 @@ Research §10 ke hisaab se asli moat **data asset** hai, tool nahi.
 2. **Config Auditor** — `requiredDVNCount < 2 && optionalDVNCount == 0` jaise
    patterns. KelpDAO mein ye **1 line** pakad leta ($292M bach jaate).
 3. **Bad-debt numbers ko real data** se replace karo (DeFiLlama + on-chain reads).
-4. **Free public "blast radius calculator"** → lead magnet (research §11).
+4. ~~**Free public "blast radius calculator"** → lead magnet (research §11).~~ ✅
+   **Done 2026-09-27** — `blastradius/web/calculator.py` + tests + content
+   (blog post, governance template). Next: deploy + DeFiLlama listing.
 5. **License fix** (research §10): MIT → AGPL + commercial dual license.
 
 ---

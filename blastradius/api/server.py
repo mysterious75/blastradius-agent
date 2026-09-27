@@ -15,8 +15,11 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from blastradius.dashboard.store import ScanStore, run_scan_job
+from blastradius.web.calculator import router as _contagion_router
 
 app = FastAPI(title="BlastRadius API", version="1.0.0")
+# Free public calculator (P1.2) — deliberately outside the Bearer-auth wall.
+app.include_router(_contagion_router)
 _bearer = HTTPBearer(auto_error=False)
 _store = ScanStore()
 
