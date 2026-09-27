@@ -1,6 +1,10 @@
 # 📥 Artifacts Index
 
 **Collected:** 2026-09-24 · Parent: `research/BLASTRADIUS-COMPETITIVE-RESEARCH.md`
+**Wave 2:** 2026-09-27 — see `research/06-DEEP-DIVE-COMPETITORS.md` §4.
+Files live in `research/artifacts/{papers,reports,books,blogs}/`.
+Security-audit every download with `python3 research/artifacts/security-audit.py`
+(13 files audited 2026-09-27: 0 hard fails, PDFs clean of JS/Launch/EmbeddedFile).
 
 ---
 
