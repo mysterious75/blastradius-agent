@@ -141,6 +141,7 @@ class DynamicWebScanner:
         authz_urls: Optional[List[str]] = None,
         sqli_probe: bool = False,
         sqli_time_probe: bool = False,
+        cachepoison_probe: bool = False,
     ):
         self.browser = browser or BrowserSession()
         # Probe browser never follows redirects (so Location-based checks work).
@@ -157,6 +158,8 @@ class DynamicWebScanner:
         # Optional live SQLi probing (opt-in: boolean/time probes are slow).
         self.sqli_probe = sqli_probe
         self.sqli_time_probe = sqli_time_probe
+        # Optional web-cache-poisoning probing (opt-in: extra requests).
+        self.cachepoison_probe = cachepoison_probe
         # Real HackerOne payloads (defaults always included) for reflected XSS.
         self.xss_payloads = xss_payloads()
         # Budget guard: total JS fetches allowed per scan() call.
@@ -200,6 +203,8 @@ class DynamicWebScanner:
             findings.extend(self._check_authz(visited + self.authz_urls))
         if self.sqli_probe:
             findings.extend(self._check_sqli(visited))
+        if self.cachepoison_probe:
+            findings.extend(self._check_cachepoison(visited))
         return findings
 
     # ------------------------------------------------------------------
@@ -342,6 +347,27 @@ class DynamicWebScanner:
             return []
         findings: List[DynamicFinding] = []
         for hit in self.authz.check(urls):
+            findings.append(
+                DynamicFinding(
+                    url=hit.url,
+                    check=hit.check,
+                    severity=hit.severity,
+                    cwe=hit.cwe,
+                    confidence=hit.confidence,
+                    evidence=hit.evidence,
+                    remediation=hit.remediation,
+                    description=hit.description,
+                )
+            )
+        return findings
+
+    def _check_cachepoison(self, urls: List[str]) -> List[DynamicFinding]:
+        """Probe crawled URLs for cache poisoning (opt-in)."""
+        from blastradius.web.cachepoison import CachePoisonChecker
+
+        checker = CachePoisonChecker(session=self._probe_browser)
+        findings: List[DynamicFinding] = []
+        for hit in checker.check(urls):
             findings.append(
                 DynamicFinding(
                     url=hit.url,

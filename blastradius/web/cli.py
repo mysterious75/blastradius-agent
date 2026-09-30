@@ -74,6 +74,11 @@ def main(argv=None) -> int:
         help="also run slow time-based SQLi probes (implies --sqli-probe)",
     )
     ap.add_argument(
+        "--cachepoison-probe",
+        action="store_true",
+        help="probe crawled URLs for web cache poisoning (unkeyed headers + WCD)",
+    )
+    ap.add_argument(
         "--scope",
         default=None,
         help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
@@ -102,6 +107,7 @@ def main(argv=None) -> int:
         authz_urls=args.idor_url,
         sqli_probe=args.sqli_probe or args.sqli_time_probe,
         sqli_time_probe=args.sqli_time_probe,
+        cachepoison_probe=args.cachepoison_probe,
     )
     scanner.browser.timeout = args.timeout
 
