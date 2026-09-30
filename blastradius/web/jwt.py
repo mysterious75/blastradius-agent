@@ -22,8 +22,8 @@ import hashlib
 import hmac
 import json
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Dict, List, Optional, Tuple
 
 # A short, high-signal dictionary of weak HMAC secrets seen in the wild.
 WEAK_SECRETS = (
@@ -56,7 +56,7 @@ def _b64url_encode(data: bytes) -> str:
     return base64.urlsafe_b64encode(data).rstrip(b"=").decode("ascii")
 
 
-def decode_jwt(token: str) -> Optional[Tuple[dict, dict, str]]:
+def decode_jwt(token: str) -> tuple[dict, dict, str] | None:
     """Return (header, payload, signature) or None if not a JWT."""
     parts = token.split(".")
     if len(parts) != 3:
@@ -64,12 +64,12 @@ def decode_jwt(token: str) -> Optional[Tuple[dict, dict, str]]:
     try:
         header = json.loads(_b64url_decode(parts[0]))
         payload = json.loads(_b64url_decode(parts[1]))
-    except Exception:
+    except Exception:  # noqa: BLE001 - probe must never crash the scan
         return None
     return header, payload, parts[2]
 
 
-def forge_none(token: str) -> Optional[str]:
+def forge_none(token: str) -> str | None:
     """Re-encode a JWT with ``alg:none`` and an empty signature."""
     decoded = decode_jwt(token)
     if decoded is None:
@@ -81,7 +81,7 @@ def forge_none(token: str) -> Optional[str]:
            f"{_b64url_encode(json.dumps(payload, separators=(',', ':')).encode())}."
 
 
-def forge_hs256(token: str, secret: bytes) -> Optional[str]:
+def forge_hs256(token: str, secret: bytes) -> str | None:
     """Re-sign a JWT with HS256 using ``secret`` (for confusion / weak-secret tests)."""
     decoded = decode_jwt(token)
     if decoded is None:
@@ -104,16 +104,16 @@ class JwtChecker:
         self,
         send: Callable[[str], object],
         url: str = "",
-        jwks_public_key: Optional[bytes] = None,
-        weak_secrets: Tuple[str, ...] = WEAK_SECRETS,
+        jwks_public_key: bytes | None = None,
+        weak_secrets: tuple[str, ...] = WEAK_SECRETS,
     ):
         self.send = send
         self.url = url
         self.jwks_public_key = jwks_public_key
         self.weak_secrets = weak_secrets
 
-    def check(self, token: str) -> List[JwtFinding]:
-        findings: List[JwtFinding] = []
+    def check(self, token: str) -> list[JwtFinding]:
+        findings: list[JwtFinding] = []
         decoded = decode_jwt(token)
         if decoded is None:
             return findings
@@ -172,7 +172,7 @@ class JwtChecker:
     def _accepted(self, token: str) -> bool:
         try:
             resp = self.send(token)
-        except Exception:
+        except Exception:  # noqa: BLE001 - probe must never crash the scan
             return False
         status = getattr(resp, "status", None)
         return status is not None and 200 <= status < 300

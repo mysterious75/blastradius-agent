@@ -1,10 +1,9 @@
 """Live end-to-end smoke test of the authz-diff IDOR check against the demo server."""
-import subprocess
-import sys
-import time
-import threading
 import http.server
 import importlib.util
+import sys
+import threading
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))

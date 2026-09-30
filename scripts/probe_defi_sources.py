@@ -1,11 +1,9 @@
 """Probe keyless DeFi data sources for live availability (HEAD/GET small), report status.
 No writes. Prints reachability so we know what is safe to download in bulk.
 """
-import json
-import sys
 import ssl
-import urllib.request
 import urllib.error
+import urllib.request
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
@@ -39,5 +37,5 @@ for name, url in SOURCES:
             print(f"[{r.status}] {name:32} {url[:60]}  bytes~{len(data)}")
     except urllib.error.HTTPError as e:
         print(f"[{e.code}] {name:32} {url[:60]}  {str(e.reason)[:40]}")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - diagnostic script must report, never crash
         print(f"[ERR] {name:32} {url[:60]}  {str(e)[:50]}")

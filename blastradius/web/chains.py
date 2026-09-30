@@ -10,12 +10,12 @@ Input: a list of findings (any object with ``check`` / ``vuln_type`` and
 combined severity. Rules are declarative so they are easy to extend and test.
 """
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Tuple
 
 # A chain rule: (required node types in order, chain name, bumped severity).
 # `nodes` must appear in the finding set; order defines the reported path.
-_CHAIN_RULES: Tuple[Tuple[Tuple[str, ...], str, str], ...] = (
+_CHAIN_RULES: tuple[tuple[tuple[str, ...], str, str], ...] = (
     (("redirect", "oauth"), "Open redirect -> OAuth code theft", "CRITICAL"),
     (("redirect", "ssrf"), "Open redirect -> SSRF bypass", "HIGH"),
     (("idor", "ato"), "IDOR on auth object -> account takeover", "CRITICAL"),
@@ -39,8 +39,8 @@ class Chain:
 
     name: str
     severity: str
-    steps: List[str]  # node types in order
-    finding_urls: List[str] = field(default_factory=list)
+    steps: list[str]  # node types in order
+    finding_urls: list[str] = field(default_factory=list)
 
     def describe(self) -> str:
         return f"{self.name}: " + " -> ".join(self.steps)
@@ -50,19 +50,19 @@ def _kind_of(finding) -> str:
     return str(getattr(finding, "check", None) or getattr(finding, "vuln_type", "") or "").lower()
 
 
-def build_chains(findings: Iterable[object]) -> List[Chain]:
+def build_chains(findings: Iterable[object]) -> list[Chain]:
     """Link findings into known exploit chains.
 
     A rule fires when every required node type is present. Only the first
     finding of each type is used (one proof per step).
     """
-    by_kind: Dict[str, object] = {}
+    by_kind: dict[str, object] = {}
     for f in findings:
         k = _kind_of(f)
         if k and k not in by_kind:
             by_kind[k] = f
 
-    chains: List[Chain] = []
+    chains: list[Chain] = []
     for nodes, name, severity in _CHAIN_RULES:
         if all(n in by_kind for n in nodes):
             chains.append(

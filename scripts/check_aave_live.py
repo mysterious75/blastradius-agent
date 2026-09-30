@@ -2,9 +2,10 @@
 import sys
 
 sys.path.insert(0, r"D:\deepseek\blastradius-agent")
-from blastradius.contagion.loaders import aave
-from blastradius.contagion.schema import EdgeKind, NodeKind
 from collections import Counter
+
+from blastradius.contagion.loaders import aave
+from blastradius.contagion.schema import NodeKind
 
 markets = aave.fetch_markets(chain_ids=[1, 42161, 8453])
 print("markets fetched:", [(m.get("name"), len(m.get("reserves", []))) for m in markets])

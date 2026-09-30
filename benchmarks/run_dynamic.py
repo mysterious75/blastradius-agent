@@ -66,9 +66,10 @@ def run_idor_target(base: str, manifest: dict):
 
 
 def run_jwt_target(base: str, manifest: dict):
-    from blastradius.web.browser import BrowserSession
-    from blastradius.web.jwt import JwtChecker, forge_none
     import base64
+
+    from blastradius.web.browser import BrowserSession
+    from blastradius.web.jwt import JwtChecker
 
     def b64(data: bytes) -> str:
         return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
@@ -88,7 +89,7 @@ def run_jwt_target(base: str, manifest: dict):
                 page = session._request(
                     "POST", _url, data=body,
                     headers={"Content-Type": "application/x-www-form-urlencoded"})
-            except Exception:
+            except Exception:  # noqa: BLE001 - probe must never crash the scan
                 return None
             return page
 

@@ -20,7 +20,6 @@ Safety:
 
 import re
 from dataclasses import dataclass
-from typing import Dict, List, Optional
 
 from blastradius.web.browser import BrowserSession
 
@@ -68,9 +67,9 @@ class AuthzDiffChecker:
 
     def __init__(
         self,
-        attacker: Optional[BrowserSession] = None,
-        victim: Optional[BrowserSession] = None,
-        victim_markers: Optional[List[str]] = None,
+        attacker: BrowserSession | None = None,
+        victim: BrowserSession | None = None,
+        victim_markers: list[str] | None = None,
         max_probes: int = 25,
     ):
         # Both sessions are required; the check is inert without them.
@@ -99,7 +98,7 @@ class AuthzDiffChecker:
                 return True
         return False
 
-    def candidate_urls(self, urls: List[str]) -> List[str]:
+    def candidate_urls(self, urls: list[str]) -> list[str]:
         seen = set()
         out = []
         for u in urls:
@@ -115,21 +114,21 @@ class AuthzDiffChecker:
     # Check
     # ------------------------------------------------------------------
 
-    def check(self, urls: List[str]) -> List[AuthzFinding]:
+    def check(self, urls: list[str]) -> list[AuthzFinding]:
         """Run the authz diff over candidate URLs; returns confirmed leaks."""
         if not self.enabled:
             return []
-        findings: List[AuthzFinding] = []
+        findings: list[AuthzFinding] = []
         for url in self.candidate_urls(urls):
             finding = self._probe(url)
             if finding is not None:
                 findings.append(finding)
         return findings
 
-    def _probe(self, url: str) -> Optional[AuthzFinding]:
+    def _probe(self, url: str) -> AuthzFinding | None:
         try:
             victim_page = self.victim.get(url)
-        except Exception:
+        except Exception:  # noqa: BLE001 - probe must never crash the scan
             return None
         # Victim must actually own the object (non-denial, 2xx, non-empty).
         victim_body = (victim_page.text or "").strip()
@@ -137,7 +136,7 @@ class AuthzDiffChecker:
             return None
         try:
             attacker_page = self.attacker.get(url)
-        except Exception:
+        except Exception:  # noqa: BLE001 - probe must never crash the scan
             return None
         if attacker_page.status >= 400:
             return None

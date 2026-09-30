@@ -20,10 +20,11 @@ Everything is dependency-injected (the listener is any object with
 ``last_hits()``) so the logic is unit-tested offline with a fake listener.
 """
 
+import contextlib
 import re
 import urllib.parse
-from dataclasses import dataclass, field
-from typing import Callable, Dict, List, Optional
+from collections.abc import Callable
+from dataclasses import dataclass
 
 from blastradius.web.browser import BrowserSession
 
@@ -66,7 +67,7 @@ INTERNAL_PROBES = (
 )
 _PRIVATE_RE = re.compile(
     r"^(?:127\.|10\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.|169\.254\.|\[::1\]|localhost)",
-    re.I,
+    re.IGNORECASE,
 )
 
 
@@ -99,9 +100,9 @@ class SsrfChecker:
     def __init__(
         self,
         listener,
-        callback_base: Optional[str] = None,
-        session: Optional[BrowserSession] = None,
-        redirect_probe_builder: Optional[Callable[[str], str]] = None,
+        callback_base: str | None = None,
+        session: BrowserSession | None = None,
+        redirect_probe_builder: Callable[[str], str] | None = None,
         max_params: int = 40,
     ):
         self.listener = listener
@@ -116,10 +117,10 @@ class SsrfChecker:
         return self.listener is not None and bool(self.callback_base)
 
     # ------------------------------------------------------------------
-    def check(self, urls: List[str]) -> List[SsrfFinding]:
+    def check(self, urls: list[str]) -> list[SsrfFinding]:
         if not self.enabled:
             return []
-        findings: List[SsrfFinding] = []
+        findings: list[SsrfFinding] = []
         for url in urls[: self.max_params]:
             parsed = urllib.parse.urlparse(url)
             params = urllib.parse.parse_qs(parsed.query)
@@ -132,16 +133,14 @@ class SsrfChecker:
         return findings
 
     # ------------------------------------------------------------------
-    def _probe_param(self, url: str, parsed, name: str) -> Optional[SsrfFinding]:
+    def _probe_param(self, url: str, parsed, name: str) -> SsrfFinding | None:
         marker = f"ssrf-{abs(hash((url, name))) & 0xFFFFFF:x}"
         callback = f"{self.callback_base.rstrip('/')}/{marker}"
         base = {k: v[0] for k, v in urllib.parse.parse_qs(parsed.query).items()}
         # 1. direct OOB
         probe = {**base, name: callback}
-        try:
+        with contextlib.suppress(Exception):  # probe must never crash the scan
             self.session.get(url.split("?")[0], params=probe)
-        except Exception:
-            pass
         hits = self._hits(marker)
         if hits:
             return SsrfFinding(
@@ -159,10 +158,8 @@ class SsrfChecker:
             marker2 = marker + "r"
             redir = self.redirect_probe_builder(f"{self.callback_base.rstrip('/')}/{marker2}")
             probe2 = {**base, name: redir}
-            try:
+            with contextlib.suppress(Exception):  # probe must never crash the scan
                 self.session.get(url.split("?")[0], params=probe2)
-            except Exception:
-                pass
             if self._hits(marker2):
                 return SsrfFinding(
                     url=url,
@@ -181,5 +178,5 @@ class SsrfChecker:
     def _hits(self, marker: str) -> list:
         try:
             return list(self.listener.hits_for(marker))
-        except Exception:
+        except Exception:  # noqa: BLE001 - probe must never crash the scan
             return []

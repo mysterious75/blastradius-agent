@@ -24,8 +24,9 @@ See ``DATA_ATTRIBUTION.md`` for provenance.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any
 
 from ..graph import DeFiContagionGraph
 from ..schema import EdgeKind, NodeKind
@@ -34,7 +35,7 @@ from ..schema import EdgeKind, NodeKind
 # Canonical source is ``data/token_backing.json`` (update the file, not the
 # code, when new LSTs/LRTs ship); this dict is the offline fallback when the
 # file is absent.
-_TOKEN_BACKING_DEFAULT: Dict[str, str] = {
+_TOKEN_BACKING_DEFAULT: dict[str, str] = {
     "wstETH": "stETH",
     "stETH": "ETH",
     "weETH": "eETH",
@@ -50,7 +51,7 @@ _TOKEN_BACKING_DEFAULT: Dict[str, str] = {
 }
 
 
-def load_token_backing_file(path: Optional[Path] = None) -> Dict[str, str]:
+def load_token_backing_file(path: Path | None = None) -> dict[str, str]:
     """Read the backing map from ``data/token_backing.json`` (or a given path).
 
     Returns the built-in fallback when the file is missing/unreadable so the
@@ -88,7 +89,7 @@ def _base_symbol(pair: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def load_protocols(graph: DeFiContagionGraph, data: Iterable[Dict[str, Any]], top_n: int = 200) -> int:
+def load_protocols(graph: DeFiContagionGraph, data: Iterable[dict[str, Any]], top_n: int = 200) -> int:
     """Fold DeFiLlama protocol rows into Protocol + Chain nodes (multi-chain)."""
     count = 0
     for i, p in enumerate(data):
@@ -111,7 +112,7 @@ def load_protocols(graph: DeFiContagionGraph, data: Iterable[Dict[str, Any]], to
     return count
 
 
-def load_oracles(graph: DeFiContagionGraph, feeds: Iterable[Dict[str, Any]], exchanges: Iterable[Dict[str, Any]] = ()) -> int:
+def load_oracles(graph: DeFiContagionGraph, feeds: Iterable[dict[str, Any]], exchanges: Iterable[dict[str, Any]] = ()) -> int:
     """Oracle (Chainlink) nodes + ``PRICES`` edges to tokens they quote.
 
     A feed ``"ETH / USD"`` yields ``Oracle:chainlink:ETH/USD`` and a ``PRICES``
@@ -138,7 +139,7 @@ def load_oracles(graph: DeFiContagionGraph, feeds: Iterable[Dict[str, Any]], exc
     return count
 
 
-def load_pyth(graph: DeFiContagionGraph, feeds: Iterable[Dict[str, Any]]) -> int:
+def load_pyth(graph: DeFiContagionGraph, feeds: Iterable[dict[str, Any]]) -> int:
     """Pyth oracle nodes -> ``PRICES`` edges."""
     count = 0
     for feed in feeds:
@@ -158,7 +159,7 @@ def load_pyth(graph: DeFiContagionGraph, feeds: Iterable[Dict[str, Any]]) -> int
     return count
 
 
-def load_token_backing(graph: DeFiContagionGraph, backing: Optional[Dict[str, str]] = None) -> int:
+def load_token_backing(graph: DeFiContagionGraph, backing: dict[str, str] | None = None) -> int:
     """Token -> Token nesting edges (``BACKS``): LRT/LST backed by underlying.
 
     With no explicit ``backing`` map, reads ``data/token_backing.json`` (falling
@@ -174,7 +175,7 @@ def load_token_backing(graph: DeFiContagionGraph, backing: Optional[Dict[str, st
     return count
 
 
-def load_morpho_markets(graph: DeFiContagionGraph, markets: Iterable[Dict[str, Any]], top_n: int = 100) -> int:
+def load_morpho_markets(graph: DeFiContagionGraph, markets: Iterable[dict[str, Any]], top_n: int = 100) -> int:
     """Morpho Blue markets -> Market nodes with collateral + oracle edges."""
     count = 0
     for i, m in enumerate(markets):
@@ -217,7 +218,7 @@ def load_morpho_markets(graph: DeFiContagionGraph, markets: Iterable[Dict[str, A
 # ---------------------------------------------------------------------------
 
 
-def build_graph_from_snapshot(ingest_dir: Optional[Path] = None, top_n_protocols: int = 200, top_n_markets: int = 100) -> DeFiContagionGraph:
+def build_graph_from_snapshot(ingest_dir: Path | None = None, top_n_protocols: int = 200, top_n_markets: int = 100) -> DeFiContagionGraph:
     """Build a contagion graph from every available ``data/ingest`` snapshot.
 
     Each input is optional; missing files are simply skipped, so the function
@@ -244,10 +245,10 @@ def build_graph_from_snapshot(ingest_dir: Optional[Path] = None, top_n_protocols
     return graph
 
 
-def provenance(ingest_dir: Optional[Path] = None) -> Dict[str, Any]:
+def provenance(ingest_dir: Path | None = None) -> dict[str, Any]:
     """List which snapshot files are present (for the graph's provenance block)."""
     root = Path(ingest_dir) if ingest_dir else _default_ingest_dir()
-    out: Dict[str, Any] = {"sources": []}
+    out: dict[str, Any] = {"sources": []}
     for name in (
         "defillama_protocols.json",
         "chainlink_feeds_mainnet.json",

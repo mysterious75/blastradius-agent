@@ -25,7 +25,7 @@ import json
 import time
 import urllib.error
 import urllib.request
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ..graph import DeFiContagionGraph
 from ..schema import EdgeKind, NodeKind
@@ -64,13 +64,13 @@ def _post_graphql(query: str, timeout: float = DEFAULT_TIMEOUT) -> Any:
         headers={"User-Agent": USER_AGENT, "Content-Type": "application/json", "Accept": "application/json"},
     )
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310 - fixed host
+        with urllib.request.urlopen(request, timeout=timeout) as response:
             return json.loads(response.read().decode("utf-8"))
     finally:
         _last_request_at = time.monotonic()
 
 
-def fetch_markets(chain_ids: Optional[List[int]] = None, timeout: float = DEFAULT_TIMEOUT) -> List[Dict[str, Any]]:
+def fetch_markets(chain_ids: list[int] | None = None, timeout: float = DEFAULT_TIMEOUT) -> list[dict[str, Any]]:
     """Live Aave markets with full reserve risk config. Network code."""
     ids = ",".join(str(c) for c in (chain_ids or DEFAULT_CHAIN_IDS))
     payload = _post_graphql(_RESERVES_QUERY % ids, timeout=timeout)
@@ -79,14 +79,14 @@ def fetch_markets(chain_ids: Optional[List[int]] = None, timeout: float = DEFAUL
     return ((payload or {}).get("data") or {}).get("markets") or []
 
 
-def _fval(node: Any) -> Optional[float]:
+def _fval(node: Any) -> float | None:
     try:
         return float(node.get("value")) if isinstance(node, dict) else None
     except (TypeError, ValueError):
         return None
 
 
-def build_graph_from_aave(markets: List[Dict[str, Any]]) -> DeFiContagionGraph:
+def build_graph_from_aave(markets: list[dict[str, Any]]) -> DeFiContagionGraph:
     """Fold Aave market dicts (as returned by :func:`fetch_markets`) into a graph.
 
     Pure function — no network, fully unit-testable.

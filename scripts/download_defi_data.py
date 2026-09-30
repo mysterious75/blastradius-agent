@@ -5,8 +5,8 @@ import json
 import os
 import ssl
 import time
-import urllib.request
 import urllib.error
+import urllib.request
 
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
@@ -44,6 +44,6 @@ for fname, url in TARGETS:
         with open(path, "wb") as f:
             f.write(data)
         print(f"[ok]   {fname}  {len(data)} bytes")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - diagnostic script must report, never crash
         print(f"[FAIL] {fname}  {str(e)[:70]}")
     time.sleep(0.5)
