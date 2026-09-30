@@ -89,7 +89,9 @@ def _base_symbol(pair: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def load_protocols(graph: DeFiContagionGraph, data: Iterable[dict[str, Any]], top_n: int = 200) -> int:
+def load_protocols(
+    graph: DeFiContagionGraph, data: Iterable[dict[str, Any]], top_n: int = 200
+) -> int:
     """Fold DeFiLlama protocol rows into Protocol + Chain nodes (multi-chain)."""
     count = 0
     for i, p in enumerate(data):
@@ -99,9 +101,13 @@ def load_protocols(graph: DeFiContagionGraph, data: Iterable[dict[str, Any]], to
         name = str(p.get("name") or slug)
         if not slug:
             continue
-        graph.add_node(NodeKind.PROTOCOL, name, tvl_usd=float(p.get("tvl") or 0.0),
-                       meta={"category": p.get("category", ""), "source": "defillama:protocols",
-                             "slug": slug}, node_id=f"Protocol:{slug}")
+        graph.add_node(
+            NodeKind.PROTOCOL,
+            name,
+            tvl_usd=float(p.get("tvl") or 0.0),
+            meta={"category": p.get("category", ""), "source": "defillama:protocols", "slug": slug},
+            node_id=f"Protocol:{slug}",
+        )
         chains = list(p.get("chains") or ([p.get("chain")] if p.get("chain") else []))
         for chain in chains:
             if not chain:
@@ -112,7 +118,11 @@ def load_protocols(graph: DeFiContagionGraph, data: Iterable[dict[str, Any]], to
     return count
 
 
-def load_oracles(graph: DeFiContagionGraph, feeds: Iterable[dict[str, Any]], exchanges: Iterable[dict[str, Any]] = ()) -> int:
+def load_oracles(
+    graph: DeFiContagionGraph,
+    feeds: Iterable[dict[str, Any]],
+    exchanges: Iterable[dict[str, Any]] = (),
+) -> int:
     """Oracle (Chainlink) nodes + ``PRICES`` edges to tokens they quote.
 
     A feed ``"ETH / USD"`` yields ``Oracle:chainlink:ETH/USD`` and a ``PRICES``
@@ -129,10 +139,18 @@ def load_oracles(graph: DeFiContagionGraph, feeds: Iterable[dict[str, Any]], exc
             continue
         # Include exchange-rate feeds (LRT/LST) as token-pricing oracles too.
         oracle_name = f"chainlink:{pair}"
-        graph.add_node(NodeKind.ORACLE, oracle_name, tvl_usd=0.0,
-                       meta={"proxy": proxy, "path": feed.get("path", ""),
-                             "heartbeat": feed.get("heartbeat", ""),
-                             "source": "chainlink"}, node_id=f"Oracle:{oracle_name}")
+        graph.add_node(
+            NodeKind.ORACLE,
+            oracle_name,
+            tvl_usd=0.0,
+            meta={
+                "proxy": proxy,
+                "path": feed.get("path", ""),
+                "heartbeat": feed.get("heartbeat", ""),
+                "source": "chainlink",
+            },
+            node_id=f"Oracle:{oracle_name}",
+        )
         graph.add_node(NodeKind.TOKEN, base, tvl_usd=0.0, node_id=f"Token:{base}")
         graph.add_edge(EdgeKind.PRICES, (NodeKind.ORACLE, oracle_name), (NodeKind.TOKEN, base))
         count += 1
@@ -150,8 +168,13 @@ def load_pyth(graph: DeFiContagionGraph, feeds: Iterable[dict[str, Any]]) -> int
             continue
         base = symbol.replace("_", "/").split("/")[0].strip()
         oracle_name = f"pyth:{symbol}"
-        graph.add_node(NodeKind.ORACLE, oracle_name, tvl_usd=0.0,
-                       meta={"feed_id": feed_id, "source": "pyth"}, node_id=f"Oracle:{oracle_name}")
+        graph.add_node(
+            NodeKind.ORACLE,
+            oracle_name,
+            tvl_usd=0.0,
+            meta={"feed_id": feed_id, "source": "pyth"},
+            node_id=f"Oracle:{oracle_name}",
+        )
         if base:
             graph.add_node(NodeKind.TOKEN, base, tvl_usd=0.0, node_id=f"Token:{base}")
             graph.add_edge(EdgeKind.PRICES, (NodeKind.ORACLE, oracle_name), (NodeKind.TOKEN, base))
@@ -175,7 +198,9 @@ def load_token_backing(graph: DeFiContagionGraph, backing: dict[str, str] | None
     return count
 
 
-def load_morpho_markets(graph: DeFiContagionGraph, markets: Iterable[dict[str, Any]], top_n: int = 100) -> int:
+def load_morpho_markets(
+    graph: DeFiContagionGraph, markets: Iterable[dict[str, Any]], top_n: int = 100
+) -> int:
     """Morpho Blue markets -> Market nodes with collateral + oracle edges."""
     count = 0
     for i, m in enumerate(markets):
@@ -193,22 +218,39 @@ def load_morpho_markets(graph: DeFiContagionGraph, markets: Iterable[dict[str, A
         supply = float((state.get("supplyAssetsUsd") or 0) or 0)
         borrow = float((state.get("borrowAssetsUsd") or 0) or 0)
         graph.add_node(
-            NodeKind.MARKET, market_name, tvl_usd=supply,
-            meta={"debt_against_token_usd": borrow, "lltv": m.get("lltv"),
-                  "token_supplied_usd": supply, "backstop_buffer_usd": 0.0,
-                  "source": "morpho"},
+            NodeKind.MARKET,
+            market_name,
+            tvl_usd=supply,
+            meta={
+                "debt_against_token_usd": borrow,
+                "lltv": m.get("lltv"),
+                "token_supplied_usd": supply,
+                "backstop_buffer_usd": 0.0,
+                "source": "morpho",
+            },
             node_id=f"Market:{market_name}",
         )
         graph.add_node(NodeKind.PROTOCOL, "Morpho", tvl_usd=0.0, node_id="Protocol:morpho")
-        graph.add_edge(EdgeKind.PART_OF, (NodeKind.MARKET, market_name), (NodeKind.PROTOCOL, "Morpho"))
+        graph.add_edge(
+            EdgeKind.PART_OF, (NodeKind.MARKET, market_name), (NodeKind.PROTOCOL, "Morpho")
+        )
         if coll_sym:
             graph.add_node(NodeKind.TOKEN, coll_sym, tvl_usd=0.0, node_id=f"Token:{coll_sym}")
-            graph.add_edge(EdgeKind.COLLATERAL_IN, (NodeKind.TOKEN, coll_sym), (NodeKind.MARKET, market_name))
+            graph.add_edge(
+                EdgeKind.COLLATERAL_IN, (NodeKind.TOKEN, coll_sym), (NodeKind.MARKET, market_name)
+            )
         if oracle.get("address"):
             oracle_name = f"morpho-oracle:{oracle['address']}"
-            graph.add_node(NodeKind.ORACLE, oracle_name, tvl_usd=0.0,
-                           meta={"source": "morpho"}, node_id=f"Oracle:{oracle_name}")
-            graph.add_edge(EdgeKind.PRICES, (NodeKind.ORACLE, oracle_name), (NodeKind.MARKET, market_name))
+            graph.add_node(
+                NodeKind.ORACLE,
+                oracle_name,
+                tvl_usd=0.0,
+                meta={"source": "morpho"},
+                node_id=f"Oracle:{oracle_name}",
+            )
+            graph.add_edge(
+                EdgeKind.PRICES, (NodeKind.ORACLE, oracle_name), (NodeKind.MARKET, market_name)
+            )
         count += 1
     return count
 
@@ -218,7 +260,9 @@ def load_morpho_markets(graph: DeFiContagionGraph, markets: Iterable[dict[str, A
 # ---------------------------------------------------------------------------
 
 
-def build_graph_from_snapshot(ingest_dir: Path | None = None, top_n_protocols: int = 200, top_n_markets: int = 100) -> DeFiContagionGraph:
+def build_graph_from_snapshot(
+    ingest_dir: Path | None = None, top_n_protocols: int = 200, top_n_markets: int = 100
+) -> DeFiContagionGraph:
     """Build a contagion graph from every available ``data/ingest`` snapshot.
 
     Each input is optional; missing files are simply skipped, so the function
@@ -257,6 +301,11 @@ def provenance(ingest_dir: Path | None = None) -> dict[str, Any]:
         "layerzero_metadata.json",
     ):
         path = root / name
-        out["sources"].append({"file": name, "present": path.is_file(),
-                               "bytes": path.stat().st_size if path.is_file() else 0})
+        out["sources"].append(
+            {
+                "file": name,
+                "present": path.is_file(),
+                "bytes": path.stat().st_size if path.is_file() else 0,
+            }
+        )
     return out

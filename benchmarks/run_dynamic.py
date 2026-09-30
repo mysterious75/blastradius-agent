@@ -32,7 +32,8 @@ if str(_REPO_ROOT) not in sys.path:
 
 def _load_server(target_dir: Path):
     spec = importlib.util.spec_from_file_location(
-        f"bench_{target_dir.name}", str(target_dir / "server.py"))
+        f"bench_{target_dir.name}", str(target_dir / "server.py")
+    )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.Handler
@@ -59,8 +60,8 @@ def run_idor_target(base: str, manifest: dict):
     attacker = BrowserSession(default_headers={"X-Identity": "A"})
     victim = BrowserSession(default_headers={"X-Identity": "B"})
     checker = AuthzDiffChecker(
-        attacker=attacker, victim=victim,
-        victim_markers=manifest.get("victim_markers", []))
+        attacker=attacker, victim=victim, victim_markers=manifest.get("victim_markers", [])
+    )
     urls = [base + p for p in manifest.get("probe_urls", [])]
     return checker.check(urls)
 
@@ -87,8 +88,11 @@ def run_jwt_target(base: str, manifest: dict):
             body = urllib.parse.urlencode({"token": token}).encode()
             try:
                 page = session._request(
-                    "POST", _url, data=body,
-                    headers={"Content-Type": "application/x-www-form-urlencoded"})
+                    "POST",
+                    _url,
+                    data=body,
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                )
             except Exception:  # noqa: BLE001 - probe must never crash the scan
                 return None
             return page
@@ -124,13 +128,22 @@ def run_target(target_dir: Path):
         base = f"http://127.0.0.1:{server.server_address[1]}"
         runner = _RUNNERS.get(target_dir.name)
         if runner is None:
-            return {"target": target_dir.name, "expected": 0, "reported": 0,
-                    "hits": 0, "skipped": True}
+            return {
+                "target": target_dir.name,
+                "expected": 0,
+                "reported": 0,
+                "hits": 0,
+                "skipped": True,
+            }
         findings = runner(base, manifest)
         expected = manifest.get("expected", [])
         hits = sum(1 for exp in expected if any(_matches(f, exp) for f in findings))
-        return {"target": target_dir.name, "expected": len(expected),
-                "reported": len(findings), "hits": hits}
+        return {
+            "target": target_dir.name,
+            "expected": len(expected),
+            "reported": len(findings),
+            "hits": hits,
+        }
     finally:
         server.shutdown()
         server.server_close()
@@ -144,11 +157,15 @@ def _render_markdown(summary: dict) -> str:
         p = r["hits"] / r["reported"] if r["reported"] else 0.0
         rec = r["hits"] / r["expected"] if r["expected"] else 0.0
         f1 = 2 * p * rec / (p + rec) if p + rec else 0.0
-        lines.append(f"| {r['target']} | {r['expected']} | {r['reported']} | {r['hits']} | "
-                     f"{p:.3f} | {rec:.3f} | {f1:.3f} |")
+        lines.append(
+            f"| {r['target']} | {r['expected']} | {r['reported']} | {r['hits']} | "
+            f"{p:.3f} | {rec:.3f} | {f1:.3f} |"
+        )
     tot = summary["totals"]
-    lines.append(f"| **Total** | **{tot['expected']}** | **{tot['reported']}** | **{tot['hits']}** | "
-                 f"**{tot['precision']:.3f}** | **{tot['recall']:.3f}** | **{tot['f1']:.3f}** |")
+    lines.append(
+        f"| **Total** | **{tot['expected']}** | **{tot['reported']}** | **{tot['hits']}** | "
+        f"**{tot['precision']:.3f}** | **{tot['recall']:.3f}** | **{tot['f1']:.3f}** |"
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -178,15 +195,20 @@ def main(argv=None) -> int:
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "corpus": str(corpus),
         "elapsed_seconds": round(elapsed, 2),
-        "totals": {**total, "precision": round(precision, 3),
-                   "recall": round(recall, 3), "f1": round(f1, 3)},
+        "totals": {
+            **total,
+            "precision": round(precision, 3),
+            "recall": round(recall, 3),
+            "f1": round(f1, 3),
+        },
         "targets": rows,
     }
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = time.strftime("%Y%m%d-%H%M%S", time.localtime())
     (out_dir / f"dynamic-benchmark-{stamp}.json").write_text(
-        json.dumps(summary, indent=2), encoding="utf-8")
+        json.dumps(summary, indent=2), encoding="utf-8"
+    )
     (out_dir / "DYNAMIC_BENCHMARK.md").write_text(_render_markdown(summary), encoding="utf-8")
     print(_render_markdown(summary))
     if f1 < args.min_f1:

@@ -11,7 +11,7 @@ import pytest
 
 from blastradius.contagion.graph import DeFiContagionGraph
 from blastradius.contagion.loaders import collateral
-from blastradius.contagion.schema import EdgeKind, NodeKind
+from blastradius.contagion.schema import NodeKind
 from blastradius.contagion.scoring import score_blast_radius, simulate_token_collapse
 
 POOLS_RESPONSE = {
@@ -103,8 +103,13 @@ def test_lending_markets_join_on_pool_id(no_network):
 
 def test_lending_markets_respect_filters(no_network):
     assert collateral.fetch_lending_markets(project="uniswap") == []
-    assert {r["pool_id"] for r in collateral.fetch_lending_markets(min_tvl_usd=100_000_000)} == {"pool-a"}
-    assert {r["pool_id"] for r in collateral.fetch_lending_markets(chain="ethereum")} == {"pool-a", "pool-b"}
+    assert {r["pool_id"] for r in collateral.fetch_lending_markets(min_tvl_usd=100_000_000)} == {
+        "pool-a"
+    }
+    assert {r["pool_id"] for r in collateral.fetch_lending_markets(chain="ethereum")} == {
+        "pool-a",
+        "pool-b",
+    }
 
 
 def test_lending_markets_sorted_by_tvl(no_network):

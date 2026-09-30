@@ -67,7 +67,10 @@ class AutoHunt:
     # ------------------------------------------------------------------
 
     def run(
-        self, strategy: str = "github", max_targets: int = 20, min_stars: int = 100,
+        self,
+        strategy: str = "github",
+        max_targets: int = 20,
+        min_stars: int = 100,
         scope: Optional[str] = None,
     ) -> List[Dict]:
         """Hunt over up to ``max_targets`` discovered targets; returns result rows.

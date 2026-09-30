@@ -107,21 +107,35 @@ class SqliChecker:
                 continue
             match = _DB_ERROR_RE.search(page.text or "")
             if match:
-                return self._mk(url, "sqli-error", "HIGH", "CWE-89", 0.9,
-                                f"param `{name}`: database error with payload {payload!r}: "
-                                f"{match.group(0)[:80]}")
+                return self._mk(
+                    url,
+                    "sqli-error",
+                    "HIGH",
+                    "CWE-89",
+                    0.9,
+                    f"param `{name}`: database error with payload {payload!r}: "
+                    f"{match.group(0)[:80]}",
+                )
         # 2. boolean differential (true vs false must differ, both stable)
         true_page = _fetch("test" + DEFAULT_SQLI_BOOLEAN_PAYLOADS[0])
         false_page = _fetch("test" + DEFAULT_SQLI_BOOLEAN_PAYLOADS[1])
         true_again = _fetch("test" + DEFAULT_SQLI_BOOLEAN_PAYLOADS[0])
         if true_page is None or false_page is None or true_again is None:
             return None
-        if (len(true_page.text or "") != len(false_page.text or "")
-                and true_page.text == true_again.text
-                and true_page.status == true_again.status):
-            return self._mk(url, "sqli-boolean", "HIGH", "CWE-89", 0.75,
-                            f"param `{name}`: stable true/false response differential "
-                            f"({len(true_page.text or '')} vs {len(false_page.text or '')} bytes)")
+        if (
+            len(true_page.text or "") != len(false_page.text or "")
+            and true_page.text == true_again.text
+            and true_page.status == true_again.status
+        ):
+            return self._mk(
+                url,
+                "sqli-boolean",
+                "HIGH",
+                "CWE-89",
+                0.75,
+                f"param `{name}`: stable true/false response differential "
+                f"({len(true_page.text or '')} vs {len(false_page.text or '')} bytes)",
+            )
         # 3. time-based (opt-in only)
         if self.enable_time_based:
             for payload in DEFAULT_SQLI_TIME_PAYLOADS:
@@ -131,8 +145,14 @@ class SqliChecker:
                 if page is None:
                     continue
                 if waited >= self.time_threshold_s and page.status < 500:
-                    return self._mk(url, "sqli-time", "HIGH", "CWE-89", 0.8,
-                                    f"param `{name}`: {waited:.1f}s delay with payload {payload!r}")
+                    return self._mk(
+                        url,
+                        "sqli-time",
+                        "HIGH",
+                        "CWE-89",
+                        0.8,
+                        f"param `{name}`: {waited:.1f}s delay with payload {payload!r}",
+                    )
         return None
 
     # ------------------------------------------------------------------
@@ -146,9 +166,18 @@ class SqliChecker:
             if page is None:
                 continue
             if _DB_ERROR_RE.search(page.text or "") or (
-                    page.status < 400 and "error" not in (page.text or "").lower()):
-                findings.append(self._mk(url, "nosqli", "HIGH", "CWE-943", 0.7,
-                                        f"NoSQL operator body accepted/surfaced: {payload}"))
+                page.status < 400 and "error" not in (page.text or "").lower()
+            ):
+                findings.append(
+                    self._mk(
+                        url,
+                        "nosqli",
+                        "HIGH",
+                        "CWE-943",
+                        0.7,
+                        f"NoSQL operator body accepted/surfaced: {payload}",
+                    )
+                )
                 break
         return findings
 
@@ -156,15 +185,22 @@ class SqliChecker:
         """POST JSON that returns None instead of raising."""
         with contextlib.suppress(Exception):  # probe must never crash the scan
             return self.session._request(
-                "POST", url, data=json.dumps(body).encode(),
-                headers={"Content-Type": "application/json"})
+                "POST",
+                url,
+                data=json.dumps(body).encode(),
+                headers={"Content-Type": "application/json"},
+            )
         return None
 
     # ------------------------------------------------------------------
     @staticmethod
     def _mk(url, check, severity, cwe, confidence, evidence) -> SqliFinding:
         return SqliFinding(
-            url=url, check=check, severity=severity, cwe=cwe, confidence=confidence,
+            url=url,
+            check=check,
+            severity=severity,
+            cwe=cwe,
+            confidence=confidence,
             evidence=evidence[:500],
             remediation="Use parameterized queries / prepared statements for every database interaction; never concatenate input into SQL.",
             description="Live SQL-injection probe with response oracle.",

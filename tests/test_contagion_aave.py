@@ -11,18 +11,34 @@ def _market():
         "address": "0x87870bca3f3fd6335c3f4ce8392d69350b4fa4e2",
         "chain": {"chainId": 1},
         "reserves": [
-            {"underlyingToken": {"symbol": "WETH", "address": "0xC02"},
-             "usdOracleAddress": "0xO1", "isPaused": False, "isFrozen": False,
-             "supplyInfo": {"maxLTV": {"value": "0.8"}, "liquidationThreshold": {"value": "0.825"},
-                            "liquidationBonus": {"value": "0.05"}, "canBeCollateral": True,
-                            "supplyCap": {"amount": {"value": "100000"}}},
-             "eModeInfo": [{"categoryId": 1, "label": "ETH"}]},
-            {"underlyingToken": {"symbol": "GHO", "address": "0xG"},
-             "usdOracleAddress": "0xO2", "isPaused": False, "isFrozen": False,
-             "supplyInfo": {"maxLTV": {"value": "0"}, "liquidationThreshold": {"value": "0"},
-                            "liquidationBonus": {"value": "0"}, "canBeCollateral": False,
-                            "supplyCap": {"amount": {"value": "0"}}},
-             "eModeInfo": []},
+            {
+                "underlyingToken": {"symbol": "WETH", "address": "0xC02"},
+                "usdOracleAddress": "0xO1",
+                "isPaused": False,
+                "isFrozen": False,
+                "supplyInfo": {
+                    "maxLTV": {"value": "0.8"},
+                    "liquidationThreshold": {"value": "0.825"},
+                    "liquidationBonus": {"value": "0.05"},
+                    "canBeCollateral": True,
+                    "supplyCap": {"amount": {"value": "100000"}},
+                },
+                "eModeInfo": [{"categoryId": 1, "label": "ETH"}],
+            },
+            {
+                "underlyingToken": {"symbol": "GHO", "address": "0xG"},
+                "usdOracleAddress": "0xO2",
+                "isPaused": False,
+                "isFrozen": False,
+                "supplyInfo": {
+                    "maxLTV": {"value": "0"},
+                    "liquidationThreshold": {"value": "0"},
+                    "liquidationBonus": {"value": "0"},
+                    "canBeCollateral": False,
+                    "supplyCap": {"amount": {"value": "0"}},
+                },
+                "eModeInfo": [],
+            },
         ],
     }
 
@@ -48,8 +64,11 @@ def test_oracle_prices_edge():
 
 def test_risk_meta_on_edge():
     g = aave.build_graph_from_aave([_market()])
-    edges = [e for e in g.backend.all_edges()
-             if e.kind == EdgeKind.COLLATERAL_IN and e.src == "Token:WETH"]
+    edges = [
+        e
+        for e in g.backend.all_edges()
+        if e.kind == EdgeKind.COLLATERAL_IN and e.src == "Token:WETH"
+    ]
     assert len(edges) == 1
     assert edges[0].meta["ltv"] == 0.8
     assert edges[0].meta["liquidation_threshold"] == 0.825

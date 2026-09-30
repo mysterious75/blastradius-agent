@@ -90,7 +90,9 @@ def main(argv=None) -> int:
     if args.attacker_cookie and args.victim_cookie:
         attacker = BrowserSession(default_headers={"Cookie": args.attacker_cookie})
         victim = BrowserSession(default_headers={"Cookie": args.victim_cookie})
-        authz = AuthzDiffChecker(attacker=attacker, victim=victim, victim_markers=args.victim_marker)
+        authz = AuthzDiffChecker(
+            attacker=attacker, victim=victim, victim_markers=args.victim_marker
+        )
 
     scanner = DynamicWebScanner(
         max_urls=args.max_urls,
@@ -150,8 +152,7 @@ def main(argv=None) -> int:
                     for f in findings
                 ],
                 "chains": [
-                    {"name": c.name, "severity": c.severity, "steps": c.steps}
-                    for c in chains
+                    {"name": c.name, "severity": c.severity, "steps": c.steps} for c in chains
                 ],
             },
             indent=2,

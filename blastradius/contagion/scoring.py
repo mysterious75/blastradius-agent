@@ -83,7 +83,7 @@ def score_blast_radius(
         if market is not None and market.kind is NodeKind.MARKET:
             direct += float(market.meta.get("token_supplied_usd", market.tvl_usd))
 
-    decayed = sum(e.tvl_usd * (hop_decay ** e.hop) for e in radius.entries)
+    decayed = sum(e.tvl_usd * (hop_decay**e.hop) for e in radius.entries)
 
     return BlastRadiusScore(
         seed_id=seed,

@@ -360,8 +360,7 @@ class DynamicWebScanner:
         """Probe crawled URLs with query strings for SQL injection (opt-in)."""
         from blastradius.web.sqli import SqliChecker
 
-        checker = SqliChecker(
-            session=self._probe_browser, enable_time_based=self.sqli_time_probe)
+        checker = SqliChecker(session=self._probe_browser, enable_time_based=self.sqli_time_probe)
         findings: List[DynamicFinding] = []
         for hit in checker.check(urls):
             findings.append(

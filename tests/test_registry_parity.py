@@ -4,7 +4,6 @@ Guards the class of bug where a vuln type exists in one place but not another
 (e.g. `secret` was in VULN_META but had no display title).
 """
 
-import re
 from pathlib import Path
 
 import blastradius.hunter.scanner as S

@@ -27,8 +27,18 @@ from dataclasses import dataclass
 
 # A short, high-signal dictionary of weak HMAC secrets seen in the wild.
 WEAK_SECRETS = (
-    "secret", "password", "123456", "changeme", "admin", "jwt", "key",
-    "your-256-bit-secret", "supersecret", "test", "dev", "private",
+    "secret",
+    "password",
+    "123456",
+    "changeme",
+    "admin",
+    "jwt",
+    "key",
+    "your-256-bit-secret",
+    "supersecret",
+    "test",
+    "dev",
+    "private",
 )
 _KID_TRAVERSAL = re.compile(r"(\.\./|\.\.\\|/etc/|%2f|%5c|\x00)")
 
@@ -77,8 +87,10 @@ def forge_none(token: str) -> str | None:
     header, payload, _ = decoded
     header = dict(header)
     header["alg"] = "none"
-    return f"{_b64url_encode(json.dumps(header, separators=(',', ':')).encode())}." \
-           f"{_b64url_encode(json.dumps(payload, separators=(',', ':')).encode())}."
+    return (
+        f"{_b64url_encode(json.dumps(header, separators=(',', ':')).encode())}."
+        f"{_b64url_encode(json.dumps(payload, separators=(',', ':')).encode())}."
+    )
 
 
 def forge_hs256(token: str, secret: bytes) -> str | None:
@@ -122,50 +134,86 @@ class JwtChecker:
         # ---- alg:none ----
         forged = forge_none(token)
         if forged and self._accepted(forged):
-            findings.append(self._mk(
-                "jwt-none", "CRITICAL", "CWE-347", 0.97,
-                "token with alg=none and empty signature was accepted",
-                "Reject alg=none; verify the signature with an explicit, fixed algorithm allowlist."))
+            findings.append(
+                self._mk(
+                    "jwt-none",
+                    "CRITICAL",
+                    "CWE-347",
+                    0.97,
+                    "token with alg=none and empty signature was accepted",
+                    "Reject alg=none; verify the signature with an explicit, fixed algorithm allowlist.",
+                )
+            )
 
         # ---- RS256 -> HS256 confusion ----
         if self.jwks_public_key is not None:
             forged = forge_hs256(token, self.jwks_public_key)
             if forged and self._accepted(forged):
-                findings.append(self._mk(
-                    "jwt-confusion", "CRITICAL", "CWE-347", 0.95,
-                    "RS256->HS256 confusion: token signed with the public key as HMAC secret accepted",
-                    "Pin the algorithm; never derive the HMAC secret from an asymmetric public key."))
+                findings.append(
+                    self._mk(
+                        "jwt-confusion",
+                        "CRITICAL",
+                        "CWE-347",
+                        0.95,
+                        "RS256->HS256 confusion: token signed with the public key as HMAC secret accepted",
+                        "Pin the algorithm; never derive the HMAC secret from an asymmetric public key.",
+                    )
+                )
 
         # ---- weak HMAC secret ----
         if str(header.get("alg", "")).upper().startswith("HS"):
             for secret in self.weak_secrets:
                 forged = forge_hs256(token, secret.encode())
                 if forged and self._accepted(forged):
-                    findings.append(self._mk(
-                        "jwt-weak-secret", "HIGH", "CWE-798", 0.9,
-                        f"HS256 token re-signed with weak secret {secret!r} was accepted",
-                        "Use a long random secret and rotate it; prefer asymmetric signing."))
+                    findings.append(
+                        self._mk(
+                            "jwt-weak-secret",
+                            "HIGH",
+                            "CWE-798",
+                            0.9,
+                            f"HS256 token re-signed with weak secret {secret!r} was accepted",
+                            "Use a long random secret and rotate it; prefer asymmetric signing.",
+                        )
+                    )
                     break
 
         # ---- hygiene ----
         if "exp" not in payload:
-            findings.append(self._mk(
-                "jwt-hygiene", "LOW", "CWE-613", 0.9,
-                "token has no exp claim (never expires)",
-                "Always set a short exp and validate it server-side."))
+            findings.append(
+                self._mk(
+                    "jwt-hygiene",
+                    "LOW",
+                    "CWE-613",
+                    0.9,
+                    "token has no exp claim (never expires)",
+                    "Always set a short exp and validate it server-side.",
+                )
+            )
         kid = header.get("kid")
         if isinstance(kid, str) and _KID_TRAVERSAL.search(kid):
-            findings.append(self._mk(
-                "jwt-hygiene", "HIGH", "CWE-22", 0.85,
-                f"kid contains traversal/injection characters: {kid!r}",
-                "Never use kid in file paths or queries; map it to a key via an allowlist."))
+            findings.append(
+                self._mk(
+                    "jwt-hygiene",
+                    "HIGH",
+                    "CWE-22",
+                    0.85,
+                    f"kid contains traversal/injection characters: {kid!r}",
+                    "Never use kid in file paths or queries; map it to a key via an allowlist.",
+                )
+            )
         for hdr in ("jku", "x5u"):
             val = header.get(hdr)
             if isinstance(val, str) and re.match(r"^https?://", val):
-                findings.append(self._mk(
-                    "jwt-hygiene", "MEDIUM", "CWE-918", 0.7,
-                    f"{hdr} points to a remote URL ({val}); verify host allowlisting",
-                    f"Only honour {hdr} for explicitly allowlisted hosts."))
+                findings.append(
+                    self._mk(
+                        "jwt-hygiene",
+                        "MEDIUM",
+                        "CWE-918",
+                        0.7,
+                        f"{hdr} points to a remote URL ({val}); verify host allowlisting",
+                        f"Only honour {hdr} for explicitly allowlisted hosts.",
+                    )
+                )
         return findings
 
     # ------------------------------------------------------------------
@@ -178,6 +226,13 @@ class JwtChecker:
         return status is not None and 200 <= status < 300
 
     def _mk(self, check, severity, cwe, confidence, evidence, remediation) -> JwtFinding:
-        return JwtFinding(url=self.url, check=check, severity=severity, cwe=cwe,
-                          confidence=confidence, evidence=evidence, remediation=remediation,
-                          description="Live JWT acceptance test.")
+        return JwtFinding(
+            url=self.url,
+            check=check,
+            severity=severity,
+            cwe=cwe,
+            confidence=confidence,
+            evidence=evidence,
+            remediation=remediation,
+            description="Live JWT acceptance test.",
+        )

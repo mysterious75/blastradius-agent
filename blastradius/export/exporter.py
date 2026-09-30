@@ -16,6 +16,7 @@ def _ensure_parent(path: str) -> None:
     """Create the output directory when missing so exports never crash on paths."""
     Path(path).parent.mkdir(parents=True, exist_ok=True)
 
+
 _SARIF_SCHEMA = (
     "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json"
 )

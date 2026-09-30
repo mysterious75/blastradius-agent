@@ -20,7 +20,6 @@ from blastradius.contagion.config_audit import ConfigAuditor
 from blastradius.contagion.graph import DeFiContagionGraph
 from blastradius.contagion.schema import NodeKind
 from blastradius.contagion.scoring import (
-    BadDebtRow,
     score_blast_radius,
     simulate_token_collapse,
 )
@@ -110,7 +109,10 @@ def _cmd_map(args, graph, seed, display) -> int:
         print(_ascii_map(radius, seed))
     else:
         _print_table(
-            ["Hop", "Kind", "Name", "TVL (USD)", "Via"], radius.rows(), title="Contagion Map", display=display
+            ["Hop", "Kind", "Name", "TVL (USD)", "Via"],
+            radius.rows(),
+            title="Contagion Map",
+            display=display,
         )
     print(
         f"\n[*] {radius.node_count} affected node(s), depth {radius.depth}, "
@@ -124,7 +126,9 @@ def _cmd_score(args, graph, seed, display) -> int:
     if args.json:
         print(json.dumps(score.__dict__, indent=2))
     else:
-        _print_table(["Metric", "Value"], score.as_rows(), title="Blast Radius Score", display=display)
+        _print_table(
+            ["Metric", "Value"], score.as_rows(), title="Blast Radius Score", display=display
+        )
     return 0
 
 
@@ -137,7 +141,15 @@ def _cmd_baddebt(args, graph, seed, display) -> int:
         print(f"[*] no lending market lists {args.token} as collateral")
         return 0
     _print_table(
-        ["Market", "Protocol", "Coll. at risk", "Debt vs token", "Backstop", "Uncovered", "Outcome"],
+        [
+            "Market",
+            "Protocol",
+            "Coll. at risk",
+            "Debt vs token",
+            "Backstop",
+            "Uncovered",
+            "Outcome",
+        ],
         [
             [
                 r.market_name,
@@ -181,7 +193,10 @@ def _cmd_audit(args, display) -> int:
     else:
         print(f"\nTarget: {report.target}")
         _print_table(
-            ["Sev", "Rule", "Target", "Finding"], report.rows(), title="Configuration Audit", display=display
+            ["Sev", "Rule", "Target", "Finding"],
+            report.rows(),
+            title="Configuration Audit",
+            display=display,
         )
         counts = report.counts()
         summary = "  ".join(f"{k}={v}" for k, v in counts.items() if v)
@@ -207,8 +222,10 @@ def _cmd_ingest(args) -> int:
     if args.source == "defillama":
         pools = fetch_pools(project=args.project, chain=args.chain, min_tvl_usd=args.min_tvl)
         graph = build_graph_from_pools(pools, top_n=args.top)
-        print(f"[*] ingested {len(pools)} pool row(s) from DeFiLlama yields"
-              + (f" (project={args.project})" if args.project else ""))
+        print(
+            f"[*] ingested {len(pools)} pool row(s) from DeFiLlama yields"
+            + (f" (project={args.project})" if args.project else "")
+        )
     else:
         if not args.data:
             print("[!] --source whitelist requires --data <listing.json>", file=sys.stderr)

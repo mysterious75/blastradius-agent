@@ -1,6 +1,7 @@
 """Probe keyless DeFi data sources for live availability (HEAD/GET small), report status.
 No writes. Prints reachability so we know what is safe to download in bulk.
 """
+
 import ssl
 import urllib.error
 import urllib.request
@@ -16,8 +17,14 @@ SOURCES = [
     ("defillama yields pools", "https://yields.llama.fi/pools"),
     ("defillama lendBorrow", "https://yields.llama.fi/lendBorrow"),
     ("chainlink feeds mainnet", "https://reference-data-directory.vercel.app/feeds-mainnet.json"),
-    ("chainlink feeds ethereum", "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet.json"),
-    ("chainlink feeds arbitrum", "https://reference-data-directory.vercel.app/feeds-arbitrum-mainnet.json"),
+    (
+        "chainlink feeds ethereum",
+        "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet.json",
+    ),
+    (
+        "chainlink feeds arbitrum",
+        "https://reference-data-directory.vercel.app/feeds-arbitrum-mainnet.json",
+    ),
     ("pyth price feeds", "https://hermes.pyth.network/v2/price_feeds?asset_type=crypto"),
     ("layerzero metadata", "https://metadata.layerzero-api.com/v1/metadata"),
     ("layerzero scan base", "https://scan.layerzero-api.com/v1/messages/latest"),

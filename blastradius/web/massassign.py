@@ -71,21 +71,31 @@ class MassassignChecker:
                 verify = self._get(self.verify_url)
                 persisted = verify is not None and _SENTINEL in (verify.text or "")
             if persisted:
-                findings.append(self._mk(
-                    url, "HIGH", 0.9,
-                    f"field `{field}` persisted (sentinel visible on re-read)"))
+                findings.append(
+                    self._mk(
+                        url, "HIGH", 0.9, f"field `{field}` persisted (sentinel visible on re-read)"
+                    )
+                )
             else:
-                findings.append(self._mk(
-                    url, "MEDIUM", 0.6,
-                    f"field `{field}` reflected in response (sentinel echoed)"))
+                findings.append(
+                    self._mk(
+                        url,
+                        "MEDIUM",
+                        0.6,
+                        f"field `{field}` reflected in response (sentinel echoed)",
+                    )
+                )
         return findings
 
     def _post_json(self, url: str, body: dict):
         """POST JSON that returns None instead of raising."""
         with contextlib.suppress(Exception):  # probe must never crash the scan
             return self.session._request(
-                "POST", url, data=json.dumps(body).encode(),
-                headers={"Content-Type": "application/json"})
+                "POST",
+                url,
+                data=json.dumps(body).encode(),
+                headers={"Content-Type": "application/json"},
+            )
         return None
 
     def _get(self, url: str):
@@ -98,9 +108,13 @@ class MassassignChecker:
     @staticmethod
     def _mk(url, severity, confidence, evidence) -> MassassignFinding:
         return MassassignFinding(
-            url=url, check="massassign", severity=severity, cwe="CWE-915",
-            confidence=confidence, evidence=evidence[:500],
+            url=url,
+            check="massassign",
+            severity=severity,
+            cwe="CWE-915",
+            confidence=confidence,
+            evidence=evidence[:500],
             remediation="Bind only an explicit allowlist of fields on update endpoints; "
-                        "never mass-assign request bodies onto models.",
+            "never mass-assign request bodies onto models.",
             description="Live mass-assignment probe with sentinel value.",
         )

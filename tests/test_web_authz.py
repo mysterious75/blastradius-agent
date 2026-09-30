@@ -29,9 +29,12 @@ class FakeSession:
 # Candidate selection
 # ---------------------------------------------------------------------------
 
+
 def test_candidate_url_detection():
     assert AuthzDiffChecker.is_candidate_url("https://x.test/api/users/1234")
-    assert AuthzDiffChecker.is_candidate_url("https://x.test/doc/01a0aced-1f5e-7204-97c4-2e0be2907656")
+    assert AuthzDiffChecker.is_candidate_url(
+        "https://x.test/doc/01a0aced-1f5e-7204-97c4-2e0be2907656"
+    )
     assert AuthzDiffChecker.is_candidate_url("https://x.test/api?user_id=7")
     assert AuthzDiffChecker.is_candidate_url("https://x.test/invoices?invoice=99")
     assert not AuthzDiffChecker.is_candidate_url("https://x.test/about")
@@ -48,6 +51,7 @@ def test_candidate_urls_bounded_and_deduped():
 # ---------------------------------------------------------------------------
 # Diff logic
 # ---------------------------------------------------------------------------
+
 
 def test_disabled_without_both_sessions():
     assert AuthzDiffChecker().enabled is False
@@ -113,6 +117,7 @@ def test_different_body_without_markers_is_not_flagged():
 # Scanner integration
 # ---------------------------------------------------------------------------
 
+
 def test_scanner_runs_authz_when_enabled():
     url = "/api/orders/555"
     victim = FakeSession({url: (200, '{"total":42,"buyer":"vip"}')})
@@ -141,7 +146,8 @@ def test_scanner_uses_explicit_authz_urls():
     victim = FakeSession({url: (200, '{"email":"victim@corp.test"}')})
     attacker = FakeSession({url: (200, '{"email":"victim@corp.test"}')})
     authz = AuthzDiffChecker(attacker=attacker, victim=victim, victim_markers=["victim@corp.test"])
-    scanner = DynamicWebScanner(probe_exposed=False, check_takeover=False, authz=authz,
-                                authz_urls=[url])
+    scanner = DynamicWebScanner(
+        probe_exposed=False, check_takeover=False, authz=authz, authz_urls=[url]
+    )
     findings = scanner._check_authz(scanner.authz_urls)
     assert len(findings) == 1 and findings[0].check == "idor"

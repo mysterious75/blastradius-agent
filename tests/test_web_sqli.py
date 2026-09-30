@@ -114,8 +114,7 @@ def test_unstable_differential_no_hit():
 
         def get(self, url, params=None):
             self.n += 1
-            return Page(url=url, status=200, headers={},
-                        text=f"body-{self.n}")
+            return Page(url=url, status=200, headers={}, text=f"body-{self.n}")
 
     c = SqliChecker(session=FlipSession())
     assert c.check(["https://app.test/items?id=1"]) == []
@@ -126,8 +125,7 @@ def test_unstable_differential_no_hit():
 
 def test_time_based_opt_in_detects_sleep():
     routes = {"SLEEP": (200, "ok", 5.0)}
-    c = SqliChecker(session=FakeSession(routes), enable_time_based=True,
-                    time_threshold_s=4.0)
+    c = SqliChecker(session=FakeSession(routes), enable_time_based=True, time_threshold_s=4.0)
     hits = c.check(["https://app.test/items?id=1"])
     assert any(h.check == "sqli-time" for h in hits)
 
@@ -164,8 +162,7 @@ def test_massassign_persisted_high():
     class PersistSession(FakeSession):
         def _request(self, method, url, data=None, headers=None):
             if method == "GET":
-                return Page(url=url, status=200, headers={},
-                            text='{"role":"blastradius-probe"}')
+                return Page(url=url, status=200, headers={}, text='{"role":"blastradius-probe"}')
             return super()._request(method, url, data, headers)
 
     c = MassassignChecker(session=PersistSession(), verify_url="https://app.test/api/me")

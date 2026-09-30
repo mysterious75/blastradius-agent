@@ -1,6 +1,6 @@
 """Probe Aave V3 GraphQL API shape: markets + reserves with collateral flags."""
+
 import json
-import sys
 import urllib.request
 import urllib.error
 import ssl
@@ -14,7 +14,9 @@ URL = "https://api.v3.aave.com/graphql"
 
 def gql(query, variables=None):
     body = json.dumps({"query": query, "variables": variables or {}}).encode()
-    req = urllib.request.Request(URL, data=body, headers={"User-Agent": UA, "Content-Type": "application/json"})
+    req = urllib.request.Request(
+        URL, data=body, headers={"User-Agent": UA, "Content-Type": "application/json"}
+    )
     with urllib.request.urlopen(req, timeout=30, context=ctx) as r:
         return json.loads(r.read().decode())
 

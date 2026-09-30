@@ -1,6 +1,7 @@
 """Download the keyless DeFi dependency-graph data sources into data/ingest/.
 Read-only public APIs, rate-limited, identifying UA. Prints sizes.
 """
+
 import json
 import os
 import ssl
@@ -19,10 +20,22 @@ TARGETS = [
     ("defillama_protocols.json", "https://api.llama.fi/protocols"),
     ("defillama_pools.json", "https://yields.llama.fi/pools"),
     ("defillama_lendborrow.json", "https://yields.llama.fi/lendBorrow"),
-    ("chainlink_feeds_mainnet.json", "https://reference-data-directory.vercel.app/feeds-mainnet.json"),
-    ("chainlink_feeds_arbitrum.json", "https://reference-data-directory.vercel.app/feeds-arbitrum-mainnet.json"),
-    ("chainlink_feeds_base.json", "https://reference-data-directory.vercel.app/feeds-base-mainnet.json"),
-    ("chainlink_feeds_optimism.json", "https://reference-data-directory.vercel.app/feeds-optimism-mainnet.json"),
+    (
+        "chainlink_feeds_mainnet.json",
+        "https://reference-data-directory.vercel.app/feeds-mainnet.json",
+    ),
+    (
+        "chainlink_feeds_arbitrum.json",
+        "https://reference-data-directory.vercel.app/feeds-arbitrum-mainnet.json",
+    ),
+    (
+        "chainlink_feeds_base.json",
+        "https://reference-data-directory.vercel.app/feeds-base-mainnet.json",
+    ),
+    (
+        "chainlink_feeds_optimism.json",
+        "https://reference-data-directory.vercel.app/feeds-optimism-mainnet.json",
+    ),
     ("pyth_price_feeds.json", "https://hermes.pyth.network/v2/price_feeds?asset_type=crypto"),
     ("layerzero_metadata.json", "https://metadata.layerzero-api.com/v1/metadata"),
     ("morpho_blue_markets.json", "https://api.morpho.org/v1/blue/markets"),

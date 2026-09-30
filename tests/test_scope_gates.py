@@ -5,7 +5,7 @@ Uses a tmp scopes dir (BLASTRADIUS_SCOPES_DIR) so no real registry is touched.
 
 import pytest
 
-from blastradius.scope import check_scope, require_scope, save_scope
+from blastradius.scope import require_scope, save_scope
 
 
 @pytest.fixture

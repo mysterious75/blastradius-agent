@@ -76,8 +76,9 @@ class OobListener:
     # -- recording -----------------------------------------------------
     def _record(self, path: str, remote_addr: str, headers: dict[str, str]) -> None:
         with self._lock:
-            self.hits.append(OobHit(path=path, remote_addr=remote_addr,
-                                    headers=headers, at=time.time()))
+            self.hits.append(
+                OobHit(path=path, remote_addr=remote_addr, headers=headers, at=time.time())
+            )
 
     def hits_for(self, marker: str) -> list[OobHit]:
         with self._lock:

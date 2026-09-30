@@ -51,7 +51,11 @@ def test_score_card_kelpdao_seed_case(client):
     assert body["token"] == "rsETH"
     assert body["reachable_tvl_usd"] == 16_734_000_000
     assert body["bad_debt_uncovered_usd"] == 220_000_000
-    assert (body["affected_markets"], body["affected_protocols"], body["affected_chains"]) == (5, 4, 4)
+    assert (body["affected_markets"], body["affected_protocols"], body["affected_chains"]) == (
+        5,
+        4,
+        4,
+    )
     assert body["risk_level"] == "CRITICAL"
     assert body["blast_radius_score"] == 87  # 22 * log10(1 + 8_983.39M / 1e6)
     assert body["generated_at"].endswith("Z")

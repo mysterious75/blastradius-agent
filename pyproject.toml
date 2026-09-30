@@ -84,3 +84,9 @@ include = ["blastradius*", "scripts*"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.ruff.lint]
+# Pinned rule set: the CI gate was written against these stable rules.
+# Newer ruff versions enable additional rules by default; those are
+# intentionally NOT gated here (see lint debt note in IMPROVEMENTS.md).
+select = ["E4", "E7", "E9", "F"]

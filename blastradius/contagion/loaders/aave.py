@@ -60,8 +60,13 @@ def _post_graphql(query: str, timeout: float = DEFAULT_TIMEOUT) -> Any:
         time.sleep(wait)
     body = json.dumps({"query": query}).encode()
     request = urllib.request.Request(
-        AAVE_V3_URL, data=body,
-        headers={"User-Agent": USER_AGENT, "Content-Type": "application/json", "Accept": "application/json"},
+        AAVE_V3_URL,
+        data=body,
+        headers={
+            "User-Agent": USER_AGENT,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        },
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -70,7 +75,9 @@ def _post_graphql(query: str, timeout: float = DEFAULT_TIMEOUT) -> Any:
         _last_request_at = time.monotonic()
 
 
-def fetch_markets(chain_ids: list[int] | None = None, timeout: float = DEFAULT_TIMEOUT) -> list[dict[str, Any]]:
+def fetch_markets(
+    chain_ids: list[int] | None = None, timeout: float = DEFAULT_TIMEOUT
+) -> list[dict[str, Any]]:
     """Live Aave markets with full reserve risk config. Network code."""
     ids = ",".join(str(c) for c in (chain_ids or DEFAULT_CHAIN_IDS))
     payload = _post_graphql(_RESERVES_QUERY % ids, timeout=timeout)
@@ -100,24 +107,29 @@ def build_graph_from_aave(markets: list[dict[str, Any]]) -> DeFiContagionGraph:
         graph.add_node(NodeKind.PROTOCOL, "aave", tvl_usd=0.0)
         graph.add_node(NodeKind.CHAIN, chain, tvl_usd=0.0)
         graph.add_node(
-            NodeKind.MARKET, market_id, tvl_usd=0.0,
+            NodeKind.MARKET,
+            market_id,
+            tvl_usd=0.0,
             meta={"address": market.get("address", ""), "source": "aave-v3-graphql"},
         )
         graph.add_edge(EdgeKind.PART_OF, (NodeKind.MARKET, market_id), (NodeKind.PROTOCOL, "aave"))
         graph.add_edge(EdgeKind.DEPLOYED_ON, (NodeKind.PROTOCOL, "aave"), (NodeKind.CHAIN, chain))
 
         for reserve in market.get("reserves") or []:
-            token = (reserve.get("underlyingToken") or {})
+            token = reserve.get("underlyingToken") or {}
             symbol = str(token.get("symbol") or "")
             if not symbol:
                 continue
             supply = reserve.get("supplyInfo") or {}
             if not supply.get("canBeCollateral"):
                 continue  # borrow-only: not a contagion edge
-            graph.add_node(NodeKind.TOKEN, symbol, tvl_usd=0.0,
-                           meta={"address": token.get("address", "")})
+            graph.add_node(
+                NodeKind.TOKEN, symbol, tvl_usd=0.0, meta={"address": token.get("address", "")}
+            )
             graph.add_edge(
-                EdgeKind.COLLATERAL_IN, (NodeKind.TOKEN, symbol), (NodeKind.MARKET, market_id),
+                EdgeKind.COLLATERAL_IN,
+                (NodeKind.TOKEN, symbol),
+                (NodeKind.MARKET, market_id),
                 meta={
                     "ltv": _fval(supply.get("maxLTV")),
                     "liquidation_threshold": _fval(supply.get("liquidationThreshold")),
@@ -125,14 +137,19 @@ def build_graph_from_aave(markets: list[dict[str, Any]]) -> DeFiContagionGraph:
                     "supply_cap": _fval((supply.get("supplyCap") or {}).get("amount")),
                     "paused": bool(reserve.get("isPaused")),
                     "frozen": bool(reserve.get("isFrozen")),
-                    "emode": [e.get("label") for e in (reserve.get("eModeInfo") or []) if e.get("label")],
+                    "emode": [
+                        e.get("label") for e in (reserve.get("eModeInfo") or []) if e.get("label")
+                    ],
                     "source": "aave-v3-graphql",
                 },
             )
             oracle = str(reserve.get("usdOracleAddress") or "")
             if oracle:
                 oracle_name = f"aave-oracle:{oracle}"
-                graph.add_node(NodeKind.ORACLE, oracle_name, tvl_usd=0.0,
-                               meta={"source": "aave-v3-graphql"})
-                graph.add_edge(EdgeKind.PRICES, (NodeKind.ORACLE, oracle_name), (NodeKind.TOKEN, symbol))
+                graph.add_node(
+                    NodeKind.ORACLE, oracle_name, tvl_usd=0.0, meta={"source": "aave-v3-graphql"}
+                )
+                graph.add_edge(
+                    EdgeKind.PRICES, (NodeKind.ORACLE, oracle_name), (NodeKind.TOKEN, symbol)
+                )
     return graph

@@ -145,9 +145,7 @@ class DeFiContagionGraph:
     ) -> Node:
         """Add (or merge into) a node. ``node_id`` overrides the derived
         ``"<Kind>:<name>"`` id so snapshots can use stable slugs."""
-        node = Node(
-            node_id or Node.make_id(kind, name), kind, name, tvl_usd, dict(meta or {})
-        )
+        node = Node(node_id or Node.make_id(kind, name), kind, name, tvl_usd, dict(meta or {}))
         self.backend.add_node(node)
         return node
 
@@ -298,6 +296,4 @@ class DeFiContagionGraph:
         }
 
     def to_json(self, path: Union[str, Path]) -> None:
-        Path(path).write_text(
-            json.dumps(self.to_dict(), indent=2) + "\n", encoding="utf-8"
-        )
+        Path(path).write_text(json.dumps(self.to_dict(), indent=2) + "\n", encoding="utf-8")

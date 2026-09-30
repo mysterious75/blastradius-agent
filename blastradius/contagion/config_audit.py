@@ -19,7 +19,7 @@ repo ``DISCLAIMER.md`` — authorized use only.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional
 
 SEVERITIES = ("CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO")
 _RANK = {s: i for i, s in enumerate(SEVERITIES)}
@@ -176,7 +176,10 @@ class ConfigAuditor:
                         ),
                         remediation=f"Set optional_dvn_threshold <= {optional}, or add more optional DVNs.",
                         target=f"pathway:{pid}",
-                        evidence={"optional_dvn_threshold": threshold, "optional_dvn_count": optional},
+                        evidence={
+                            "optional_dvn_threshold": threshold,
+                            "optional_dvn_count": optional,
+                        },
                     )
                 )
 
@@ -213,7 +216,8 @@ class ConfigAuditor:
                             "a reorged source message can be replayed against the destination."
                         ),
                         remediation=f"Raise confirmations to >= {floor}"
-                        + (f" (chain override for {chain})" if chain else "") + ".",
+                        + (f" (chain override for {chain})" if chain else "")
+                        + ".",
                         target=f"pathway:{pid}",
                         evidence={"confirmations": confs, "floor": floor, "chain": chain},
                     )
@@ -233,6 +237,48 @@ class ConfigAuditor:
                         ),
                         remediation="Pin receive_library explicitly and monitor for library migration events.",
                         target=f"pathway:{pid}",
+                    )
+                )
+
+            # --- R: executor shares an operator with verification ------------
+            # LayerZero docs: on default pathways a single operator controls both
+            # verification and execution. Only fires when executor identity is
+            # supplied (Scan messages don't carry it; pass executor_operator
+            # from pathway docs or on-chain config).
+            executor = str(path.get("executor") or "").strip()
+            exec_op = str(path.get("executor_operator") or "").strip().lower()
+            req_ops = [
+                str(x or "").strip().lower() for x in (path.get("required_dvn_operators") or [])
+            ]
+            if executor and executor.lower() in [a.lower() for a in req_list]:
+                report.add(
+                    Finding(
+                        rule_id="EXECUTOR-SHARED-OPERATOR",
+                        severity="HIGH",
+                        title="executor is also a required DVN",
+                        detail=(
+                            "The same contract/operator both verifies and executes messages. "
+                            "A compromise of that operator bypasses verification AND delivers "
+                            "the forged message in one step."
+                        ),
+                        remediation="Separate execution from verification: use an independent executor.",
+                        target=f"pathway:{pid}",
+                        evidence={"executor": executor},
+                    )
+                )
+            elif exec_op and exec_op in req_ops:
+                report.add(
+                    Finding(
+                        rule_id="EXECUTOR-SHARED-OPERATOR",
+                        severity="HIGH",
+                        title=f"executor shares operator '{exec_op}' with verification",
+                        detail=(
+                            "The executor is operated by the same entity as a required DVN. "
+                            "One operator compromise controls both attestation and delivery."
+                        ),
+                        remediation="Use an executor from an operator independent of every required DVN.",
+                        target=f"pathway:{pid}",
+                        evidence={"executor_operator": exec_op, "required_dvn_operators": req_ops},
                     )
                 )
 
@@ -445,7 +491,10 @@ class ConfigAuditor:
                         ),
                         remediation="Fund a safety module / backstop sized to cover a realistic collateral collapse.",
                         target=f"market:{name}",
-                        evidence={"debt_against_token_usd": debt_usd, "backstop_buffer_usd": buffer_usd},
+                        evidence={
+                            "debt_against_token_usd": debt_usd,
+                            "backstop_buffer_usd": buffer_usd,
+                        },
                     )
                 )
             elif debt_usd > 0 and buffer_usd < 0.25 * debt_usd:
@@ -457,6 +506,9 @@ class ConfigAuditor:
                         detail="Buffer absorbs only a fraction of a full collateral collapse.",
                         remediation="Grow the backstop toward full coverage of debt against this listing.",
                         target=f"market:{name}",
-                        evidence={"debt_against_token_usd": debt_usd, "backstop_buffer_usd": buffer_usd},
+                        evidence={
+                            "debt_against_token_usd": debt_usd,
+                            "backstop_buffer_usd": buffer_usd,
+                        },
                     )
                 )

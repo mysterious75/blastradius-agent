@@ -8,7 +8,6 @@ import json
 from blastradius.web.jwt import (
     JwtChecker,
     decode_jwt,
-    forge_hs256,
     forge_none,
 )
 
@@ -71,8 +70,9 @@ def test_strict_verifier_no_none_finding():
 
 
 def test_detects_weak_secret():
-    tok = make_jwt({"alg": "HS256", "typ": "JWT"}, {"sub": "1", "exp": 9999999999},
-                   secret=b"secret")
+    tok = make_jwt(
+        {"alg": "HS256", "typ": "JWT"}, {"sub": "1", "exp": 9999999999}, secret=b"secret"
+    )
 
     def verifier(token):
         # accepts only tokens signed with the weak secret "secret"

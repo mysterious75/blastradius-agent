@@ -65,4 +65,8 @@ def fetch_protocol_tvl(slug: str, timeout: float = DEFAULT_TIMEOUT) -> Optional[
 def find_protocols(name: str, timeout: float = DEFAULT_TIMEOUT) -> List[Dict[str, Any]]:
     """Case-insensitive substring search over DeFiLlama's protocol list."""
     needle = name.lower()
-    return [p for p in fetch_protocols(timeout=timeout) if needle in p["name"].lower() or needle in p["slug"].lower()]
+    return [
+        p
+        for p in fetch_protocols(timeout=timeout)
+        if needle in p["name"].lower() or needle in p["slug"].lower()
+    ]

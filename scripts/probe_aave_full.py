@@ -1,4 +1,5 @@
 """Probe fuller reserve shape: oracle, caps, isolation, borrow info."""
+
 import json
 import urllib.request
 import ssl
@@ -20,8 +21,11 @@ q = """{ markets(request: {chainIds: [1]}) {
   }
 } }"""
 body = json.dumps({"query": q}).encode()
-req = urllib.request.Request("https://api.v3.aave.com/graphql", data=body,
-                             headers={"User-Agent": UA, "Content-Type": "application/json"})
+req = urllib.request.Request(
+    "https://api.v3.aave.com/graphql",
+    data=body,
+    headers={"User-Agent": UA, "Content-Type": "application/json"},
+)
 with urllib.request.urlopen(req, timeout=60, context=ctx) as r:
     d = json.loads(r.read().decode())
 if "errors" in d:

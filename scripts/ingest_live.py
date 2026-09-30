@@ -77,9 +77,7 @@ def main(argv=None) -> int:
 
     all_markets = []
     for project in args.projects:
-        rows = fetch_lending_markets(
-            project=project, chain=args.chain, min_tvl_usd=args.min_tvl
-        )
+        rows = fetch_lending_markets(project=project, chain=args.chain, min_tvl_usd=args.min_tvl)
         print(f"[+] {project:14} {len(rows):4d} lending markets")
         all_markets.extend(rows)
 
@@ -122,9 +120,7 @@ def main(argv=None) -> int:
         "generated_at_utc": snapshot["provenance"]["generated_at_utc"],
         "market_count": len(all_markets),
         "projects": args.projects,
-        "tokens": sorted(
-            n.name for n in nodes if n.kind is NodeKind.TOKEN
-        ),
+        "tokens": sorted(n.name for n in nodes if n.kind is NodeKind.TOKEN),
         "protocols": sorted({n.name for n in nodes if n.kind is NodeKind.PROTOCOL}),
         "chains": sorted({n.name for n in nodes if n.kind is NodeKind.CHAIN}),
     }

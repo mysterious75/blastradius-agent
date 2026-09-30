@@ -1,4 +1,5 @@
 """Final verified Aave reserves query."""
+
 import json
 import urllib.request
 import ssl
@@ -19,8 +20,11 @@ q = """{ markets(request: {chainIds: [1]}) {
   }
 } }"""
 body = json.dumps({"query": q}).encode()
-req = urllib.request.Request("https://api.v3.aave.com/graphql", data=body,
-                             headers={"User-Agent": UA, "Content-Type": "application/json"})
+req = urllib.request.Request(
+    "https://api.v3.aave.com/graphql",
+    data=body,
+    headers={"User-Agent": UA, "Content-Type": "application/json"},
+)
 with urllib.request.urlopen(req, timeout=60, context=ctx) as r:
     d = json.loads(r.read().decode())
 if "errors" in d:
@@ -29,5 +33,7 @@ else:
     ms = d["data"]["markets"]
     print("markets:", [(m["name"], len(m["reserves"])) for m in ms])
     print(json.dumps(ms[0]["reserves"][1], indent=1)[:900])
-    open(r"D:\deepseek\blastradius-agent\data\ingest\aave_reserves_eth.json", "w").write(json.dumps(d, indent=1))
+    open(r"D:\deepseek\blastradius-agent\data\ingest\aave_reserves_eth.json", "w").write(
+        json.dumps(d, indent=1)
+    )
     print("saved sample")

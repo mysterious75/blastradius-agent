@@ -25,9 +25,7 @@ def test_kelpdao_config_is_flagged_critical():
 
 def test_single_signer_rule_fires_on_every_pathway():
     report = ConfigAuditor().audit(_seed())
-    hits = [
-        f for f in report.findings if f.rule_id == "DVN-INSUFFICIENT-REDUNDANCY"
-    ]
+    hits = [f for f in report.findings if f.rule_id == "DVN-INSUFFICIENT-REDUNDANCY"]
     assert len(hits) == 2  # both pathways in the snapshot
     assert all(f.severity == "CRITICAL" for f in hits)
     assert any("KelpDAO" in f.detail for f in hits)
@@ -95,7 +93,9 @@ def test_hardened_config_passes():
         "multisigs": [{"id": "emergency-pauser", "threshold": 3, "signers": 5}],
         "admin": {"address": "0xops", "type": "multisig", "timelock_seconds": 86400},
         "roles": {"pauser": True, "sentinel": True},
-        "markets": [{"id": "m1", "name": "m1", "debt_against_token_usd": 1e6, "backstop_buffer_usd": 5e5}],
+        "markets": [
+            {"id": "m1", "name": "m1", "debt_against_token_usd": 1e6, "backstop_buffer_usd": 5e5}
+        ],
     }
     report = ConfigAuditor().audit(config)
     assert report.passed is True
@@ -156,9 +156,16 @@ def test_unreachable_multisig_threshold_is_critical():
 def test_low_confirmations_respects_chain_override():
     base = {
         "target": "confs",
-        "pathways": [{"id": "p1", "chain": "Base", "confirmations": 10,
-                      "required_dvn_count": 2, "required_dvns": ["0xa", "0xb"],
-                      "receive_library": "ReceiveUln302"}],
+        "pathways": [
+            {
+                "id": "p1",
+                "chain": "Base",
+                "confirmations": 10,
+                "required_dvn_count": 2,
+                "required_dvns": ["0xa", "0xb"],
+                "receive_library": "ReceiveUln302",
+            }
+        ],
     }
     strict = ConfigAuditor().audit(base)
     assert "LOW-CONFIRMATIONS" in _ids(strict)

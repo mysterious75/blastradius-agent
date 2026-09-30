@@ -10,7 +10,6 @@ import json
 import pytest
 
 from blastradius.contagion.cli import main as cli_main
-from blastradius.contagion.graph import DeFiContagionGraph
 from blastradius.contagion.loaders.collateral import (
     _split_symbol,
     build_graph_from_pools,
@@ -93,9 +92,7 @@ def test_pools_become_markets_protocols_chains():
     # LP symbols split into their underlyings, each linked as collateral.
     # COLLATERAL_IN runs Token -> Market, so the tokens are the predecessors' src.
     market = g.seed_id(NodeKind.MARKET, "aave-v3 WETH-rsETH (Base)")
-    collateral = {
-        e.src for e in g.backend.predecessors(market, kind=EdgeKind.COLLATERAL_IN)
-    }
+    collateral = {e.src for e in g.backend.predecessors(market, kind=EdgeKind.COLLATERAL_IN)}
     assert collateral == {
         g.seed_id(NodeKind.TOKEN, "WETH"),
         g.seed_id(NodeKind.TOKEN, "rsETH"),

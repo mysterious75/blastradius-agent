@@ -73,9 +73,16 @@ def test_redirect_follow_oracle():
                 listener.hit_markers.add(m)
 
     session = FakeSession(on_request=mark)
-    builder = lambda target: "https://redirector.test/?to=" + target
-    c = SsrfChecker(listener=listener, callback_base="http://oob.test", session=session,
-                    redirect_probe_builder=builder)
+
+    def builder(target):
+        return "https://redirector.test/?to=" + target
+
+    c = SsrfChecker(
+        listener=listener,
+        callback_base="http://oob.test",
+        session=session,
+        redirect_probe_builder=builder,
+    )
     hits = c.check(["https://app.test/proxy?target=https://example.com"])
     assert len(hits) == 1
     assert hits[0].check == "ssrf-oracle" and hits[0].confidence == 0.8

@@ -235,7 +235,9 @@ def build_graph_from_lending_markets(
         )
         graph.add_node(NodeKind.PROTOCOL, project, tvl_usd=0.0)
         graph.add_node(NodeKind.CHAIN, chain, tvl_usd=0.0)
-        graph.add_edge(EdgeKind.PART_OF, (NodeKind.MARKET, market_name), (NodeKind.PROTOCOL, project))
+        graph.add_edge(
+            EdgeKind.PART_OF, (NodeKind.MARKET, market_name), (NodeKind.PROTOCOL, project)
+        )
         graph.add_edge(EdgeKind.DEPLOYED_ON, (NodeKind.PROTOCOL, project), (NodeKind.CHAIN, chain))
 
         for token in _split_symbol(symbol):
@@ -281,7 +283,9 @@ def build_graph_from_pools(
         )
         graph.add_node(NodeKind.PROTOCOL, project, tvl_usd=0.0)
         graph.add_node(NodeKind.CHAIN, chain, tvl_usd=0.0)
-        graph.add_edge(EdgeKind.PART_OF, (NodeKind.MARKET, market_name), (NodeKind.PROTOCOL, project))
+        graph.add_edge(
+            EdgeKind.PART_OF, (NodeKind.MARKET, market_name), (NodeKind.PROTOCOL, project)
+        )
         graph.add_edge(EdgeKind.DEPLOYED_ON, (NodeKind.PROTOCOL, project), (NodeKind.CHAIN, chain))
 
         for token in _split_symbol(symbol):
@@ -325,7 +329,9 @@ def build_graph_from_whitelist(payload: Union[str, Path, Dict[str, Any]]) -> DeF
         )
         for chain in token.get("wrapped_on", []) or []:
             graph.add_node(NodeKind.CHAIN, str(chain), tvl_usd=0.0)
-            graph.add_edge(EdgeKind.WRAPPED_ON, (NodeKind.TOKEN, name), (NodeKind.CHAIN, str(chain)))
+            graph.add_edge(
+                EdgeKind.WRAPPED_ON, (NodeKind.TOKEN, name), (NodeKind.CHAIN, str(chain))
+            )
 
     for market in data.get("markets", []) or []:
         name = str(market.get("name") or market["id"])

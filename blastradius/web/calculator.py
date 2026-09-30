@@ -164,7 +164,9 @@ def ascii_map(graph: DeFiContagionGraph, token: str) -> str:
             node = graph.backend.node(entry.path[-1])
             name = node.name if node is not None else entry.path[-1]
             kind = node.kind.value if node is not None else "?"
-            lines.append(f"{prefix}{'└──' if last else '├──'} [{kind}] {name}  (${entry.tvl_usd:,.0f})")
+            lines.append(
+                f"{prefix}{'└──' if last else '├──'} [{kind}] {name}  (${entry.tvl_usd:,.0f})"
+            )
             walk(entry.path[-1], prefix + ("    " if last else "│   "))
 
     walk(seed)

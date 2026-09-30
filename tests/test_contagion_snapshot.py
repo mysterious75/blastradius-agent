@@ -5,7 +5,7 @@ from pathlib import Path
 
 from blastradius.contagion.graph import DeFiContagionGraph
 from blastradius.contagion.loaders import snapshot
-from blastradius.contagion.schema import EdgeKind, NodeKind
+from blastradius.contagion.schema import NodeKind
 
 
 def _write(root: Path, name: str, payload):
@@ -13,10 +13,19 @@ def _write(root: Path, name: str, payload):
 
 
 def test_protocols_multi_chain_edges(tmp_path):
-    _write(tmp_path, "defillama_protocols.json", [
-        {"slug": "aave", "name": "Aave", "tvl": 1.0e10, "category": "Lending",
-         "chains": ["Ethereum", "Arbitrum", "Base"]},
-    ])
+    _write(
+        tmp_path,
+        "defillama_protocols.json",
+        [
+            {
+                "slug": "aave",
+                "name": "Aave",
+                "tvl": 1.0e10,
+                "category": "Lending",
+                "chains": ["Ethereum", "Arbitrum", "Base"],
+            },
+        ],
+    )
     g = snapshot.build_graph_from_snapshot(tmp_path, top_n_protocols=10, top_n_markets=0)
     chains = g.blast_radius(g.seed_id(NodeKind.PROTOCOL, "aave")).names_of_kind(NodeKind.CHAIN)
     assert set(chains) == {"Ethereum", "Arbitrum", "Base"}
@@ -25,10 +34,14 @@ def test_protocols_multi_chain_edges(tmp_path):
 
 
 def test_oracle_prices_edge(tmp_path):
-    _write(tmp_path, "chainlink_feeds_mainnet.json", [
-        {"pair": "ETH / USD", "proxyAddress": "0xabc", "path": "eth-usd"},
-        {"pair": "weETH / ETH", "proxyAddress": "0xdef"},
-    ])
+    _write(
+        tmp_path,
+        "chainlink_feeds_mainnet.json",
+        [
+            {"pair": "ETH / USD", "proxyAddress": "0xabc", "path": "eth-usd"},
+            {"pair": "weETH / ETH", "proxyAddress": "0xdef"},
+        ],
+    )
     g = snapshot.build_graph_from_snapshot(tmp_path, top_n_protocols=0, top_n_markets=0)
     # feed ETH/USD prices ETH -> Token:ETH is damaged if the oracle fails
     radius = g.blast_radius(g.seed_id(NodeKind.ORACLE, "chainlink:ETH / USD"))
@@ -49,17 +62,23 @@ def test_token_backing_nesting(tmp_path):
 
 
 def test_morpho_market_collateral_and_oracle(tmp_path):
-    _write(tmp_path, "morpho_blue_markets.json", {
-        "data": [{
-            "collateralAsset": {"symbol": "wstETH"},
-            "loanAsset": {"symbol": "WETH"},
-            "oracle": {"address": "0xORACLE"},
-            "lltv": "860000000000000000",
-            "chain": {"id": 1},
-            "state": {"supplyAssetsUsd": 5.0e8, "borrowAssetsUsd": 2.0e8},
-        }],
-        "cursor": None,
-    })
+    _write(
+        tmp_path,
+        "morpho_blue_markets.json",
+        {
+            "data": [
+                {
+                    "collateralAsset": {"symbol": "wstETH"},
+                    "loanAsset": {"symbol": "WETH"},
+                    "oracle": {"address": "0xORACLE"},
+                    "lltv": "860000000000000000",
+                    "chain": {"id": 1},
+                    "state": {"supplyAssetsUsd": 5.0e8, "borrowAssetsUsd": 2.0e8},
+                }
+            ],
+            "cursor": None,
+        },
+    )
     g = snapshot.build_graph_from_snapshot(tmp_path, top_n_protocols=0, top_n_markets=10)
     # collateral token damages the market
     radius = g.blast_radius(g.seed_id(NodeKind.TOKEN, "wstETH"))
