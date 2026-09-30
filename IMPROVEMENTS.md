@@ -122,3 +122,19 @@ PyPA conventions, registry counts via import).
 | Lint | own new files ruff-clean (UP035/F401/BLE001-noqa/S110); repo-wide 1241 pre-existing violations untouched (upstream debt) |
 
 Health after session 3: **755 passed, 1 skipped, 0 failed** · static F1=1.0 · dynamic F1=1.0.
+
+---
+
+## Session 4 — real-target proof (2026-09-30)
+
+No new features; verified the tool works on real targets, not just fixtures:
+
+| Target | Result |
+|---|---|
+| **WebGoat source (real repo, 20MB)** | 100 findings: **54 in real lesson code** (SqlInjectionChallenge/Lessons, JWTHeaderKIDEndpoint, SSRF task, traversal, XSS lessons) incl. sandbox-CONFIRMED textbook SQLi; 43 in vendored `wysihtml5` lib (known FP noise — `auto_hunt` has an FP filter, plain `hunter` CLI does not) |
+| **Own dashboard (live HTTP)** | 4 missing-header findings (true positives); correctly zero XSS/redirect/IDOR |
+| **KelpDAO case** | CRITICAL, $16.734B reachable TVL (matches incident) |
+| **Live Aave/LayerZero/RPC** | 38+38 edges, $80M/$213M buffers, real HIGH findings |
+| **Sandbox PoCs** | 9/15 execute+confirm via documented fallback (no Docker daemon here) |
+
+Honest gaps confirmed: Docker daemon unavailable (sandbox fallback used); PyPI publish needs owner Trusted-Publisher setup; CI lint red from 1241 pre-existing violations (own new code is clean); Umbrella per-asset slots operator-filled.
