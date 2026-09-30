@@ -1,5 +1,10 @@
 # 🔴 BlastRadius Agent
 
+[![CI](https://img.shields.io/github/actions/workflow/status/mysterious75/blastradius-agent/ci.yml?branch=main&label=CI)](https://github.com/mysterious75/blastradius-agent/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
+[![Release](https://img.shields.io/github/v/release/mysterious75/blastradius-agent)](https://github.com/mysterious75/blastradius-agent/releases)
+
 > Autonomous security engineer: scan → prove → patch → verify
 
 > [!WARNING]
@@ -23,6 +28,19 @@
 See [DISCLAIMER.md](DISCLAIMER.md) for the full legal terms and
 [SECURITY.md](SECURITY.md) for reporting and disclosure policies.
 
+## Contents
+
+- [What it does](#what-it-does)
+- [Why BlastRadius](#why-blastradius-deterministic-validation)
+- [DeFi Contagion & Config Audit](#-defi-contagion--config-audit-phase-6)
+- [Installation](#installation)
+- [Usage](#all-cli-commands)
+- [Dynamic Web Testing](#dynamic-web-testing)
+- [Benchmark](#benchmark)
+- [Trust & Safety](#trust--safety)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## What it does
 
 BlastRadius clones repositories, statically scans them for vulnerabilities
@@ -31,16 +49,24 @@ auto-generates and verifies patches, and tracks the whole lifecycle — from
 target discovery to CVE disclosure — in a local SQLite database with a web
 dashboard, multi-channel notifications, and a self-improving scanner.
 
+## Why BlastRadius: deterministic validation
+
+LLM-based scanners produce hypotheses; BlastRadius produces **proof**.
+Every finding is either executed in a sandbox (carrying the `[VULNERABLE]`
+marker) or honestly labeled a *candidate* — never silently asserted.
+This fail-closed discipline is enforced by tests, by the benchmark gate,
+and by the patch loop, which re-runs the exploit after every fix.
+
 ## 🔴 DeFi Contagion & Config Audit (Phase 6)
 
-Supply-chain blast radius (`blastradius/blast_radius`, Package → Repo) ka
+Supply-chain blast radius (`blastradius/blast_radius`, Package → Repo) has an
 on-chain counterpart: **`blastradius/contagion/`** — `Token → Market → Protocol → Chain`.
 
-Do sawaal jo deploy se pehle aane chahiye, aur jinka jawab abhi market mein
-koi product nahi deta:
+Two questions every deployment should answer beforehand — which no product
+on the market currently does:
 
-> **1.** *Agar ye token fail ho jaye to kitna TVL, kitne protocols, kitni chains jaayengi?*
-> **2.** *Kya ye cross-chain/protocol config ek compromised signer survive kar sakta hai?*
+> **1.** *If this token fails, how much TVL, how many protocols, and how many chains go down?*
+> **2.** *Can this cross-chain/protocol config survive one compromised signer?*
 
 ### Contagion graph + bad-debt simulation
 
@@ -51,15 +77,14 @@ python -m blastradius.contagion map --token *** --data data/seed_kelpdao_case.js
 # reachability + exposure score
 python -m blastradius.contagion score --token *** --data data/seed_kelpdao_case.json
 
-# "token -> 0" pe kitna bad debt liquidation clear nahi kar sakta
+# how much bad debt liquidation cannot clear if "token -> 0"
 python -m blastradius.contagion baddebt --token *** --data data/seed_kelpdao_case.json
 ```
 
-Bad-debt model wahi mechanic hai jo KelpDAO ke baad Aave ke WETH reserve ko
-unliquidatable bad debt mein chhod gaya: collateral to jaata hai, uske against
-liya gaya debt nahi jaata, aur liquidators ke paas seize karne ko kuch nahi
-bachta. `backstop_buffer_usd` batata hai safety module / umbrella kitna absorb
-kar payega.
+The bad-debt model captures the exact mechanic that left Aave's WETH reserve
+with unliquidatable bad debt after KelpDAO: the collateral is gone while the
+debt taken against it remains, leaving liquidators nothing to seize.
+`backstop_buffer_usd` reports how much a safety module / umbrella can absorb.
 
 ### Config auditor
 
@@ -67,25 +92,25 @@ kar payega.
 python -m blastradius.contagion audit --config data/seed_kelpdao_config.json
 ```
 
-Anchor case **KelpDAO / LayerZero (18 Apr 2026)** — ek `1-of-1` DVN config,
-$k292M drain. Koi contract bug nahi tha; saare contracts as-designed chale.
-Ye auditor wahi class of misconfiguration **deploy se pehle** pakadta hai:
+Anchor case **KelpDAO / LayerZero (18 Apr 2026)** — a `1-of-1` DVN config,
+$292M drained. No contract bug was involved; every contract behaved as designed.
+This auditor catches that class of misconfiguration **before deployment**:
 
-| Rule | Severity | Kya pakadta hai |
+| Rule | Severity | What it catches |
 |---|---|---|
-| `DVN-INSUFFICIENT-REDUNDANCY` | CRITICAL | attestors < 2 — **KelpDAO yahin phasa** |
+| `DVN-INSUFFICIENT-REDUNDANCY` | CRITICAL | attestors < 2 — **where KelpDAO failed** |
 | `DVN-THRESHOLD-UNREACHABLE` | CRITICAL | `optional_dvn_threshold > optional_dvn_count` |
 | `MULTISIG-THRESHOLD-UNREACHABLE` | CRITICAL | threshold > signers — emergency action dead |
-| `DVN-CORRELATED-PATHWAYS` | HIGH | ek operator kai pathways secure kare |
-| `DVN-DUPLICATE-OPERATOR` | HIGH | redundancy ka illusion (same signer repeat) |
+| `DVN-CORRELATED-PATHWAYS` | HIGH | one operator secures many pathways |
+| `DVN-DUPLICATE-OPERATOR` | HIGH | illusion of redundancy (same signer repeated) |
 | `MULTISIG-THRESHOLD-ONE` | HIGH | `1-of-N` multisig = single key |
-| `ORACLE-SINGLE-FEED` | HIGH | ek hi price feed = single point of failure |
+| `ORACLE-SINGLE-FEED` | HIGH | single price feed = single point of failure |
 | `NO-BACKSTOP-BUFFER` | HIGH | borrowing on, buffer zero |
-| `ADMIN-NOT-A-MULTISIG` | HIGH | admin EOA hai |
+| `ADMIN-NOT-A-MULTISIG` | HIGH | admin is an EOA |
 | `ADMIN-NO-TIMELOCK` / oracle limits / `LOW-CONFIRMATIONS` | MEDIUM | |
-| `NO-EMERGENCY-PAUSER` / `NO-LIVE-SENTINEL` | MEDIUM/LOW | brake nahi hai |
+| `NO-EMERGENCY-PAUSER` / `NO-LIVE-SENTINEL` | MEDIUM/LOW | no brake pedal |
 
-Exit code `1` jab config ship karne layak na ho — CI mein seedha gate.
+Exit code `1` when the config is not shippable — gate it directly in CI.
 
 ### Ingestion — collateral whitelists + live TVL
 
@@ -93,47 +118,45 @@ Exit code `1` jab config ship karne layak na ho — CI mein seedha gate.
 # live (DeFiLlama public APIs, no key) — real lending markets with supply/borrow/LTV
 python3 scripts/ingest_live.py --projects aave-v3 compound-v3 morpho-blue sparklend fluid
 
-# ya module se
+# or via the module
 python -m blastradius.contagion ingest --source defillama --project aave-v3 --out graph.json
 
-# deterministic (protocol ki apni declared collateral listing)
+# deterministic (the protocol's own declared collateral listing)
 python -m blastradius.contagion ingest --source whitelist --data listing.json --out graph.json
 
-# phir usi graph pe
+# then run the same graph
 python -m blastradius.contagion map --token *** --data graph.json
 ```
 
-`scripts/ingest_live.py` DeFiLlama ke **`/pools` + `/lendBorrow`** ko pool-id se
-join karta hai — isliye graph mein real `token_supplied_usd`,
-`debt_against_token_usd`, `ltv`, `borrowable`, `debt_ceiling_usd` aate hain.
-Snapshot `docs/data/blast-graph.json` mein likha jaata hai, **provenance block
-ke saath** (source URLs, timestamp, aur kya derived hai).
+`scripts/ingest_live.py` joins DeFiLlama's **`/pools` + `/lendBorrow`** on pool id —
+which is why the graph carries real `token_supplied_usd`,
+`debt_against_token_usd`, `ltv`, `borrowable`, and `debt_ceiling_usd`.
+Snapshots land in `docs/data/blast-graph.json` **with a provenance block**
+(source URLs, timestamp, and what was derived).
 
-> **Known limitation (hamesha disclosed):** safety-module / backstop balances
-> koi free API publish nahi karta. Live markets mein `backstop_buffer_usd = 0`
-> hota hai — isliye `uncovered_loss_usd` ek **upper bound** hai, forecast nahi.
-> `backstop_buffers={...}` se on-chain reads se bhar sakte ho.
+> **Known limitation (always disclosed):** no free API publishes safety-module /
+> backstop balances. On live markets `backstop_buffer_usd = 0`, which makes
+> `uncovered_loss_usd` an **upper bound**, not a forecast. Fill it in from
+> on-chain reads via `backstop_buffers={...}`.
 
-Data sources, attribution aur legal notes: [`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md).
+Data sources, attribution, and legal notes: [`DATA_ATTRIBUTION.md`](DATA_ATTRIBUTION.md).
 
 ### 🌐 Public site (GitHub Pages)
 
-`docs/` ek static site hai — koi build step nahi, koi framework nahi, koi
-third-party font/logo nahi:
+`docs/` is a static site — no build step, no framework, no third-party fonts/logos:
 
-| Page | Kya hai |
+| Page | Contents |
 |---|---|
 | [`docs/index.html`](docs/index.html) | Landing page + KelpDAO case study |
-| [`docs/calculator.html`](docs/calculator.html) | **Free blast-radius calculator** — poora computation browser mein, same formulas as `scoring.py` |
+| [`docs/calculator.html`](docs/calculator.html) | **Free blast-radius calculator** — all computation in-browser, same formulas as `scoring.py` |
 | [`docs/deck.html`](docs/deck.html) | 8-slide pitch deck |
 
-Deploy: repo **Settings → Pages → Source: GitHub Actions**. Workflow
-[`.github/workflows/pages.yml`](.github/workflows/pages.yml) `main` pe har
-`docs/` change pe auto-deploy karta hai (least-privilege permissions,
-koi external request nahi).
+Deploy: repo **Settings → Pages → Source: GitHub Actions**. The
+[`.github/workflows/pages.yml`](.github/workflows/pages.yml) workflow auto-deploys
+on every `docs/` change to `main` (least-privilege permissions, no external requests).
 
-Design notes, aur har decision ka *kyun*: [`research/04-DESIGN-DECISIONS.md`](research/04-DESIGN-DECISIONS.md).
-Competitive research + market valuations: [`research/00-README.md`](research/00-README.md).
+Design notes and the reasoning behind every decision: [`research/04-DESIGN-DECISIONS.md`](research/04-DESIGN-DECISIONS.md).
+Competitive research and market valuations: [`research/00-README.md`](research/00-README.md).
 
 ---
 
@@ -479,6 +502,20 @@ behavioral checks (`blastradius.web` — stdlib only):
 - **Live IDOR/BOLA authz-diff** (opt-in) — replay object URLs under a second
   identity and flag cross-identity reads (`--attacker-cookie`, `--victim-cookie`,
   `--victim-marker`, `--idor-url`)
+- **Live SSRF with OOB + redirect-follow oracle** — inject callback URLs into
+  URL-bearing params; confirm server-side fetches and redirect following
+- **Live JWT checks** — `alg:none`, RS256→HS256 confusion, weak HMAC secrets,
+  `kid` traversal
+- **Live SQL injection** (opt-in) — error-based, boolean-differential, and
+  time-based probes; NoSQL operator probes for JSON endpoints
+- **Mass-assignment probes** — smuggle privileged fields with sentinel values,
+  distinguish reflection from persistence
+- **Web cache poisoning** (opt-in) — unkeyed-header reflection with cache-buster
+  discipline and a persistence proof; Web Cache Deception surfaces
+- **Exploit-chain linking** — findings are linked into A→B→C chains
+  (open-redirect→OAuth, IDOR→ATO, SSRF→metadata) with combined severity
+- **Scope gating** — every URL-accepting command honors `--scope` against the
+  scope registry (default deny); discovery commands filter to in-scope targets
 - HTTP interception proxy (records + replays traffic, builds sitemaps)
 
 ```bash
@@ -521,16 +558,24 @@ labeled a candidate. Latest run (detection F1 / sandbox-proven):
 | flask-crlf | 1 | 1 | 1.000 | 1/1 |
 | flask-deserialization | 1 | 1 | 1.000 | 1/1 |
 | flask-idor | 1 | 1 | 1.000 | 1/1 |
+| flask-nosqli | 1 | 1 | 1.000 | 1/1 |
 | flask-sqli | 1 | 1 | 1.000 | 1/1 |
 | flask-traversal | 1 | 1 | 1.000 | 1/1 |
 | flask-xss | 1 | 1 | 1.000 | 1/1 |
 | requests-ssrf | 1 | 1 | 1.000 | 1/1 |
-| jinja-ssti | 1 | 1 | 1.000 | 0/1* |
-| lxml-xxe | 1 | 1 | 1.000 | 0/1* |
+| jinja-ssti | 1 | 1 | 1.000 | 1/1 |
+| lxml-xxe | 1 | 1 | 1.000 | 1/1 |
 | hardcoded-secrets | 1 | 1 | 1.000 | 0/1* |
-| **Total** | **12** | **12** | **1.000** | **9/12** |
+| flask-proto-pollution | 1 | 1 | 1.000 | 0/1* |
+| ci-supply-chain | 1 | 1 | 1.000 | 0/1* |
+| **Total** | **15** | **15** | **1.000** | **12/15** |
 
-\* no exploit template yet — reported as candidate, never silently "proven".
+\* presence-based findings (hardcoded secrets, prototype pollution, CI config)
+have no meaningful execution proof — reported as candidates, never silently "proven".
+
+A second gate covers the live web checks (`benchmarks/run_dynamic.py`):
+IDOR authz-diff, JWT acceptance, and SSRF/OOB probes against local targets —
+currently 3/3 at F1 1.000.
 
 ```bash
 python benchmarks/run.py            # detection benchmark (offline)
@@ -548,12 +593,31 @@ The benchmark runs on every push/PR in CI with an F1 gate.
 Found one with BlastRadius? Submit via the CVE Program / GitHub Security
 Advisory (see [SECURITY.md](SECURITY.md)) and add it here.
 
+## Trust & Safety
+
+- **Authorized use only.** Every URL-accepting command supports `--scope`
+  against a local scope registry that defaults to **deny**. Discovery commands
+  filter to in-scope targets. See `python -m blastradius.scope --help`.
+- **Fail-closed verification.** No finding is ever reported as confirmed
+  without execution evidence (`[VULNERABLE]` marker or HTTP-response proof);
+  everything else stays labeled a *candidate*.
+- **Responsible live testing.** Cache-poisoning probes use per-request cache
+  busters so nothing can land in shared entries; OOB listeners are
+  localhost-only by default; time-based and write-path probes are opt-in.
+- **Disclosure.** Found a vulnerability with BlastRadius? Follow
+  [SECURITY.md](SECURITY.md) — coordinated disclosure via the CVE Program
+  or a GitHub Security Advisory.
+
 ## Contributing
 
-PRs welcome — tests run with `pytest tests/`. Keep new features dependency-
-light, mock all network calls in tests, and make every integration graceful
-when credentials are missing.
+PRs welcome. Ground rules:
+
+- `python -m pytest tests/ -q` must stay green; add tests with every feature
+- Keep new features dependency-light; mock all network calls in tests
+- Every external integration must degrade gracefully when credentials are missing
+- `ruff check` and `ruff format --check` must pass (`blastradius tests scripts`)
+- Never commit secrets, corpora dumps, or large binaries — see `.gitignore`
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
