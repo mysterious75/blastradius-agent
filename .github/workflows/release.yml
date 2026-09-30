@@ -78,5 +78,11 @@ jobs:
       # Trusted Publishing: PyPI maps the GitHub Actions OIDC identity, so no
       # password / API token is required (PEP 740 attestations are generated
       # index-side for every uploaded file).
+      #
+      # OPTIONAL until there is real `pip install` demand: requires a Trusted
+      # Publisher configured on PyPI (project settings). Until then this step
+      # is best-effort so a missing PyPI setup never fails the release —
+      # GitHub Releases (wheel/sdist/SBOM/signatures) remain the channel.
       - name: Publish to PyPI (trusted publishing)
+        continue-on-error: true
         uses: pypa/gh-action-pypi-publish@release/v1
