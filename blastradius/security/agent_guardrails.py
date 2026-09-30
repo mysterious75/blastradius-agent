@@ -15,6 +15,9 @@ Implements a subset of the OWASP AI Agent Security / LLM Top 10 controls:
   report publishing, or network-enabled exploitation require a human in the
   loop; read/scan actions run unattended (human-in-the-loop, OWASP agent
   autonomy / LLM10).
+- Data-egress blocking (``AgentGuard.check_exfil`` /
+  ``check_exfil_command``): delegating to :mod:`blastradius.security.exfil_guard`
+  so a reader of secrets cannot become a writer of attacker-visible data.
 
 Everything here is offline and deterministic -- no LLM calls, no network.
 """
@@ -65,7 +68,16 @@ INJECTION_MARKERS: List[str] = [
 ]
 
 # Actions that must not run unattended (human-in-the-loop gate).
-HIGH_RISK_ACTIONS = frozenset({"patch-apply", "report-publish", "exploit-with-network"})
+HIGH_RISK_ACTIONS = frozenset(
+    {
+        "patch-apply",
+        "report-publish",
+        "exploit-with-network",
+        "visibility-change",
+        "gist-publish",
+        "package-publish",
+    }
+)
 
 DEFAULT_MAX_OUTPUT = 50_000
 
@@ -160,6 +172,18 @@ class AgentGuard:
     def flag_repo_content(self, text: str) -> bool:
         """True when repo content fed to this agent carries an injection marker."""
         return flag_repo_content(text)
+
+    def check_exfil(self, action: str, **kwargs) -> Any:
+        """Audit-gated data-egress decision for this agent (see exfil_guard)."""
+        from .exfil_guard import ExfilGuard
+
+        return ExfilGuard().check(action, **kwargs)
+
+    def check_exfil_command(self, command: str) -> Any:
+        """Audit-gated shell-egress screen for this agent (see exfil_guard)."""
+        from .exfil_guard import ExfilGuard
+
+        return ExfilGuard().check_command(command)
 
     def action_risk(self, action: str) -> str:
         """Tier for ``action``; records the highest tier observed this run."""
