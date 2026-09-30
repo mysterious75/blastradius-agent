@@ -1,10 +1,11 @@
 """Live cross-check: full backstop read."""
+
 import sys
 import time
 
 sys.path.insert(0, r"D:\deepseek\blastradius-agent")
 time.sleep(2)
-from blastradius.contagion.loaders import backstop
+from blastradius.contagion.loaders import backstop  # noqa: E402 - sys.path bootstrap above
 
 out = backstop.fetch_backstops()
 for k, v in out.items():
