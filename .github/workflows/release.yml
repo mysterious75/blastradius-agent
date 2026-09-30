@@ -42,11 +42,14 @@ jobs:
       # NOTE: syft is a Go binary, not a PyPI package — install via the
       # Anchore action, not `pip install syft` (which yields an empty file
       # and fails the attach step on 0-byte validation).
+      # NOTE 2: scan the source tree (./), not dist/: syft catalogs Python
+      # dependencies from pyproject.toml, while a built wheel is opaque and
+      # yields a near-empty SBOM.
       - name: Generate CycloneDX SBOM
         continue-on-error: true
         uses: anchore/sbom-action@v0
         with:
-          path: dist/
+          path: ./
           format: cyclonedx-json
           output-file: sbom.cdx.json
 
