@@ -106,3 +106,19 @@ conventions (token_backing), ZAP default-deny + OWASP APTS pre-action validation
 | 6 | `_title()` missing `secret` → `"Hardcoded Secret"` | `hunter/scanner.py` | `test_registry_parity.py` (4) |
 
 Health after session 2: **739 passed, 1 skipped, 0 failed** (was 722) · benchmark **F1=1.0 (15/15)**.
+
+---
+
+## Session 3 — Aave loader + dynamic benchmark + v1.1.0 + lint (2026-09-30)
+
+Research-first per item (Aave docs/GraphQL introspection, ZAP+OWASP scope patterns,
+PyPA conventions, registry counts via import).
+
+| Item | Result |
+|---|---|
+| Aave loader (`contagion/loaders/aave.py`) | keyless AaveKit GraphQL, schema mapped by introspection; live cross-check 6 markets/126 reserves → 38 collateral + 38 oracle edges; 8 tests |
+| Dynamic benchmark (`benchmarks/run_dynamic.py` + 3 live targets) | F1=1.0 ×3 runs, deterministic; CI gate added to `ci.yml` |
+| Release v1.1.0 | version bump (single-sourced), CHANGELOG entry, tag pushed (release workflow running); version-agnostic test fixes |
+| Lint | own new files ruff-clean (UP035/F401/BLE001-noqa/S110); repo-wide 1241 pre-existing violations untouched (upstream debt) |
+
+Health after session 3: **755 passed, 1 skipped, 0 failed** · static F1=1.0 · dynamic F1=1.0.
