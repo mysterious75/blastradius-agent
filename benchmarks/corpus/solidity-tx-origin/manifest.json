@@ -1,0 +1,7 @@
+{
+  "target": "solidity-tx-origin",
+  "description": "Solidity contract authorizing an admin-only state change on tx.origin instead of msg.sender.",
+  "expected": [
+    {"file": "AuthGate.sol", "vuln_type": "solidity", "severity": "MEDIUM", "cwe": "CWE-807"}
+  ]
+}

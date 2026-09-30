@@ -50,6 +50,7 @@ FILE_EXTENSIONS = (
     "*.jsx",
     "*.yml",
     "*.yaml",
+    "*.sol",
 )
 
 # Paths/dirs that are never scanned (vendored code, build artifacts, migrations,
@@ -453,6 +454,28 @@ VULN_META = {
             "workflows; trigger on pull_request (trusted base) or pin the base "
             "ref and gate PR code behind an approved reviewer with "
             "least-privilege tokens."
+        ),
+    },
+    "solidity": {
+        "severity": "HIGH",
+        "cvss": 8.1,
+        "cwe": "CWE-841",
+        "description": (
+            "Solidity smart-contract defect. The finding payload names the "
+            "class: reentrancy, unchecked-lowlevel, unchecked-transfer, "
+            "tx-origin, weak-prng, controlled-delegatecall, arbitrary-send, "
+            "unprotected-upgrade, integer-overflow, divide-before-multiply, "
+            "incorrect-exp, timestamp-dependency or hardcoded-private-key. "
+            "These are immutable-by-deployment bugs, so the blast radius is "
+            "every pool of value the contract custodies."
+        ),
+        "remediation": (
+            "Apply checks-effects-interactions and a reentrancy guard, verify "
+            "every low-level call and ERC20 return value (SafeERC20), "
+            "authorise on msg.sender rather than tx.origin, source randomness "
+            "from a verifiable oracle, restrict delegatecall and value "
+            "destinations, guard initializers, compile with solc >= 0.8, and "
+            "keep keys in a managed signer."
         ),
     },
 }
@@ -1680,6 +1703,14 @@ class CVEHunter:
             if ci_score >= self._learned_threshold("ci_injection"):
                 return [self._make_finding(path, 1, text.splitlines(), "ci_injection", ci_score)]
             return []
+        # Solidity contracts — delegated to the dedicated Slither-aligned scanner.
+        # The generic line scorers below are Python/web-shaped (indentation- and
+        # string-literal based) and misfire on contract source, so the whole file
+        # is handed to the language-specific detector instead.
+        if path.suffix.lower() == ".sol":
+            from blastradius.scanners.solidity import SolidityScanner
+
+            return SolidityScanner().detect(text, path)
         lines = text.splitlines()
         has_source = any(re.search(p, text, re.I) for p in SOURCES)
         has_defusedxml = "defusedxml" in text
@@ -1839,4 +1870,5 @@ class CVEHunter:
             "ci_injection": "CI Injection",
             "secret": "Hardcoded Secret",
             "secret_history": "Secret in Git History",
+            "solidity": "Solidity Smart-Contract Defect",
         }.get(vuln_type, vuln_type)

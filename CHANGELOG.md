@@ -2,6 +2,24 @@
 
 All notable changes to BlastRadius Agent are documented here.
 
+## [Unreleased]
+
+### Added
+- Solidity smart-contract scanner (`blastradius/scanners/solidity.py`): Slither-aligned
+  reentrancy (structural checks-effects-interactions analysis), tx.origin auth, controlled
+  delegatecall, arbitrary send, weak randomness, unchecked low-level calls, unchecked ERC20
+  transfers, divide-before-multiply, incorrect exponentiation, timestamp dependency,
+  pre-0.8 integer overflow, unprotected upgrade, and hardcoded private keys.
+- Registry: `solidity` vuln type (CWE-841) added, taking the static registry to
+  **19 vuln types / 12 languages**.
+- Dynamic benchmark extended to 6 live local targets (SQLi, mass assignment, cache
+  poisoning added to IDOR/JWT/SSRF) — 7 expected / 7 reported, F1 1.000.
+- Exfiltration guardrail (`blastradius/security/exfil_guard.py`): deny-by-default
+  egress classification, public-host/visibility enforcement, command screening, audited
+  and fail-closed.
+- Shadow-repository recon (`--shadow`): contributors to public repos/Gists/releases with
+  bounded, detection-only secret scoring.
+
 ## [1.0.0] - 2026-08-09
 
 ### Added

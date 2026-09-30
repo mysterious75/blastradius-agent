@@ -44,10 +44,19 @@ See [DISCLAIMER.md](DISCLAIMER.md) for the full legal terms and
 ## What it does
 
 BlastRadius clones repositories, statically scans them for vulnerabilities
-across 18 types and 11 languages, proves exploitability in a sandboxed PoC,
+across 19 types and 12 languages, proves exploitability in a sandboxed PoC,
 auto-generates and verifies patches, and tracks the whole lifecycle — from
 target discovery to CVE disclosure — in a local SQLite database with a web
 dashboard, multi-channel notifications, and a self-improving scanner.
+
+Solidity contracts are first-class: `*.sol` files are routed to a dedicated
+Slither-aligned detector (`blastradius/scanners/solidity.py`) rather than the
+web-shaped line scorers, covering reentrancy (structural
+checks-effects-interactions analysis), `tx.origin` authorization, controlled
+`delegatecall`, arbitrary-send, weak randomness, unchecked low-level calls and
+ERC20 transfers, divide-before-multiply, incorrect exponentiation, timestamp
+dependency, pre-0.8 integer overflow, unprotected upgrade, and hardcoded
+private keys.
 
 ## Why BlastRadius: deterministic validation
 
@@ -421,7 +430,7 @@ models are passed through as-is.
 └──────────────┬───────────────────────────────┬─────────────────────────────┘
                ▼                                ▼
 ┌──────────────────────────────  FullPipeline (scan → prove → patch → verify) ─┐
-│  CVEHunter (static scan, 18 vuln types, 11 languages, learned rules)          │
+│  CVEHunter (static scan, 19 vuln types, 12 languages, learned rules)          │
 │  ─► sandbox exploit check ─► PatchLoop (generate → verify → retry ×3)       │
 │  ─► DisclosureReport + SummaryReporter ─► reports/                           │
 │  ─► BlastRadiusGraph (package → repo)  ─► SQLiteDB (findings, CVE tracking) │
@@ -450,6 +459,7 @@ models are passed through as-is.
 | `python -m blastradius.pipeline_cli --target <url\|path>` | Full end-to-end pipeline |
 | `python -m blastradius.auto_hunt --strategy github --max 20` | Autonomous hunt over discovered targets |
 | `python -m blastradius.recon --strategy all` | Discover targets (GitHub code search / PyPI / Shodan) |
+| `python -m blastradius.recon --shadow <org\|user>` | Shadow-repo recon: contributors → public repos/Gists/releases, bounded detection-only secret scoring |
 | `python -m blastradius.blast_radius --repo ./path` | Map dependency blast radius |
 | `python -m blastradius.providers list\|test\|set\|cost` | Provider status, connectivity, .env, cost report |
 | `python -m blastradius.db stats\|clear` | SQLite stats / reset |
@@ -568,18 +578,21 @@ labeled a candidate. Latest run (detection F1 / sandbox-proven):
 | hardcoded-secrets | 1 | 1 | 1.000 | 0/1* |
 | flask-proto-pollution | 1 | 1 | 1.000 | 0/1* |
 | ci-supply-chain | 1 | 1 | 1.000 | 0/1* |
-| **Total** | **15** | **15** | **1.000** | **12/15** |
+| solidity-tx-origin | 1 | 1 | 1.000 | 0/1* |
+| **Total** | **16** | **16** | **1.000** | **12/16** |
 
 \* presence-based findings (hardcoded secrets, prototype pollution, CI config)
 have no meaningful execution proof — reported as candidates, never silently "proven".
 
-A second gate covers the live web checks (`benchmarks/run_dynamic.py`):
-IDOR authz-diff, JWT acceptance, and SSRF/OOB probes against local targets —
-currently 3/3 at F1 1.000.
+A second gate covers the live web checks (`benchmarks/run_dynamic.py`): IDOR
+authz-diff, JWT acceptance, SSRF/OOB, SQLi, mass assignment and cache poisoning
+against six local stdlib-HTTP targets — currently **7 expected / 7 reported at
+F1 1.000**.
 
 ```bash
 python benchmarks/run.py            # detection benchmark (offline)
 python benchmarks/run.py --verify   # + sandbox PoC execution (proven count)
+python benchmarks/run_dynamic.py --min-f1 1.0   # live local web checks
 ```
 
 The benchmark runs on every push/PR in CI with an F1 gate.
@@ -604,6 +617,15 @@ Advisory (see [SECURITY.md](SECURITY.md)) and add it here.
 - **Responsible live testing.** Cache-poisoning probes use per-request cache
   busters so nothing can land in shared entries; OOB listeners are
   localhost-only by default; time-based and write-path probes are opt-in.
+- **Exfiltration guard.** Agent actions that publish or export data
+  (`visibility-change`, `gist-publish`, `package-publish`, and similar) are
+  deny-by-default in `blastradius/security/exfil_guard.py`. Public hosts and
+  public visibility are rejected unless a human explicitly overrides, every
+  decision is written to the tamper-evident audit log, and an audit-write
+  failure fails closed.
+- **Shadow recon is detection-only.** `--shadow` inspects public repos, Gists
+  and releases for secret-shaped material and scores it as a *candidate*. It
+  never validates, authenticates with, or uses a discovered credential.
 - **Disclosure.** Found a vulnerability with BlastRadius? Follow
   [SECURITY.md](SECURITY.md) — coordinated disclosure via the CVE Program
   or a GitHub Security Advisory.

@@ -18,16 +18,16 @@ def test_every_meta_type_has_title():
 
 
 def test_title_covers_meta():
-    assert len(S.VULN_META) == 18
+    assert len(S.VULN_META) == 19
 
 
 def test_docs_match_registry():
     readme = (REPO / "README.md").read_text(encoding="utf-8")
-    assert "18 types" in readme or "18 vuln types" in readme
+    assert "19 types" in readme or "19 vuln types" in readme
     agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
-    assert "18 vuln types" in agents
+    assert "19 vuln types" in agents
 
 
 def test_changelog_notes_correction():
     log = (REPO / "CHANGELOG.md").read_text(encoding="utf-8")
-    assert "18" in log
+    assert "19" in log

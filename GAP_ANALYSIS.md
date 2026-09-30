@@ -23,7 +23,18 @@ Method: inventory repo detection surface → map against `D:\deepseek` hunting a
 ### 2a. Static scanners — TWO layers
 **(i) `CVEHunter` (`hunter/scanner.py`) — 19 vuln types** incl. **`idor`** (function-level object-id + no-auth reasoning, multi-language), `jwt`, `graphql`, `ci_injection`, `secret_history`, plus the 8 core. This is the primary static engine and it DOES cover IDOR + JWT + GraphQL statically.
 
-**(ii) `scanners/` package — 13 self-contained scanners** (`auth_bypass, cmd_injection, crlf, deserialization, nosqli, proto_pollution, secrets, sqli, ssrf, ssti, traversal, xss, xxe`). Regex line scan + `has_source`/`references_variable` reasoning + `_SAFE` suppression + confidence.
+**(ii) `scanners/` package — 14 self-contained scanners** (`auth_bypass, cmd_injection, crlf, deserialization, nosqli, proto_pollution, secrets, solidity, sqli, ssrf, ssti, traversal, xss, xxe`). Regex line scan + `has_source`/`references_variable` reasoning + `_SAFE` suppression + confidence.
+
+`SolidityScanner` is the only non-web-shaped member: `*.sol` is registered in
+`FILE_EXTENSIONS` and `CVEHunter._scan_file` dispatches to it before the generic
+line scorers, because those are indentation/string-literal heuristics that misfire
+on contract source. It adds structural checks (function-block reentrancy) on top of
+the line rules, and a `.sol` ground-truth case sits in the benchmark corpus.
+
+**Gap that remains:** Slither-grade precision (AST + call-graph, false-positive
+suppression via `reentrancy-eth`, `send`, `solhint` config) is not reproduced. The
+current detector is a high-signal candidate generator, so an analyst/sandbox stage
+must confirm before any finding is called proven.
 
 > Correction: an earlier draft of this doc said "no IDOR scanner" — that was wrong. IDOR is covered **statically** in `CVEHunter._scan_idor` (+ an IDOR sandbox PoC). The real gap is the **dynamic/live** side.
 

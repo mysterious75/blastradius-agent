@@ -9,7 +9,7 @@ as a *candidate*.
 ## Core loop
 
 ```
-scan (static, 18 vuln types / 11 languages)
+scan (static, 19 vuln types / 12 languages)
   -> prove (sandbox PoC, gVisor/Docker, fail-closed)
   -> patch (PatchLoop: generate -> verify x3 checks -> retry x3)
   -> verify (ast.parse + exploit re-run + pytest regression)
@@ -38,7 +38,9 @@ python -m pytest tests/ -q                              # 442 tests, offline
 - `blastradius/agents/` — multi-agent graph: ReconAgent → ExploitAgent
   (parallel, sandbox-proven) → PatchAgent over a shared thread-safe blackboard
 - `blastradius/hunter/` — CVEHunter: repo clone, static scan, findings
-- `blastradius/scanners/` — 6 self-contained regex scanners + cache + parallel
+- `blastradius/scanners/` — 14 self-contained regex/structural scanners + cache + parallel
+  (Solidity smart-contract defects via `solidity.py`: reentrancy, tx.origin, controlled
+  delegatecall, arbitrary send, weak PRNG, unchecked calls, legacy overflow, hardcoded keys)
 - `blastradius/sandbox/` — SandboxRunner: docker `--network none --read-only`
   (gVisor runsc), **fail-closed**: unsandboxed local execution is opt-in only
 - `blastradius/patcher/` — PatchLoop / PatchVerifier (3 checks, needs_human gate)

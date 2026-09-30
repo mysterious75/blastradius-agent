@@ -19,6 +19,7 @@ def test_registry_discovers_all_scanners():
         "auth_bypass",
         "nosqli",
         "proto_pollution",
+        "solidity",
     }
 
 
