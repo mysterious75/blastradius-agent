@@ -1251,9 +1251,16 @@ def reconstruct_target_code(finding: Finding) -> str:
     if finding.vuln_type == "jwt":
         return '# JWT\nimport jwt\ndata = jwt.decode(token, options={"verify_signature": False})\n'
     if finding.vuln_type == "xxe":
-        return "# XXE\nimport xml.etree.ElementTree as ET\nET.parse(user_input)\n"
+        return (
+            "# XXE\nfrom lxml import etree\n"
+            "_xxe_parser = etree.XMLParser(resolve_entities=True, no_network=False)\n"
+            "def target(user_input):\n    return etree.fromstring(user_input.encode(), parser=_xxe_parser)\n"
+        )
     if finding.vuln_type == "ssti":
-        return "# SSTI\nfrom jinja2 import Environment\nenv = Environment()\nenv.from_string(user_input).render()\n"
+        return (
+            "# SSTI\nfrom jinja2 import Environment\nenv = Environment()\n"
+            "def target(user_input):\n    return env.from_string(user_input).render()\n"
+        )
     if finding.vuln_type == "deserialization":
         return "import pickle\ndef target(user_input):\n    return pickle.loads(user_input)\n"
     if finding.vuln_type == "cmd_injection":
@@ -1269,8 +1276,11 @@ def reconstruct_target_code(finding: Finding) -> str:
     if finding.vuln_type == "nosqli":
         return (
             "def target(user_input):\n"
-            "    q = {'username': user_input}\n"
-            "    return 'matched' if q['username'] else 'denied'\n"
+            "    filt = {'username': user_input}\n"
+            "    val = filt['username']\n"
+            "    if isinstance(val, dict) and ('$ne' in val or '$gt' in val or '$regex' in val):\n"
+            "        return 'matched'\n"
+            "    return 'denied'\n"
         )
     return f"# {finding.vuln_type}\nresult = process(user_input)\n"
 

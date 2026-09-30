@@ -20,6 +20,8 @@ VALID_VULN_TYPES = {
     "crlf",
     "auth_bypass",
     "idor",
+    "xxe",
+    "nosqli",
 }
 
 _TEMPLATE_FILES = {
@@ -34,6 +36,8 @@ _TEMPLATE_FILES = {
     "crlf": "crlf_exploit.py.template",
     "auth_bypass": "auth_bypass_exploit.py.template",
     "idor": "idor_exploit.py.template",
+    "xxe": "xxe_exploit.py.template",
+    "nosqli": "nosqli_exploit.py.template",
 }
 
 
