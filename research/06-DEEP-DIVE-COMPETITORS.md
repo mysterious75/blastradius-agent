@@ -142,7 +142,7 @@ consultancy** hai. Hamara pitch: *"LlamaRisk ka deliverable, ghanton mein nahi
 | `papers/defi-ecosystems-review-mdpi2024.pdf` | MDPI (open access) | Survey |
 | `reports/nyfed-financial-stability-digital-assets-2024.pdf` | NY Fed | Institutional |
 | `reports/defi-critical-infrastructure-security-area-2024.pdf` | U. Oregon AREA | DeFi infra security |
-| `books/networks-crowds-markets-kleinberg.pdf` | Cornell (official free PDF) | Network/contagion textbook |
+| *(Easley & Kleinberg textbook — not vendored; official free edition at cs.cornell.edu/home/kleinber/networks-book/)* | Cornell | Network/contagion textbook |
 | `blogs/blockaid-kelpdao-dvn-292m.html` | blockaid.io | Founding case source |
 | `blogs/chainalysis-kelpdao-bridge-exploit.html` | chainalysis.com | Attribution source |
 | `blogs/layerzero-kelpdao-incident-report.html` | layerzero.network | Primary source |

@@ -2,7 +2,8 @@
 a88cbff86579128b604d9bb692660b8aad2607a1c888edf1da868a5fa19aab28  blogs/chainalysis-kelpdao-bridge-exploit.html
 9e9c0cca5f443728bb3f8ca108e3ca35590cfdfd12d345048f5bb01cb6414842  blogs/layerzero-kelpdao-incident-report.html
 2c98122e698ddb6ec975d6bd78084e16d8e4a5c6f8362c988c06b0ac8dfa3c52  blogs/openzeppelin-lessons-from-kelpdao.html
-78e2a7e612bd490676e86cdb15b03bde76932325a5faceca15329a9a6011f014  books/networks-crowds-markets-kleinberg.pdf
+# NOTE: Easley & Kleinberg "Networks, Crowds, and Markets" is NOT vendored here.
+# Read the authors' official free edition: https://www.cs.cornell.edu/home/kleinber/networks-book/
 e990520e6bd6534e652fb7e219bf8c7fcce4726d6b6409f2d2fdc6763a4ab12e  papers/defi-ecosystems-review-mdpi2024.pdf
 6b2c174e55e7bc0a15df990ef0ac132a1c12ebf664382a1509751b7eb723a1cf  papers/flashloan-vulns-static-analysis.pdf
 7a7a223514cb3cdf0c5ba9e00327dfa75ca32870acaf5be30a90ed4f4c22851e  papers/mapping-microscopic-systemic-risks-tradfi-defi.pdf
