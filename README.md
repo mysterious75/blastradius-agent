@@ -211,10 +211,12 @@ pip install -e ".[all]"
 # 6. Run setup wizard (configure API keys, notifications)
 python -m blastradius.cli.wizard
 
-# 7. Verify installation (install pytest inside the venv if needed)
-pip install pytest  # if running tests
+# 7. Verify installation
+# Sandbox proof tests reconstruct SSTI (jinja2) and XXE (lxml) PoCs and
+# execute them, so those two libs are required to run the test suite:
+pip install pytest jinja2 lxml
 python -m pytest tests/ -q
-# Expected: 371 passed, 0 failed
+# Expected: 943 passed, 1 skipped
 
 # 8. Run your first scan
 python -m blastradius.hunter --target https://github.com/WebGoat/WebGoat

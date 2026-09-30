@@ -30,7 +30,7 @@ python -m blastradius.dashboard                         # local dashboard :8080
 python -m blastradius.cli.wizard                        # provider/notification setup
 scripts/pr_scan.py --repo . --base origin/main          # PR diff-scoped scan (GitHub Action)
 python benchmarks/run.py --verify                       # reproducible benchmark
-python -m pytest tests/ -q                              # 442 tests, offline
+python -m pytest tests/ -q                              # 943 tests, offline (needs jinja2 + lxml)
 ```
 
 ## Architecture map
