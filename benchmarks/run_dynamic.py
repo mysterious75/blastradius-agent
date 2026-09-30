@@ -114,10 +114,47 @@ def run_ssrf_target(base: str, manifest: dict):
         return checker.check(urls)
 
 
+def run_sqli_target(base: str, manifest: dict):
+    from blastradius.web.sqli import SqliChecker
+
+    urls = [base + p for p in manifest.get("probe_urls", [])]
+    return SqliChecker().check(urls)
+
+
+def run_massassign_target(base: str, manifest: dict):
+    from blastradius.web.massassign import MassassignChecker
+
+    checker = MassassignChecker(
+        verify_url=base + manifest.get("verify_url", "/api/me"), fields=manifest.get("fields")
+    )
+    findings = []
+    findings.extend(
+        checker.check(
+            base + manifest.get("profile_url", "/api/profile"), dict(manifest.get("base_body", {}))
+        )
+    )
+    findings.extend(
+        checker.check(
+            base + manifest.get("strict_url", "/api/strict"), dict(manifest.get("base_body", {}))
+        )
+    )
+    return findings
+
+
+def run_cachepoison_target(base: str, manifest: dict):
+    from blastradius.web.cachepoison import CachePoisonChecker
+
+    urls = [base + p for p in manifest.get("probe_urls", [])]
+    return CachePoisonChecker().check(urls)
+
+
 _RUNNERS = {
     "live-idor": run_idor_target,
     "live-jwt": run_jwt_target,
     "live-ssrf": run_ssrf_target,
+    "live-sqli": run_sqli_target,
+    "live-massassign": run_massassign_target,
+    "live-cachepoison": run_cachepoison_target,
 }
 
 

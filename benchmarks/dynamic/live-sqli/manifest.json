@@ -1,0 +1,9 @@
+{
+  "target": "live-sqli",
+  "description": "Error-based + boolean-differential SQLi endpoints plus a parameterized control.",
+  "probe_urls": ["/search?q=x", "/items?id=1", "/safe?q=x"],
+  "expected": [
+    {"check": "sqli-error", "severity": "HIGH", "cwe": "CWE-89", "url_suffix": "/search"},
+    {"check": "sqli-boolean", "severity": "HIGH", "cwe": "CWE-89", "url_suffix": "/items"}
+  ]
+}

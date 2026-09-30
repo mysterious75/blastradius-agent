@@ -1,0 +1,8 @@
+{
+  "target": "live-cachepoison",
+  "description": "Unkeyed-header cache poisoning with persistence, plus a no-store control.",
+  "probe_urls": ["/page", "/safe"],
+  "expected": [
+    {"check": "cachepoison", "severity": "HIGH", "cwe": "CWE-444", "url_suffix": "/page"}
+  ]
+}

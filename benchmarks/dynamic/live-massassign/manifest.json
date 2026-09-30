@@ -1,0 +1,12 @@
+{
+  "target": "live-massassign",
+  "description": "Mass-assigning profile endpoint plus an allowlisted control.",
+  "profile_url": "/api/profile",
+  "strict_url": "/api/strict",
+  "verify_url": "/api/me",
+  "base_body": {"name": "bob"},
+  "fields": ["role"],
+  "expected": [
+    {"check": "massassign", "severity": "HIGH", "cwe": "CWE-915", "url_suffix": "/api/profile"}
+  ]
+}
