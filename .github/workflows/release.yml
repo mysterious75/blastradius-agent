@@ -39,11 +39,20 @@ jobs:
         run: python -m build
 
       # SBOM generation is best-effort: a failure must not block publishing.
+      # NOTE: syft is a Go binary, not a PyPI package — install via the
+      # Anchore action, not `pip install syft` (which yields an empty file
+      # and fails the attach step on 0-byte validation).
       - name: Generate CycloneDX SBOM
         continue-on-error: true
+        uses: anchore/sbom-action@v0
+        with:
+          path: dist/
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+
+      - name: Drop empty SBOM so attach never fails on 0-byte assets
         run: |
-          pip install syft || true
-          syft scan dist/ -o cyclonedx-json > sbom.cdx.json || true
+          if [ ! -s sbom.cdx.json ]; then echo "SBOM empty/missing - skipping attach"; rm -f sbom.cdx.json; fi
 
       # Sigstore keyless signing (Fulcio OIDC cert + Rekor log) — produces a
       # PEP 740-compatible bundle (<artifact>.sigstore). Best-effort.
