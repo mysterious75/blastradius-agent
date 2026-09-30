@@ -7,7 +7,9 @@ from blastradius.version import __author__, __license__, __version__
 
 
 def test_version_module():
-    assert __version__ == "1.0.0"
+    import re
+
+    assert re.fullmatch(r"\d+\.\d+\.\d+", __version__)
     assert __author__ == "BlastRadius Team"
     assert __license__ == "MIT"
 
@@ -15,7 +17,7 @@ def test_version_module():
 def test_version_command(capsys):
     rc = main(["version"])
     assert rc == 0
-    assert "BlastRadius Agent v1.0.0" in capsys.readouterr().out
+    assert f"BlastRadius Agent v{__version__}" in capsys.readouterr().out
 
 
 def test_banner_uses_version():

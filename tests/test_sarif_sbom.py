@@ -6,6 +6,7 @@ import json
 import pytest
 
 from blastradius.export.exporter import FindingsExporter
+from blastradius.version import __version__
 
 FINDING = {
     "repo": "org/demo",
@@ -33,7 +34,7 @@ def test_sarif_21_rule_and_result_enrichment(tmp_path):
     sarif = _export_sarif([FINDING], tmp_path)
     assert sarif["version"] == "2.1.0"
     driver = sarif["runs"][0]["tool"]["driver"]
-    assert driver["semanticVersion"] == "1.0.0"
+    assert driver["semanticVersion"] == __version__
     rule = driver["rules"][0]
     assert rule["properties"]["security-severity"] == 9.0
     assert rule["properties"]["precision"] == "high"  # confidence 0.9 >= 0.85
@@ -85,7 +86,7 @@ def test_sbom_metadata_only(tmp_path):
     assert bom["bomFormat"] == "CycloneDX"
     assert bom["specVersion"] == "1.5"
     assert bom["version"] == 1
-    assert bom["metadata"]["tools"] == [{"name": "BlastRadius", "version": "1.0.0"}]
+    assert bom["metadata"]["tools"] == [{"name": "BlastRadius", "version": __version__}]
     assert bom["metadata"]["component"]["type"] == "application"
     assert bom["metadata"]["component"]["name"] == "blastradius-agent"
     assert "components" not in bom
