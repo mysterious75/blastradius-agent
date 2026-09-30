@@ -123,7 +123,7 @@ def test_package_scanner_skips_safe():
     assert scanner.detect(SAFE_PARAMETERIZED) == []
 
 
-# --- reconstruct_target_code (candidate-only: no PoC template) ----------------
+# --- reconstruct_target_code (operator-injection stub, proven by PoC) --------
 
 
 def test_reconstruct_nosqli_target():
@@ -131,5 +131,4 @@ def test_reconstruct_nosqli_target():
         Finding(file="x.py", line=1, vuln_type="nosqli", payload="x", confidence=0.9)
     )
     assert "def target(user_input):" in code
-    assert "q = {'username': user_input}" in code
-    assert "return 'matched' if q['username'] else 'denied'" in code
+    assert "$ne" in code and "$gt" in code

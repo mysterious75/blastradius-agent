@@ -193,7 +193,8 @@ def test_reconstruct_idor_and_xxe_templates():
     xxe = reconstruct_target_code(
         Finding(file="x.py", line=1, vuln_type="xxe", payload="x", confidence=0.9)
     )
-    assert "ET.parse(user_input)" in xxe
+    assert "def target(user_input):" in xxe
+    assert "resolve_entities" in xxe  # genuinely-resolving parser, not stdlib ET
 
 
 def test_reconstruct_never_raises_on_unknown_type():
