@@ -4,7 +4,8 @@
     "1": ["https://ethereum-rpc.publicnode.com", "https://eth.llamarpc.com", "https://eth.drpc.org"]
   },
   "chainlink_usd_feeds": {
-    "AAVE": "0x547a514d5e3769680Ce22B2361c10Ea13619e8a9"
+    "AAVE": "0x547a514d5e3769680Ce22B2361c10Ea13619e8a9",
+    "WETH": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"
   },
   "sources": [
     {
@@ -16,7 +17,48 @@
       "decimals": 18,
       "price_usd_feed": "AAVE",
       "slashable_pct": 20,
-      "note": "Legacy Safety Module; max slash 20% by governance vote"
+      "note": "Legacy Safety Module (aave-address-book AaveSafetyModule.sol STK_AAVE); max slash 20% by governance vote"
+    },
+    {
+      "id": "stkwaUSDC-umbrella",
+      "chain": 1,
+      "kind": "erc4626-totalAssets",
+      "address": "0x6bf183243FdD1e306ad2C4450BC7dcf6f0bf8Aa6",
+      "underlying": "USDC",
+      "decimals": 6,
+      "slashable_pct": 100,
+      "note": "Umbrella StakeToken Ethereum (Aave governance ARFC Jul-2026); per-asset automated slashing"
+    },
+    {
+      "id": "stkwaUSDT-umbrella",
+      "chain": 1,
+      "kind": "erc4626-totalAssets",
+      "address": "0xA484Ab92fe32B143AEE7019fC1502b1dAA522D31",
+      "underlying": "USDT",
+      "decimals": 6,
+      "slashable_pct": 100,
+      "note": "Umbrella StakeToken Ethereum (Aave governance ARFC Jul-2026)"
+    },
+    {
+      "id": "stkwaWETH-umbrella",
+      "chain": 1,
+      "kind": "erc4626-totalAssets",
+      "address": "0xaAFD07D53A7365D3e9fb6F3a3B09EC19676B73Ce",
+      "underlying": "WETH",
+      "decimals": 18,
+      "price_usd_feed": "WETH",
+      "slashable_pct": 100,
+      "note": "Umbrella StakeToken Ethereum; paused Apr-2026 during rsETH response, verify live state"
+    },
+    {
+      "id": "stkGHO-umbrella",
+      "chain": 1,
+      "kind": "erc4626-totalAssets",
+      "address": "0x4f827A63755855cDf3e8f3bcD20265C833f15033",
+      "underlying": "GHO",
+      "decimals": 18,
+      "slashable_pct": 100,
+      "note": "Umbrella stkGHO Ethereum"
     }
   ]
 }

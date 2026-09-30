@@ -72,12 +72,39 @@ class AutoHunt:
         max_targets: int = 20,
         min_stars: int = 100,
         scope: Optional[str] = None,
+        iterations: int = 1,
+        seed: int = 0,
     ) -> List[Dict]:
         """Hunt over up to ``max_targets`` discovered targets; returns result rows.
 
         When ``scope`` (a program name in the scope registry) is given, only
-        in-scope targets are hunted.
+        in-scope targets are hunted. ``iterations`` repeats the hunt with a
+        fixed ``seed`` (same-seed runs): a finding confirmed in k-of-N runs
+        carries ``runs`` evidence instead of a single pass/fail, which dampens
+        flaky network/timing outcomes.
         """
+        import random
+
+        random.seed(seed)
+        merged: Dict[tuple, Dict] = {}
+        for _ in range(max(1, iterations)):
+            for row in self._run_once(strategy, max_targets, min_stars, scope):
+                key = (row.get("repo"), row.get("report"))
+                slot = merged.setdefault(key, {**row, "runs": 0})
+                slot["runs"] += 1
+                slot["confirmed"] = max(slot.get("confirmed", 0), row.get("confirmed", 0))
+        results = sorted(merged.values(), key=lambda r: r.get("confirmed", 0), reverse=True)
+        self._print_table(results)
+        return results
+
+    def _run_once(
+        self,
+        strategy: str,
+        max_targets: int,
+        min_stars: int,
+        scope: Optional[str],
+    ) -> List[Dict]:
+        """One hunt pass; returns result rows."""
         targets = self.dork.find_targets(strategy, min_stars=min_stars)[:max_targets]
         if scope:
             from blastradius.scope import check_scope
@@ -100,7 +127,6 @@ class AutoHunt:
                 results.append(future.result())
 
         results.sort(key=lambda r: r.get("confirmed", 0), reverse=True)
-        self._print_table(results)
         return results
 
     # ------------------------------------------------------------------

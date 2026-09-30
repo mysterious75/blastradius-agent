@@ -23,10 +23,22 @@ def main(argv=None) -> int:
         default=None,
         help="program name in the scope registry — hunts only in-scope discovered targets",
     )
+    parser.add_argument(
+        "--iterations",
+        type=int,
+        default=1,
+        help="repeat the hunt N times with a fixed seed; confirmations aggregate k-of-N",
+    )
+    parser.add_argument("--seed", type=int, default=0, help="fixed seed for iterated runs")
     args = parser.parse_args(argv)
 
     AutoHunt(reports_dir=args.reports_dir).run(
-        args.strategy, max_targets=args.max_targets, min_stars=args.min_stars, scope=args.scope
+        args.strategy,
+        max_targets=args.max_targets,
+        min_stars=args.min_stars,
+        scope=args.scope,
+        iterations=args.iterations,
+        seed=args.seed,
     )
     return 0
 

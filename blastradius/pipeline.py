@@ -71,6 +71,13 @@ class FullPipeline:
             self.improver = SelfImprover()
         except Exception:
             self.improver = None
+        # Reseed log: unproven candidates become seeds for deeper future runs.
+        try:
+            from blastradius.learning.reseed import ReseedLog
+
+            self.reseed = ReseedLog()
+        except Exception:
+            self.reseed = None
         # Plugin system: fires on_finding / on_patch / on_scan_complete.
         try:
             from blastradius.plugins.loader import PluginLoader
@@ -188,6 +195,18 @@ class FullPipeline:
                             was_fp=was_fp,
                             sandbox_result=sandbox_result,
                             patch_confidence=patch_confidence,
+                        )
+                    except Exception:
+                        pass
+                if was_fp and self.reseed is not None:
+                    try:
+                        self.reseed.record(
+                            repo_name,
+                            finding.vuln_type,
+                            file=finding.file,
+                            line=finding.line,
+                            confidence=finding.confidence,
+                            reason="sandbox did not confirm",
                         )
                     except Exception:
                         pass
