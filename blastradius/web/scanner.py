@@ -139,6 +139,8 @@ class DynamicWebScanner:
         check_takeover: bool = True,
         authz: Optional[AuthzDiffChecker] = None,
         authz_urls: Optional[List[str]] = None,
+        sqli_probe: bool = False,
+        sqli_time_probe: bool = False,
     ):
         self.browser = browser or BrowserSession()
         # Probe browser never follows redirects (so Location-based checks work).
@@ -152,6 +154,9 @@ class DynamicWebScanner:
         self.authz = authz
         # Explicit object URLs to test (in addition to crawler-discovered ones).
         self.authz_urls = list(authz_urls or [])
+        # Optional live SQLi probing (opt-in: boolean/time probes are slow).
+        self.sqli_probe = sqli_probe
+        self.sqli_time_probe = sqli_time_probe
         # Real HackerOne payloads (defaults always included) for reflected XSS.
         self.xss_payloads = xss_payloads()
         # Budget guard: total JS fetches allowed per scan() call.
@@ -193,6 +198,8 @@ class DynamicWebScanner:
             findings.extend(self._check_subdomain_takeover(target))
         if self.authz is not None and getattr(self.authz, "enabled", False):
             findings.extend(self._check_authz(visited + self.authz_urls))
+        if self.sqli_probe:
+            findings.extend(self._check_sqli(visited))
         return findings
 
     # ------------------------------------------------------------------
@@ -335,6 +342,28 @@ class DynamicWebScanner:
             return []
         findings: List[DynamicFinding] = []
         for hit in self.authz.check(urls):
+            findings.append(
+                DynamicFinding(
+                    url=hit.url,
+                    check=hit.check,
+                    severity=hit.severity,
+                    cwe=hit.cwe,
+                    confidence=hit.confidence,
+                    evidence=hit.evidence,
+                    remediation=hit.remediation,
+                    description=hit.description,
+                )
+            )
+        return findings
+
+    def _check_sqli(self, urls: List[str]) -> List[DynamicFinding]:
+        """Probe crawled URLs with query strings for SQL injection (opt-in)."""
+        from blastradius.web.sqli import SqliChecker
+
+        checker = SqliChecker(
+            session=self._probe_browser, enable_time_based=self.sqli_time_probe)
+        findings: List[DynamicFinding] = []
+        for hit in checker.check(urls):
             findings.append(
                 DynamicFinding(
                     url=hit.url,

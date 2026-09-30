@@ -64,6 +64,16 @@ def main(argv=None) -> int:
         help="explicit object URL to test for IDOR (repeatable); crawler URLs are also used",
     )
     ap.add_argument(
+        "--sqli-probe",
+        action="store_true",
+        help="probe crawled URLs for SQL injection (error + boolean differential)",
+    )
+    ap.add_argument(
+        "--sqli-time-probe",
+        action="store_true",
+        help="also run slow time-based SQLi probes (implies --sqli-probe)",
+    )
+    ap.add_argument(
         "--scope",
         default=None,
         help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
@@ -88,6 +98,8 @@ def main(argv=None) -> int:
         probe_exposed=not args.no_exposed_probe,
         authz=authz,
         authz_urls=args.idor_url,
+        sqli_probe=args.sqli_probe or args.sqli_time_probe,
+        sqli_time_probe=args.sqli_time_probe,
     )
     scanner.browser.timeout = args.timeout
 
