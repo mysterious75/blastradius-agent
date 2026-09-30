@@ -26,3 +26,9 @@ payloads/README.md
 tasks/
 
 .cache/
+
+# DeFi dependency-graph snapshots are large + re-downloadable — keep them local.
+# Regenerate with: python scripts/download_defi_data.py
+data/ingest/*.json
+data/ingest/defihacklabs-incidents/
+data/ingest/defi-hack-chronicle/

@@ -150,6 +150,23 @@ def check_scope(target: str, program: Optional[str] = None) -> ScopesResult:
     }
 
 
+def require_scope(target: str, program: Optional[str] = None) -> bool:
+    """Enforce scope for a URL target; print BLOCKED and return False if denied.
+
+    Shared by every CLI that touches URL targets (hunter, web, recon,
+    auto_hunt, agents, pipeline). Local paths and empty programs always pass —
+    only URL targets with an explicit ``--scope`` program are gated, matching
+    the hunter convention.
+    """
+    if not program or not target.startswith(("http://", "https://")):
+        return True
+    result = check_scope(target, program)
+    if not result["in_scope"]:
+        print(f"[!] BLOCKED: {result['reason']} (program={program})")
+        return False
+    return True
+
+
 def _main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="blastradius-scope",

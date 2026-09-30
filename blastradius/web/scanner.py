@@ -16,6 +16,7 @@ Checks (vuln_type -> CWE):
     exposure  CWE-200  /.git, /.env, /admin probes
     listing   CWE-538  directory listing
     takeover  CWE-706  dangling third-party service fingerprint (candidate)
+    idor      CWE-639  live authorization diff (opt-in: two identity sessions)
 
 Usage:
     scanner = DynamicWebScanner()
@@ -30,6 +31,7 @@ from typing import Dict, List, Optional
 
 from blastradius.payloads import xss_payloads
 from blastradius.web import takeover
+from blastradius.web.authz import AuthzDiffChecker
 from blastradius.web.browser import BrowserSession
 
 # Fallback defaults when the real HackerOne payload corpus is unavailable.
@@ -135,6 +137,8 @@ class DynamicWebScanner:
         depth: int = 1,
         probe_exposed: bool = True,
         check_takeover: bool = True,
+        authz: Optional[AuthzDiffChecker] = None,
+        authz_urls: Optional[List[str]] = None,
     ):
         self.browser = browser or BrowserSession()
         # Probe browser never follows redirects (so Location-based checks work).
@@ -143,6 +147,11 @@ class DynamicWebScanner:
         self.depth = max(1, depth)
         self.probe_exposed = probe_exposed
         self.check_takeover = check_takeover
+        # Optional live authorization-diff (IDOR/BOLA) — inert unless two
+        # identity sessions are supplied (opt-in, read-only).
+        self.authz = authz
+        # Explicit object URLs to test (in addition to crawler-discovered ones).
+        self.authz_urls = list(authz_urls or [])
         # Real HackerOne payloads (defaults always included) for reflected XSS.
         self.xss_payloads = xss_payloads()
         # Budget guard: total JS fetches allowed per scan() call.
@@ -182,6 +191,8 @@ class DynamicWebScanner:
             findings.extend(self._probe_exposed(target))
         if self.check_takeover:
             findings.extend(self._check_subdomain_takeover(target))
+        if self.authz is not None and getattr(self.authz, "enabled", False):
+            findings.extend(self._check_authz(visited + self.authz_urls))
         return findings
 
     # ------------------------------------------------------------------
@@ -314,6 +325,26 @@ class DynamicWebScanner:
                     confidence=0.9,
                     evidence="directory listing marker found in response body",
                     remediation="Disable directory listings on the web server.",
+                )
+            )
+        return findings
+
+    def _check_authz(self, urls: List[str]) -> List[DynamicFinding]:
+        """Replay crawled object URLs under a second identity (opt-in IDOR)."""
+        if self.authz is None or not getattr(self.authz, "enabled", False):
+            return []
+        findings: List[DynamicFinding] = []
+        for hit in self.authz.check(urls):
+            findings.append(
+                DynamicFinding(
+                    url=hit.url,
+                    check=hit.check,
+                    severity=hit.severity,
+                    cwe=hit.cwe,
+                    confidence=hit.confidence,
+                    evidence=hit.evidence,
+                    remediation=hit.remediation,
+                    description=hit.description,
                 )
             )
         return findings

@@ -26,7 +26,7 @@ See [DISCLAIMER.md](DISCLAIMER.md) for the full legal terms and
 ## What it does
 
 BlastRadius clones repositories, statically scans them for vulnerabilities
-across 8 types and 11 languages, proves exploitability in a sandboxed PoC,
+across 18 types and 11 languages, proves exploitability in a sandboxed PoC,
 auto-generates and verifies patches, and tracks the whole lifecycle — from
 target discovery to CVE disclosure — in a local SQLite database with a web
 dashboard, multi-channel notifications, and a self-improving scanner.
@@ -398,7 +398,7 @@ models are passed through as-is.
 └──────────────┬───────────────────────────────┬─────────────────────────────┘
                ▼                                ▼
 ┌──────────────────────────────  FullPipeline (scan → prove → patch → verify) ─┐
-│  CVEHunter (static scan, 8 vuln types, 11 languages, learned rules)          │
+│  CVEHunter (static scan, 18 vuln types, 11 languages, learned rules)          │
 │  ─► sandbox exploit check ─► PatchLoop (generate → verify → retry ×3)       │
 │  ─► DisclosureReport + SummaryReporter ─► reports/                           │
 │  ─► BlastRadiusGraph (package → repo)  ─► SQLiteDB (findings, CVE tracking) │
@@ -476,10 +476,21 @@ behavioral checks (`blastradius.web` — stdlib only):
 - Missing security headers (CSP, HSTS, X-Frame-Options, X-Content-Type-Options)
 - Wildcard CORS with credentials
 - Exposed files (`.git/config`, `.env`, `/admin`) and directory listing
+- **Live IDOR/BOLA authz-diff** (opt-in) — replay object URLs under a second
+  identity and flag cross-identity reads (`--attacker-cookie`, `--victim-cookie`,
+  `--victim-marker`, `--idor-url`)
 - HTTP interception proxy (records + replays traffic, builds sitemaps)
 
 ```bash
+# basic dynamic scan
 python -m blastradius.web --target http://localhost:8000
+
+# + live IDOR/BOLA diff with two identities (attacker vs victim cookies)
+python -m blastradius.web --target https://app.example \
+  --attacker-cookie "session=ATTACKER" \
+  --victim-cookie   "session=VICTIM" \
+  --victim-marker "victim@example.com" \
+  --idor-url https://app.example/api/users/1234
 ```
 
 Dynamic findings are HTTP-response evidence and are reported as *candidates*

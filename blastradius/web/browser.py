@@ -45,10 +45,12 @@ class BrowserSession:
         proxy: Optional[str] = None,
         user_agent: str = "BlastRadiusWeb/1.0",
         follow_redirects: bool = True,
+        default_headers: Optional[Dict[str, str]] = None,
     ):
         self.timeout = timeout
         self.user_agent = user_agent
         self.follow_redirects = follow_redirects
+        self.default_headers = dict(default_headers or {})
         self.cookie_jar = http.cookiejar.CookieJar()
         handlers = [urllib.request.HTTPCookieProcessor(self.cookie_jar)]
         if proxy:
@@ -70,6 +72,7 @@ class BrowserSession:
         headers: Optional[Dict[str, str]] = None,
     ) -> Page:
         req_headers = {"User-Agent": self.user_agent}
+        req_headers.update(self.default_headers)
         req_headers.update(headers or {})
         request = urllib.request.Request(url, data=data, headers=req_headers, method=method)
         try:

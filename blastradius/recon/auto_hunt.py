@@ -67,10 +67,21 @@ class AutoHunt:
     # ------------------------------------------------------------------
 
     def run(
-        self, strategy: str = "github", max_targets: int = 20, min_stars: int = 100
+        self, strategy: str = "github", max_targets: int = 20, min_stars: int = 100,
+        scope: Optional[str] = None,
     ) -> List[Dict]:
-        """Hunt over up to ``max_targets`` discovered targets; returns result rows."""
+        """Hunt over up to ``max_targets`` discovered targets; returns result rows.
+
+        When ``scope`` (a program name in the scope registry) is given, only
+        in-scope targets are hunted.
+        """
         targets = self.dork.find_targets(strategy, min_stars=min_stars)[:max_targets]
+        if scope:
+            from blastradius.scope import check_scope
+
+            before = len(targets)
+            targets = [t for t in targets if check_scope(t.get("url", ""), scope)["in_scope"]]
+            print(f"[*] scope filter ({scope}): {before} -> {len(targets)} target(s)")
         if not targets:
             print(
                 "[!] no targets discovered — set GITHUB_TOKEN (github strategy) / "

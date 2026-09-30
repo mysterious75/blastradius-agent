@@ -19,7 +19,17 @@ def main(argv=None) -> int:
     )
     parser.add_argument("--target", required=True, help="GitHub repo URL or local path")
     parser.add_argument("--reports-dir", default="reports")
+    parser.add_argument(
+        "--scope",
+        default=None,
+        help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
+    )
     args = parser.parse_args(argv)
+
+    from blastradius.scope import require_scope
+
+    if not require_scope(args.target, args.scope):
+        return 2
 
     display = RichDisplay()
     display.print_banner()

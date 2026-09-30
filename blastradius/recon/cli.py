@@ -20,6 +20,11 @@ def main(argv=None) -> int:
     parser.add_argument("--strategy", choices=["github", "pypi", "shodan", "all"], default="all")
     parser.add_argument("--limit", type=int, default=100)
     parser.add_argument("--min-stars", type=int, default=0)
+    parser.add_argument(
+        "--scope",
+        default=None,
+        help="program name in the scope registry — filters discovered targets to in-scope ones",
+    )
     args = parser.parse_args(argv)
 
     display = RichDisplay()
@@ -27,6 +32,12 @@ def main(argv=None) -> int:
 
     engine = DorkEngine()
     targets = engine.find_targets(args.strategy, min_stars=args.min_stars, limit=args.limit)
+    if args.scope:
+        from blastradius.scope import check_scope
+
+        before = len(targets)
+        targets = [t for t in targets if check_scope(t.get("url", ""), args.scope)["in_scope"]]
+        print(f"[*] scope filter ({args.scope}): {before} -> {len(targets)} target(s)")
 
     print(f"[*] {len(targets)} target(s) discovered (strategy={args.strategy})")
     rows = [[t.get("source", "?"), t["url"], t.get("stars", 0)] for t in targets[:30]]

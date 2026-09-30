@@ -22,7 +22,17 @@ def main(argv=None) -> int:
     ap.add_argument("--exploit-workers", type=int, default=4)
     ap.add_argument("--min-confidence", type=float, default=0.7)
     ap.add_argument("--reports-dir", default="reports")
+    ap.add_argument(
+        "--scope",
+        default=None,
+        help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
+    )
     args = ap.parse_args(argv)
+
+    from blastradius.scope import require_scope
+
+    if not require_scope(args.target, args.scope):
+        return 2
 
     graph = AgentGraph(exploit_workers=args.exploit_workers, min_confidence=args.min_confidence)
     print(f"[*] agent graph: recon -> exploit(x{args.exploit_workers}) -> patch")

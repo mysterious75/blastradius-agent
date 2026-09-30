@@ -105,7 +105,8 @@ class Deduplicator:
                 "SELECT t.finding_id, t.cve_id, t.disclosed_at, t.fixed_at, t.bounty_usd, "
                 "f.vuln_type, f.file, f.line "
                 "FROM cve_tracking t LEFT JOIN findings f ON f.id = t.finding_id "
-                "ORDER BY t.disclosed_at DESC"
+                "ORDER BY (t.cve_id IS NULL OR t.cve_id = '') ASC, "
+                "t.disclosed_at DESC, t.finding_id ASC"
             ).fetchall()
             return [dict(r) for r in rows]
 

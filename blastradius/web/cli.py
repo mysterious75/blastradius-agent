@@ -16,6 +16,8 @@ from pathlib import Path
 
 from blastradius.cli.display import RichDisplay
 from blastradius.hunter.scanner import Finding
+from blastradius.web.authz import AuthzDiffChecker
+from blastradius.web.browser import BrowserSession
 from blastradius.web.scanner import DynamicWebScanner
 
 
@@ -41,11 +43,51 @@ def main(argv=None) -> int:
     ap.add_argument("--depth", type=int, default=1)
     ap.add_argument("--timeout", type=int, default=10)
     ap.add_argument("--no-exposed-probe", action="store_true", help="skip /.git, /.env probes")
+    ap.add_argument(
+        "--attacker-cookie",
+        help="session cookie for identity A (attacker) — enables the live IDOR authz-diff check",
+    )
+    ap.add_argument(
+        "--victim-cookie",
+        help="session cookie for identity B (victim) — enables the live IDOR authz-diff check",
+    )
+    ap.add_argument(
+        "--victim-marker",
+        action="append",
+        default=[],
+        help="distinctive string only the victim should see (repeatable); strengthens IDOR confidence",
+    )
+    ap.add_argument(
+        "--idor-url",
+        action="append",
+        default=[],
+        help="explicit object URL to test for IDOR (repeatable); crawler URLs are also used",
+    )
+    ap.add_argument(
+        "--scope",
+        default=None,
+        help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
+    )
     ap.add_argument("--reports-dir", default="reports")
     args = ap.parse_args(argv)
 
+    from blastradius.scope import require_scope
+
+    if not require_scope(args.target, args.scope):
+        return 2
+
+    authz = None
+    if args.attacker_cookie and args.victim_cookie:
+        attacker = BrowserSession(default_headers={"Cookie": args.attacker_cookie})
+        victim = BrowserSession(default_headers={"Cookie": args.victim_cookie})
+        authz = AuthzDiffChecker(attacker=attacker, victim=victim, victim_markers=args.victim_marker)
+
     scanner = DynamicWebScanner(
-        max_urls=args.max_urls, depth=args.depth, probe_exposed=not args.no_exposed_probe
+        max_urls=args.max_urls,
+        depth=args.depth,
+        probe_exposed=not args.no_exposed_probe,
+        authz=authz,
+        authz_urls=args.idor_url,
     )
     scanner.browser.timeout = args.timeout
 
@@ -63,6 +105,15 @@ def main(argv=None) -> int:
     rows = [_to_finding(f) for f in findings]
     rows.sort(key=lambda f: (f.severity, f.file))
 
+    # Exploit-chain linking: report end-to-end impact, not just single findings.
+    from blastradius.web.chains import build_chains
+
+    chains = build_chains(findings)
+    if chains:
+        print("[*] exploit chain(s) detected:")
+        for c in chains:
+            print(f"    [{c.severity}] {c.describe()}")
+
     display = RichDisplay()
     if rows:
         display.print_findings_table(rows)
@@ -74,17 +125,23 @@ def main(argv=None) -> int:
     path = out_dir / f"web_scan_{stamp}.json"
     path.write_text(
         json.dumps(
-            [
-                {
-                    "url": f.url,
-                    "check": f.check,
-                    "severity": f.severity,
-                    "cwe": f.cwe,
-                    "confidence": f.confidence,
-                    "evidence": f.evidence,
-                }
-                for f in findings
-            ],
+            {
+                "findings": [
+                    {
+                        "url": f.url,
+                        "check": f.check,
+                        "severity": f.severity,
+                        "cwe": f.cwe,
+                        "confidence": f.confidence,
+                        "evidence": f.evidence,
+                    }
+                    for f in findings
+                ],
+                "chains": [
+                    {"name": c.name, "severity": c.severity, "steps": c.steps}
+                    for c in chains
+                ],
+            },
             indent=2,
         ),
         encoding="utf-8",

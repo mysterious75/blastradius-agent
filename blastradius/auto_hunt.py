@@ -18,10 +18,15 @@ def main(argv=None) -> int:
     parser.add_argument("--max", type=int, default=20, dest="max_targets")
     parser.add_argument("--min-stars", type=int, default=100)
     parser.add_argument("--reports-dir", default="reports/auto_hunt")
+    parser.add_argument(
+        "--scope",
+        default=None,
+        help="program name in the scope registry — hunts only in-scope discovered targets",
+    )
     args = parser.parse_args(argv)
 
     AutoHunt(reports_dir=args.reports_dir).run(
-        args.strategy, max_targets=args.max_targets, min_stars=args.min_stars
+        args.strategy, max_targets=args.max_targets, min_stars=args.min_stars, scope=args.scope
     )
     return 0
 

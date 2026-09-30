@@ -9,7 +9,7 @@ as a *candidate*.
 ## Core loop
 
 ```
-scan (static, 8+ vuln types / 11 languages)
+scan (static, 18 vuln types / 11 languages)
   -> prove (sandbox PoC, gVisor/Docker, fail-closed)
   -> patch (PatchLoop: generate -> verify x3 checks -> retry x3)
   -> verify (ast.parse + exploit re-run + pytest regression)

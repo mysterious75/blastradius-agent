@@ -1827,5 +1827,6 @@ class CVEHunter:
             "nosqli": "NoSQL Injection",
             "proto_pollution": "Prototype Pollution",
             "ci_injection": "CI Injection",
+            "secret": "Hardcoded Secret",
             "secret_history": "Secret in Git History",
         }.get(vuln_type, vuln_type)

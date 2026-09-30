@@ -1,0 +1,17 @@
+{
+  "_note": "LRT/LST/wrapped token backing map: token -> underlying token it is backed by. Drives BACKS edges (Token -> Token) in the contagion graph. Sources: Lido docs, ether.fi docs, KelpDAO docs, Chainlink exchange-rate feeds. Extend as new LSTs/LRTs ship — no code change needed.",
+  "backing": {
+    "wstETH": "stETH",
+    "stETH": "ETH",
+    "weETH": "eETH",
+    "eETH": "ETH",
+    "rsETH": "ETH",
+    "rETH": "ETH",
+    "cbETH": "ETH",
+    "ezETH": "ETH",
+    "sfrxETH": "frxETH",
+    "frxETH": "ETH",
+    "ankrETH": "ETH",
+    "sETH2": "ETH"
+  }
+}

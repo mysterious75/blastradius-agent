@@ -61,13 +61,10 @@ def main(argv=None) -> int:
     hunter = CVEHunter(min_confidence=args.min_confidence)
     target = args.target or DEFAULT_TARGETS[0]
 
-    if args.scope and target.startswith(("http://", "https://")):
-        from blastradius.scope import check_scope
+    from blastradius.scope import require_scope
 
-        result = check_scope(target, args.scope)
-        if not result["in_scope"]:
-            print(f"[!] BLOCKED: {result['reason']} (program={args.scope})")
-            return 2
+    if not require_scope(target, args.scope):
+        return 2
 
     if target.startswith(("http://", "https://")):
         print(f"[*] Cloning {target}")
