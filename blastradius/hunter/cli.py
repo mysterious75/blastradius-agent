@@ -48,6 +48,11 @@ def main(argv=None) -> int:
         help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
     )
     parser.add_argument(
+        "--no-fp-filter",
+        action="store_true",
+        help="disable vendored/tests/docs/minified filtering (report everything)",
+    )
+    parser.add_argument(
         "--real-repo",
         action="store_true",
         default=False,
@@ -76,6 +81,14 @@ def main(argv=None) -> int:
         print(f"[*] Scanning local path {target}")
 
     findings = hunter.scan_repo(repo_path)
+    if not args.no_fp_filter:
+        from blastradius.filters import fp_filter
+
+        dropped = len(findings)
+        findings = fp_filter(findings)
+        dropped -= len(findings)
+        if dropped:
+            print(f"[*] FP filter dropped {dropped} vendored/tests/docs candidate(s)")
     print(f"[*] {len(findings)} candidate finding(s) with confidence >= {args.min_confidence}")
     if findings:
         display.print_findings_table(findings)

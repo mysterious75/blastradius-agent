@@ -7,44 +7,20 @@ reports for confirmed findings, and print the summary table.
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import sys
-from pathlib import Path
 from typing import Dict, List, Optional
 
+from blastradius.filters import FP_PATH_PARTS, fp_filter
 from blastradius.hunter.disclosure import DisclosureReport
-from blastradius.hunter.scanner import CVEHunter, Finding, reconstruct_target_code
+from blastradius.hunter.scanner import CVEHunter, reconstruct_target_code
 from blastradius.recon.dorker import DorkEngine
 from blastradius.tools.sandbox_tool import run_exploit_sandbox
 
-# Vendored/noise path parts excluded from findings before sandbox validation
-FP_PATH_PARTS = {
-    "node_modules",
-    "vendor",
-    "dist",
-    "libs",
-    "assets",
-    "tests",
-    "docs",
-    "examples",
-    "migrations",
-    "__pycache__",
-    "static",
-    "public",
-}
+__all__ = ["AutoHunt", "FP_PATH_PARTS", "fp_filter"]
+
+# Backward-compat alias (moved to blastradius.filters).
+_fp_filter = fp_filter
 
 _SEVERITY_RANK = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 1, "INFO": 0}
-
-
-def _fp_filter(findings: List[Finding]) -> List[Finding]:
-    """Quick filter: drop vendored/tests/docs/minified candidates."""
-    survivors = []
-    for f in findings:
-        parts = Path(f.file).parts
-        if any(p in FP_PATH_PARTS for p in parts):
-            continue
-        if "min." in Path(f.file).name:
-            continue
-        survivors.append(f)
-    return survivors
 
 
 class AutoHunt:
