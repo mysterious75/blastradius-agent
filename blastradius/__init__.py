@@ -1,3 +1,3 @@
 """BlastRadius Agent — autonomous security engineer powered by Prometheus scanners."""
 
-__version__ = "0.1.0"
+from blastradius.version import __version__

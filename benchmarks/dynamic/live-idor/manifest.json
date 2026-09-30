@@ -1,0 +1,9 @@
+{
+  "target": "live-idor",
+  "description": "Object endpoint returning any user's record regardless of identity, plus an ownership-enforced control.",
+  "probe_urls": ["/api/user/2", "/api/safe/2"],
+  "victim_markers": ["victim@corp.test"],
+  "expected": [
+    {"check": "idor", "severity": "HIGH", "cwe": "CWE-639", "url_suffix": "/api/user/2"}
+  ]
+}

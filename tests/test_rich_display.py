@@ -30,12 +30,14 @@ def make_finding(vuln_type="sqli"):
 
 
 def test_banner(display):
+    from blastradius.version import __version__
+
     d, buf = display
     d.print_banner()
     out = buf.getvalue()
     assert "BlastRadius Agent" in out
     assert "Autonomous Security Engineer" in out
-    assert "v1.0.0" in out
+    assert f"v{__version__}" in out
 
 
 def test_findings_table(display):

@@ -1,0 +1,8 @@
+{
+  "target": "live-ssrf",
+  "description": "URL-fetching endpoint (SSRF) plus a static control with no fetch.",
+  "probe_param": "url",
+  "expected": [
+    {"check": "ssrf", "severity": "HIGH", "cwe": "CWE-918", "url_suffix": "/fetch"}
+  ]
+}

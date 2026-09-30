@@ -1,0 +1,8 @@
+{
+  "target": "live-jwt",
+  "description": "Token endpoint accepting empty signatures (alg:none), plus a strict HMAC control.",
+  "probe_paths": ["/verify", "/strict"],
+  "expected": [
+    {"check": "jwt-none", "severity": "CRITICAL", "cwe": "CWE-347", "url_suffix": "/verify"}
+  ]
+}

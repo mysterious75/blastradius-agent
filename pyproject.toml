@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "blastradius-agent"
-version = "1.0.0"
+version = "1.1.0"
 description = "Autonomous security engineer — scan, prove, patch, verify"
 readme = "README.md"
 license = {text = "MIT"}

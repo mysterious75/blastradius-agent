@@ -80,6 +80,8 @@ jobs:
         continue-on-error: true
       - name: "Run verified benchmark (CI gate: F1 >= 0.5)"
         run: python benchmarks/run.py --verify --min-f1 0.5
+      - name: "Run dynamic benchmark (CI gate: F1 >= 1.0)"
+        run: python benchmarks/run_dynamic.py --min-f1 1.0
       - name: Upload benchmark report
         uses: actions/upload-artifact@v4
         with:
