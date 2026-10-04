@@ -52,6 +52,9 @@ jobs:
           # gh CLI needs an explicit token inside Actions (GITHUB_TOKEN is
           # not auto-consumed); used only for the merge-blocking status post.
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Status goes to the PR head SHA so branch protection evaluates it
+          # on the head commit (the checkout itself is the merge commit).
+          BLASTRADIUS_STATUS_SHA: ${{ github.event.pull_request.head.sha }}
           # Indirect expression via env (script-injection best practice: the
           # value never participates in shell parsing).
           BASE_REF: ${{ github.event.pull_request.base.ref }}
@@ -70,17 +73,6 @@ jobs:
         uses: github/codeql-action/upload-sarif@87ef0dc97def48aa960fbf026a2563ee9dbdb470 # v3
         with:
           sarif_file: verified-pr/verified.sarif
-
-      # TEMPORARY beta-validation scaffolding (removed before merge): keep
-      # the exact submitted SARIF as a downloadable artifact for diagnosis.
-      - name: Keep submitted SARIF (beta debug)
-        if: always()
-        continue-on-error: true
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: verified-sarif-debug
-          path: verified-pr/verified.sarif
-          if-no-files-found: ignore
 
       - name: Comment verdict on PR
         if: always()
