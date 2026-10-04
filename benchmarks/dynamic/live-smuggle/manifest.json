@@ -1,0 +1,8 @@
+{
+  "target": "live-smuggle",
+  "description": "Fake desync backend (CL.TE timeout + TE.CL follow-up corruption) plus a hardened server that must stay silent.",
+  "expected": [
+    {"check": "smuggle-cl-te"},
+    {"check": "smuggle-te-cl"}
+  ]
+}

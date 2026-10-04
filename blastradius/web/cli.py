@@ -1,7 +1,8 @@
 """python -m blastradius.web — dynamic web testing CLI.
 
 Scans a live target with behavioral checks (reflected XSS, open redirect,
-security headers, CORS, exposed files, directory listing) and saves the
+security headers, CORS, exposed files, directory listing, GraphQL,
+request smuggling) and saves the
 candidate findings as JSON.
 
 Usage:
@@ -85,6 +86,12 @@ def main(argv=None) -> int:
         "(introspection, field suggestions, alias batching)",
     )
     ap.add_argument(
+        "--smuggle-probe",
+        action="store_true",
+        help="probe crawled URLs for CL.TE / TE.CL desync (Kettle-ordered, "
+        "raw sockets, our own connection only)",
+    )
+    ap.add_argument(
         "--scope",
         default=None,
         help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
@@ -115,6 +122,7 @@ def main(argv=None) -> int:
         sqli_time_probe=args.sqli_time_probe,
         cachepoison_probe=args.cachepoison_probe,
         graphql_probe=args.graphql_probe,
+        smuggle_probe=args.smuggle_probe,
     )
     scanner.browser.timeout = args.timeout
 

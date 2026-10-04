@@ -19,6 +19,11 @@ All notable changes to BlastRadius Agent are documented here.
   (10 aliased `__typename` fields — the rate-limit-bypass primitive) checks,
   plus an offline sensitive-resolver review helper. Dynamic benchmark gains
   the `live-graphql` target (14/14 at F1 1.000).
+- Live request-smuggling checks (`blastradius/web/smuggle.py`, opt-in
+  `--smuggle-probe`): Kettle-ordered CL.TE timing probe then TE.CL
+  differential probe over raw timeout-enforced sockets, our own connection
+  only — no poisoning, no victim requests, no depth/DoS or H2 variants.
+  Dynamic benchmark gains the `live-smuggle` target (16/16 at F1 1.000).
 - Solidity smart-contract scanner (`blastradius/scanners/solidity.py`): Slither-aligned
   reentrancy (structural checks-effects-interactions analysis), tx.origin auth, controlled
   delegatecall, arbitrary send, weak randomness, unchecked low-level calls, unchecked ERC20

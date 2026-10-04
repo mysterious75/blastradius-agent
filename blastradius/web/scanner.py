@@ -19,6 +19,8 @@ Checks (vuln_type -> CWE):
     idor      CWE-639  live authorization diff (opt-in: two identity sessions)
     graphql-* CWE-200/209/400 introspection, field suggestions, alias batching
                        (opt-in: endpoint discovery + read-only checks)
+    smuggle-* CWE-444  CL.TE / TE.CL desync probes, Kettle-ordered, raw-socket
+                       (opt-in: timing + differential on our own connection)
 
 Usage:
     scanner = DynamicWebScanner()
@@ -145,6 +147,7 @@ class DynamicWebScanner:
         sqli_time_probe: bool = False,
         cachepoison_probe: bool = False,
         graphql_probe: bool = False,
+        smuggle_probe: bool = False,
     ):
         self.browser = browser or BrowserSession()
         # Probe browser never follows redirects (so Location-based checks work).
@@ -165,6 +168,9 @@ class DynamicWebScanner:
         self.cachepoison_probe = cachepoison_probe
         # Optional GraphQL probing (opt-in: endpoint discovery + 3 read-only checks).
         self.graphql_probe = graphql_probe
+        # Optional request-smuggling probing (opt-in: Kettle-ordered desync
+        # probes over raw sockets; timing differential on our own connection).
+        self.smuggle_probe = smuggle_probe
         # Real HackerOne payloads (defaults always included) for reflected XSS.
         self.xss_payloads = xss_payloads()
         # Budget guard: total JS fetches allowed per scan() call.
@@ -212,6 +218,8 @@ class DynamicWebScanner:
             findings.extend(self._check_cachepoison(visited))
         if self.graphql_probe:
             findings.extend(self._check_graphql(target))
+        if self.smuggle_probe:
+            findings.extend(self._check_smuggle(visited))
         return findings
 
     # ------------------------------------------------------------------
@@ -396,6 +404,27 @@ class DynamicWebScanner:
         checker = GraphqlChecker(session=self._probe_browser)
         findings: List[DynamicFinding] = []
         for hit in checker.check(target):
+            findings.append(
+                DynamicFinding(
+                    url=hit.url,
+                    check=hit.check,
+                    severity=hit.severity,
+                    cwe=hit.cwe,
+                    confidence=hit.confidence,
+                    evidence=hit.evidence,
+                    remediation=hit.remediation,
+                    description=hit.description,
+                )
+            )
+        return findings
+
+    def _check_smuggle(self, urls: List[str]) -> List[DynamicFinding]:
+        """Probe crawled URLs for CL.TE / TE.CL desync (opt-in)."""
+        from blastradius.web.smuggle import SmuggleChecker
+
+        checker = SmuggleChecker()
+        findings: List[DynamicFinding] = []
+        for hit in checker.check(urls):
             findings.append(
                 DynamicFinding(
                     url=hit.url,

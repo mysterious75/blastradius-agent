@@ -167,6 +167,28 @@ def run_graphql_target(base: str, manifest: dict, target_dir=None):
     return GraphqlChecker().check(base)
 
 
+def run_smuggle_target(base: str, manifest: dict, target_dir=None):
+    from blastradius.web.smuggle import SmuggleChecker
+
+    spec = importlib.util.spec_from_file_location(
+        "bench_live_smuggle_impl", str(target_dir / "server_impl.py")
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    servers = module.make_servers()
+    try:
+        checker = SmuggleChecker(connect_timeout=2, read_timeout=4)
+        findings = []
+        for _, server in servers:
+            url = f"http://127.0.0.1:{server.server_address[1]}/smuggle"
+            findings.extend(checker.check([url]))
+        return findings
+    finally:
+        for _, server in servers:
+            server.shutdown()
+            server.server_close()
+
+
 def run_netservices_target(base: str, manifest: dict, target_dir: Path):
     """Boot the fake FTP/SMTP/Telnet/SSH services and run the net scanner."""
     from blastradius.net.scanner import NetworkServiceScanner
@@ -196,6 +218,7 @@ _RUNNERS = {
     "live-cachepoison": run_cachepoison_target,
     "live-graphql": run_graphql_target,
     "live-netservices": run_netservices_target,
+    "live-smuggle": run_smuggle_target,
 }
 
 
