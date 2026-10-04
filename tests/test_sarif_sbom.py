@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import sys
 
 import pytest
 
@@ -50,6 +51,21 @@ def test_sarif_21_rule_and_result_enrichment(tmp_path):
     fix = result["fixes"][0]
     assert fix["artifactChanges"][0]["artifactLocation"]["uri"] == "src/app.py"
     assert fix["artifactChanges"][0]["replacements"][0]["insertedContent"]["text"] == "-a\n+b"
+
+
+def test_sarif_export_survives_missing_pyyaml(tmp_path, monkeypatch):
+    """Real-world regression: GitHub runners install .[all] without PyYAML;
+    SARIF enrichment must degrade (no ATT&CK techniques), never crash the
+    gate with ModuleNotFoundError. sys.modules['yaml'] = None makes the
+    lazy `import yaml` raise ImportError, exactly like a missing package."""
+    import blastradius.reporting.attack_map as attack_map
+
+    monkeypatch.setitem(sys.modules, "yaml", None)
+    monkeypatch.setattr(attack_map, "_cache", None)
+    sarif = _export_sarif([FINDING], tmp_path, name="noyaml.sarif")
+    assert sarif["runs"][0]["results"]
+    rule = sarif["runs"][0]["tool"]["driver"]["rules"][0]
+    assert "techniques" not in rule["properties"]
 
 
 def test_sarif_fingerprint_is_stable_across_runs(tmp_path):

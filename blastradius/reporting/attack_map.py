@@ -47,10 +47,13 @@ def load_cwe_to_attack(path: Optional[str] = None) -> Dict[str, Dict[str, str]]:
     """Load the CWE -> ATT&CK table as ``{cwe: {id, name}}``.
 
     ``path`` defaults to ``cwe_to_attack.yaml`` at the repository root.
-    Returns an empty dict when the file is missing or unparseable (never
-    raises — mapping is best-effort decoration).
+    Returns an empty dict when PyYAML is unavailable or the file is missing
+    or unparseable (never raises — mapping is best-effort decoration).
     """
-    import yaml
+    try:
+        import yaml
+    except ImportError:
+        return {}
 
     src = Path(path) if path else _DEFAULT_YAML
     try:
