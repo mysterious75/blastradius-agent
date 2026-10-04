@@ -36,7 +36,9 @@ def test_sarif_21_rule_and_result_enrichment(tmp_path):
     driver = sarif["runs"][0]["tool"]["driver"]
     assert driver["semanticVersion"] == __version__
     rule = driver["rules"][0]
-    assert rule["properties"]["security-severity"] == 9.0
+    # GitHub code scanning requires a STRING severity ("9.0"), not a number —
+    # enforced by the real upload API (Verified PR beta validation).
+    assert rule["properties"]["security-severity"] == "9.0"
     assert rule["properties"]["precision"] == "high"  # confidence 0.9 >= 0.85
     assert rule["properties"]["tags"] == ["sqli"]
     assert rule["fullDescription"]["text"]
