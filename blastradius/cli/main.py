@@ -8,6 +8,7 @@ Usage:
     blastradius api [--port 8001]
     blastradius providers list|test
     blastradius cve list
+    blastradius ci review|gate --diff-file ... --policy ...
     blastradius export --format <csv|json|sarif|html|markdown> --output <file>
     blastradius sca --repo . [--online]
     blastradius cvehunt [--repo .] [--kev-file <saved KEV JSON>]
@@ -91,6 +92,12 @@ def cmd_cve(args) -> int:
     from blastradius.cli.cve_tracker import main as cve_main
 
     return cve_main([args.action] + list(args.rest))
+
+
+def cmd_ci(args) -> int:
+    from blastradius.ci.cli import main as ci_main
+
+    return ci_main([args.action] + list(args.rest))
 
 
 def cmd_scope(args) -> int:
@@ -327,6 +334,10 @@ def main(argv=None) -> int:
     cve_p.add_argument("action", choices=["list", "update", "stats"])
     cve_p.add_argument("rest", nargs=argparse.REMAINDER)
 
+    ci_p = sub.add_parser("ci", help="CI security & quality gate (review|gate)")
+    ci_p.add_argument("action", choices=["review", "gate"])
+    ci_p.add_argument("rest", nargs=argparse.REMAINDER)
+
     scope_p = sub.add_parser("scope", help="scope registry (default-deny for URL targets)")
     scope_p.add_argument("arguments", nargs=argparse.REMAINDER)
 
@@ -382,6 +393,8 @@ def main(argv=None) -> int:
         return cmd_providers(args)
     if args.command == "cve":
         return cmd_cve(args)
+    if args.command == "ci":
+        return cmd_ci(args)
     if args.command == "scope":
         return cmd_scope(args)
     if args.command == "graph":

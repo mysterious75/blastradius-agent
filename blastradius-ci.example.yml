@@ -1,0 +1,34 @@
+# BlastRadius CI security & quality gate — example policy.
+#
+# Copy to `blastradius-ci.yml` in your repository root and adjust thresholds.
+# The deterministic policy engine (blastradius/ci/policy.py) is the ONLY
+# decider of PASS/FAIL; AI findings are evaluated exactly like deterministic
+# ones and can never flip a verdict by themselves.
+#
+# Exit codes: 0 = PASS, 1 = POLICY_FAILURE, 2 = ANALYSIS_ERROR.
+
+# Severities that fail the build when a finding meets them with at least
+# `minimum_confidence`. Valid: critical, high, medium, low, info.
+fail_on:
+  - critical
+  - high
+
+# Findings below this confidence are reported but never fail the build.
+minimum_confidence: 0.80
+
+# Independently enable the security and quality gates. Disabled categories
+# are still reported, just never failing.
+security_gate: true
+quality_gate: true
+
+# What to do with analysis errors (unavailable/malformed AI output,
+# oversized diffs, unreadable files). Default and recommended: fail-closed.
+# Set to "fail-open" ONLY with explicit risk acceptance — errors then become
+# warnings and the gate may PASS with reduced coverage.
+on_error: fail-closed
+
+# Change-set budgets. Exceeding any of them is an analysis error under the
+# default fail-closed policy — an oversized PR is never silently marked safe.
+max_files: 100
+max_total_bytes: 200000
+max_hunks_per_file: 50

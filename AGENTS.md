@@ -51,6 +51,10 @@ python -m pytest tests/ -q                              # 943 tests, offline (ne
 - `blastradius/net/` — network-service plugin (Tsunami-style: discovery ->
   banner fingerprint -> service-filtered detectors, timeout-enforced sockets,
   `--scope` mandatory for non-lab targets)
+- `blastradius/ci/` — CI security & quality gate: diff collector, deterministic
+  analyzers (reuse `scanners/`), optional AI review (`AnthropicAdapter`),
+  deterministic policy engine (sole PASS/FAIL decider), JSON/Markdown reports,
+  notifications; `blastradius ci review|gate`, exit 0/1/2
 - `blastradius/mcp/` — MCP stdio server (7 tools)
 - `blastradius/github_app/` — webhook + PR commenter; `scripts/pr_scan.py` —
   PR scan used by the `pr-security-scan` GitHub Action

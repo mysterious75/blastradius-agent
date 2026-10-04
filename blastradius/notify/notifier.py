@@ -36,7 +36,7 @@ def _default_http(url: str, payload: dict, headers: Dict = None) -> int:
 class Notifier:
     """Send finding alerts to every configured channel."""
 
-    CHANNELS = ("slack", "discord", "telegram", "email", "github")
+    CHANNELS = ("slack", "teams", "discord", "telegram", "email", "github")
 
     def __init__(self, http: Optional[Callable] = None, db=None):
         self.http = http or _default_http
@@ -51,6 +51,8 @@ class Notifier:
         out = []
         if os.getenv("SLACK_WEBHOOK_URL"):
             out.append("slack")
+        if os.getenv("TEAMS_WEBHOOK_URL"):
+            out.append("teams")
         if os.getenv("DISCORD_WEBHOOK_URL"):
             out.append("discord")
         if os.getenv("TELEGRAM_BOT_TOKEN") and os.getenv("TELEGRAM_CHAT_ID"):
@@ -64,6 +66,68 @@ class Notifier:
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
+
+    def notify_text(self, text: str) -> List[str]:
+        """Send a plain-text summary to every configured channel.
+
+        Used by the CI gate (no finding object needed). Returns per-channel
+        errors; a failing channel never breaks the caller. Callers must pass
+        already-redacted text — this method sends it verbatim.
+        """
+        self._errors = []
+        channels = self.configured_channels()
+        threads = []
+        for channel in channels:
+            thread = threading.Thread(
+                target=self._dispatch_text,
+                args=(channel, text),
+                daemon=True,
+            )
+            thread.start()
+            threads.append(thread)
+        for thread in threads:
+            thread.join(timeout=30)
+        return list(self._errors)
+
+    def _dispatch_text(self, channel: str, text: str) -> None:
+        try:
+            if channel == "slack":
+                self.http(os.getenv("SLACK_WEBHOOK_URL"), {"text": text})
+            elif channel == "teams":
+                self._send_teams_text(text)
+            elif channel == "discord":
+                self.http(
+                    os.getenv("DISCORD_WEBHOOK_URL"),
+                    {"embeds": [{"title": "BlastRadius CI gate", "description": text}]},
+                )
+            elif channel == "telegram":
+                token = os.getenv("TELEGRAM_BOT_TOKEN")
+                chat_id = os.getenv("TELEGRAM_CHAT_ID")
+                url = f"https://api.telegram.org/bot{token}/sendMessage"
+                self.http(url, {"chat_id": chat_id, "text": text})
+            elif channel == "email":
+                self._send_email_text(text)
+            elif channel == "github":
+                return  # plain-text gate summaries are not filed as issues
+            self._log_delivery(channel)
+        except Exception as exc:  # a failing channel never breaks the caller
+            self._errors.append(f"{channel}: {exc}")
+
+    def _send_email_text(self, text: str) -> None:
+        host = os.getenv("SMTP_HOST")
+        port = int(os.getenv("SMTP_PORT", "587"))
+        user = os.getenv("SMTP_USER", "")
+        password = os.getenv("SMTP_PASS", "")
+        to_addr = os.getenv("NOTIFY_EMAIL")
+        msg = MIMEText(text)
+        msg["Subject"] = "BlastRadius CI gate result"
+        msg["From"] = user or "blastradius@local"
+        msg["To"] = to_addr
+        with smtplib.SMTP(host, port, timeout=15) as server:
+            if user and password:
+                server.starttls()
+                server.login(user, password)
+            server.sendmail(msg["From"], [to_addr], msg.as_string())
 
     def notify_finding(self, finding, patch_result=None, report_path: str = "") -> List[str]:
         """Send the finding to ALL configured channels simultaneously.
@@ -131,6 +195,12 @@ class Notifier:
 
     def _send_slack(self, finding, patch_result, report_path) -> None:
         self.http(os.getenv("SLACK_WEBHOOK_URL"), {"text": self._summary(finding, report_path)})
+
+    def _send_teams(self, finding, patch_result, report_path) -> None:
+        self._send_teams_text(self._summary(finding, report_path))
+
+    def _send_teams_text(self, text: str) -> None:
+        self.http(os.getenv("TEAMS_WEBHOOK_URL"), {"text": text})
 
     def _send_discord(self, finding, patch_result, report_path) -> None:
         if patch_result is not None:

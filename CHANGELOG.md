@@ -5,6 +5,15 @@ All notable changes to BlastRadius Agent are documented here.
 ## [Unreleased]
 
 ### Added
+- CI security & quality gate (`blastradius/ci/` + `blastradius ci review|gate`):
+  provider-neutral PR pipeline (diff → deterministic analyzers reusing
+  `blastradius.scanners` + optional Claude review via `AnthropicAdapter`)
+  → normalized findings → deterministic policy engine (only PASS/FAIL
+  decider) → JSON + Markdown reports + optional Slack/Teams/email
+  notifications. Exit 0 = PASS, 1 = POLICY_FAILURE, 2 = ANALYSIS_ERROR.
+  Includes `blastradius-ci.example.yml` policy, SHA-pinned GitHub Actions
+  template (`.github/workflows/ci-review.yml`), Bitbucket Pipelines template,
+  local PASS/FAIL demo fixtures, and `docs/ci-gate.md`.
 - Optional Zhipu GLM provider (`zhipu` in `blastradius/providers/registry.py`):
   OpenAI-compatible BigModel endpoint with `ZHIPU_API_KEY`; default provider
   selection is unchanged and no network is used without a key.

@@ -1,0 +1,61 @@
+# Reusable BlastRadius CI security & quality gate (Bitbucket Pipelines template).
+#
+# Thin adapter: the SAME core Python gate as GitHub CI runs here. No analysis
+# engine is duplicated — Bitbucket only supplies the checkout, the PR diff
+# range, secrets, and merge gating.
+#
+# Adoption:
+#   1. copy this file to bitbucket-pipelines.yml in your repository,
+#   2. set repository variables (see below; ANTHROPIC_API_KEY as Secured),
+#   3. add an optional blastradius-ci.yml policy (safe defaults otherwise),
+#   4. require passing builds before merge:
+#      Repository settings -> Branch permissions -> check
+#      "Require passing builds" (Premium) or use the merge-check API, e.g.
+#        curl -u "$BB_USER:$BB_APP_PASSWORD" -X POST \
+#          https://api.bitbucket.org/2.0/repositories/$BITBUCKET_REPO_FULL_NAME/...
+#      (Bitbucket Cloud merge checks for pipelines need Premium; otherwise
+#      enforce the green build socially/by policy — do not claim automation
+#      you cannot configure without workspace permissions.)
+#
+# Exit codes from `python -m blastradius.ci gate`:
+#   0 = PASS, 1 = POLICY_FAILURE, 2 = ANALYSIS_ERROR. Any non-zero exit fails
+#   the pipeline step, which is what merge gating keys on.
+#
+# Variables / secrets (Repository settings -> Repository variables):
+#   ANTHROPIC_API_KEY   Secured, optional — enables Claude AI review.
+#                       Absent = deterministic-only mode (still gated).
+#   BLASTRADIUS_AI_MODEL  Optional variable, e.g. claude-sonnet-4-5.
+#   CI_BASE_REF           Optional variable, default "origin/main".
+#   BITBUCKET_PR_ID etc.  Provided automatically by Pipelines.
+#
+# Fork/PR safety: Bitbucket does not expose secured variables to fork PR
+# builds by default ("Secure" variables are withheld from forks), so the
+# gate degrades to deterministic-only there — never silently safe, since
+# oversized/unreadable diffs fail closed.
+
+image: python:3.12
+
+definitions:
+  steps:
+    - step: &ci-gate
+        name: BlastRadius CI security & quality gate
+        script:
+          - pip install -e ".[dev]"
+          - POLICY="blastradius-ci.yml"
+          - if [ ! -f "$POLICY" ]; then POLICY="blastradius-ci.example.yml"; fi
+          - BASE_REF="${CI_BASE_REF:-origin/main}"
+          # Pull-request pipelines only: compare the PR branch against base.
+          - git fetch origin "$BITBUCKET_BRANCH" "$BITBUCKET_PR_DESTINATION_BRANCH" || true
+          - python -m blastradius.ci gate
+            --repo "$BITBUCKET_CLONE_DIR"
+            --base "origin/$BITBUCKET_PR_DESTINATION_BRANCH"
+            --policy "$POLICY"
+            --out ci-gate
+            --run-ref "$BITBUCKET_REPO_FULL_NAME#$BITBUCKET_PR_ID"
+        artifacts:
+          - ci-gate/**
+
+pipelines:
+  pull-requests:
+    "**":
+      - step: *ci-gate

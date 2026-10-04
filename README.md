@@ -35,6 +35,7 @@ See [DISCLAIMER.md](DISCLAIMER.md) for the full legal terms and
 - [DeFi Contagion & Config Audit](#-defi-contagion--config-audit-phase-6)
 - [Installation](#installation)
 - [Usage](#all-cli-commands)
+- [CI Security & Quality Gate](#ci-security--quality-gate)
 - [Dynamic Web Testing](#dynamic-web-testing)
 - [Benchmark](#benchmark)
 - [Trust & Safety](#trust--safety)
@@ -478,6 +479,21 @@ models are passed through as-is.
 | `uvicorn blastradius.github_app.webhook:app` | GitHub App webhook at :8000 |
 | `python -m scripts.cve_hunt [--target …]` | Multi-target CVE hunt + disclosure templates |
 | `python -m blastradius.db stats` | Persisted stats |
+| `python -m blastradius.ci gate --repo . --base origin/main` | CI security & quality gate (deterministic policy decides PASS/FAIL) |
+
+## CI Security & Quality Gate
+
+Reusable PR gate: diff → deterministic analyzers (+ optional Claude review) →
+normalized findings → deterministic policy → PASS/FAIL with JSON + Markdown
+reports. The LLM never decides the outcome; only the policy engine does.
+Works on GitHub Actions and Bitbucket Pipelines from the same core.
+
+```bash
+blastradius ci gate --repo . --base origin/main --policy blastradius-ci.yml
+```
+
+Full guide (architecture, GitHub/Bitbucket setup, policy reference, demo,
+security model): [`docs/ci-gate.md`](docs/ci-gate.md).
 
 ## Docker
 
