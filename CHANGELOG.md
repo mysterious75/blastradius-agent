@@ -38,6 +38,14 @@ All notable changes to BlastRadius Agent are documented here.
   SameSite-Lax-bypass shape) against analyst-named URLs with a victim
   session — sessionless 200s never count. Dynamic benchmark gains the
   `live-csrf` target with a token-enforcing twin (20/20 at F1 1.000).
+- Live MFA checks (`blastradius/web/mfa.py`, explicit `--mfa-verify-url` /
+  `--mfa-dashboard-url` / `--mfa-reuse-otp` config): bounded wrong-OTP rate
+  probe (default 8, cap 20 — wrong acceptance is broken-verification HIGH,
+  silence-free K attempts is no-rate-limit MEDIUM), pre-MFA step-skip, and
+  double-submit OTP reuse. HTTP error statuses surface as responses (a 429
+  IS the throttle signal); transport silence never becomes a finding.
+  Dynamic benchmark gains the `live-mfa` target with a throttling twin
+  (23/23 at F1 1.000).
 - Solidity smart-contract scanner (`blastradius/scanners/solidity.py`): Slither-aligned
   reentrancy (structural checks-effects-interactions analysis), tx.origin auth, controlled
   delegatecall, arbitrary send, weak randomness, unchecked low-level calls, unchecked ERC20

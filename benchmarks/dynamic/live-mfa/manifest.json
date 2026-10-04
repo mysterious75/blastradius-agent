@@ -1,0 +1,19 @@
+{
+  "target": "live-mfa",
+  "description": "MFA endpoints with no rate limit, a skippable MFA step, and reusable OTPs, plus a throttling twin that must stay silent.",
+  "probe_paths": ["/verify", "/dashboard", "/verify-reuse"],
+  "verify_url": "/verify",
+  "strict_url": "/verify-strict",
+  "dashboard_url": "/dashboard",
+  "reuse_url": "/verify-reuse",
+  "reuse_otp": "123456",
+  "pre_cookie": "pre=1",
+  "otp_field": "otp",
+  "success_markers": ["\"ok\": true"],
+  "dashboard_markers": ["DASHBOARD-SECRET"],
+  "expected": [
+    {"check": "mfa-no-rate-limit"},
+    {"check": "mfa-step-skip"},
+    {"check": "mfa-otp-reuse"}
+  ]
+}

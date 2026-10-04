@@ -137,6 +137,50 @@ def main(argv=None) -> int:
         "authority is required — sessionless 200s prove nothing)",
     )
     ap.add_argument(
+        "--mfa-verify-url",
+        default=None,
+        help="explicit OTP verification URL for the MFA probes (no discovery; "
+        "test accounts you own)",
+    )
+    ap.add_argument(
+        "--mfa-dashboard-url",
+        default=None,
+        help="explicit post-login URL for the MFA step-skip probe",
+    )
+    ap.add_argument(
+        "--mfa-marker",
+        action="append",
+        default=[],
+        help="success string for OTP acceptance (repeatable)",
+    )
+    ap.add_argument(
+        "--mfa-dashboard-marker",
+        action="append",
+        default=[],
+        help="success string for post-login content (repeatable)",
+    )
+    ap.add_argument(
+        "--mfa-reuse-otp",
+        default=None,
+        help="once-valid OTP to resubmit for the reuse probe",
+    )
+    ap.add_argument(
+        "--mfa-cookie",
+        default=None,
+        help="session cookie for the MFA probes (pre-MFA session for step-skip)",
+    )
+    ap.add_argument(
+        "--mfa-otp-field",
+        default="otp",
+        help="JSON field carrying the OTP (default: otp)",
+    )
+    ap.add_argument(
+        "--mfa-probes",
+        type=int,
+        default=8,
+        help="wrong OTPs for the rate-limit probe (default 8, max 20)",
+    )
+    ap.add_argument(
         "--scope",
         default=None,
         help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
@@ -175,6 +219,24 @@ def main(argv=None) -> int:
         csrf_urls=args.csrf_url,
         csrf_markers=args.csrf_marker,
         csrf_cookie=args.csrf_cookie,
+        mfa_cfg={
+            "verify_url": args.mfa_verify_url,
+            "dashboard_url": args.mfa_dashboard_url,
+            "success_markers": args.mfa_marker,
+            "dashboard_markers": args.mfa_dashboard_marker,
+            "reuse_otp": args.mfa_reuse_otp,
+            "cookie": args.mfa_cookie,
+            "otp_field": args.mfa_otp_field,
+            "max_probes": args.mfa_probes,
+        }
+        if any(
+            [
+                args.mfa_verify_url,
+                args.mfa_dashboard_url,
+                args.mfa_reuse_otp,
+            ]
+        )
+        else None,
     )
     scanner.browser.timeout = args.timeout
 

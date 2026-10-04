@@ -178,6 +178,55 @@ def run_csrf_target(base: str, manifest: dict, target_dir=None):
     return checker.check(urls, manifest.get("success_markers", []))
 
 
+def run_mfa_target(base: str, manifest: dict, target_dir=None):
+    from blastradius.web.browser import BrowserSession
+    from blastradius.web.mfa import MfaChecker
+
+    findings = []
+    # Throttling twin first: must stay silent (and must not poison state).
+    strict = MfaChecker(session=BrowserSession())
+    findings.extend(
+        strict.check(
+            {
+                "verify_url": base + manifest.get("strict_url", "/verify-strict"),
+                "success_markers": manifest.get("success_markers", []),
+            }
+        )
+    )
+    plain = MfaChecker(session=BrowserSession())
+    findings.extend(
+        plain.check(
+            {
+                "verify_url": base + manifest.get("verify_url", "/verify"),
+                "success_markers": manifest.get("success_markers", []),
+            }
+        )
+    )
+    reuse = MfaChecker(session=BrowserSession())
+    findings.extend(
+        reuse.check(
+            {
+                "verify_url": base + manifest.get("reuse_url", "/verify-reuse"),
+                "reuse_otp": manifest.get("reuse_otp"),
+                "success_markers": manifest.get("success_markers", []),
+            }
+        )
+    )
+    pre_cookie = manifest.get("pre_cookie", "")
+    dashboard = MfaChecker(
+        session=BrowserSession(default_headers={"Cookie": pre_cookie} if pre_cookie else None)
+    )
+    findings.extend(
+        dashboard.check(
+            {
+                "dashboard_url": base + manifest.get("dashboard_url", "/dashboard"),
+                "dashboard_markers": manifest.get("dashboard_markers", []),
+            }
+        )
+    )
+    return findings
+
+
 def run_race_target(base: str, manifest: dict, target_dir=None):
     from blastradius.web.race import RaceChecker
 
@@ -234,6 +283,7 @@ _RUNNERS = {
     "live-ssrf": run_ssrf_target,
     "live-sqli": run_sqli_target,
     "live-massassign": run_massassign_target,
+    "live-mfa": run_mfa_target,
     "live-cachepoison": run_cachepoison_target,
     "live-csrf": run_csrf_target,
     "live-graphql": run_graphql_target,

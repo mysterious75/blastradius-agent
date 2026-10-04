@@ -26,6 +26,8 @@ Checks (vuln_type -> CWE):
     csrf-*    CWE-352  passive token-field analysis on crawled forms +
                        active token harness on EXPLICIT URLs with a victim
                        session (opt-in)
+    mfa-*     CWE-307/287/613 bounded OTP rate probe, step-skip, OTP reuse
+                       on EXPLICIT config only (opt-in: accounts you own)
 
 Usage:
     scanner = DynamicWebScanner()
@@ -160,6 +162,7 @@ class DynamicWebScanner:
         csrf_urls: Optional[List[str]] = None,
         csrf_markers: Optional[List[str]] = None,
         csrf_cookie: Optional[str] = None,
+        mfa_cfg: Optional[Dict] = None,
     ):
         self.browser = browser or BrowserSession()
         # Probe browser never follows redirects (so Location-based checks work).
@@ -196,6 +199,10 @@ class DynamicWebScanner:
         self.csrf_urls = list(csrf_urls or [])
         self.csrf_markers = list(csrf_markers or [])
         self.csrf_cookie = csrf_cookie
+        # MFA: explicit analyst config only (verify/dashboard URLs, sessions,
+        # oracles). No discovery, no crawling — OTP probes belong on accounts
+        # you own, named one by one.
+        self.mfa_cfg = dict(mfa_cfg or {})
         # Real HackerOne payloads (defaults always included) for reflected XSS.
         self.xss_payloads = xss_payloads()
         # Budget guard: total JS fetches allowed per scan() call.
@@ -249,6 +256,8 @@ class DynamicWebScanner:
             findings.extend(self._check_race(self.race_urls))
         if self.csrf_probe or self.csrf_urls:
             findings.extend(self._check_csrf(visited))
+        if self.mfa_cfg:
+            findings.extend(self._check_mfa())
         return findings
 
     # ------------------------------------------------------------------
@@ -522,6 +531,22 @@ class DynamicWebScanner:
             remediation=hit.remediation,
             description=hit.description,
         )
+
+    def _check_mfa(self) -> List[DynamicFinding]:
+        """Bounded MFA probes on explicit analyst config (opt-in only)."""
+        from blastradius.web.mfa import MfaChecker
+
+        cookie = self.mfa_cfg.get("cookie")
+        session = BrowserSession(default_headers={"Cookie": cookie} if cookie else None)
+        checker = MfaChecker(
+            session=session,
+            otp_field=self.mfa_cfg.get("otp_field", "otp"),
+            max_probes=int(self.mfa_cfg.get("max_probes", 8)),
+        )
+        findings: List[DynamicFinding] = []
+        for hit in checker.check(self.mfa_cfg):
+            findings.append(self._to_dynamic(hit))
+        return findings
 
     def _check_sqli(self, urls: List[str]) -> List[DynamicFinding]:
         """Probe crawled URLs with query strings for SQL injection (opt-in)."""

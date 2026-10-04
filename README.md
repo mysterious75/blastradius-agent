@@ -592,9 +592,10 @@ authz-diff, JWT acceptance, SSRF/OOB, SQLi, mass assignment, cache poisoning,
 GraphQL (introspection, field suggestions, alias batching), request
 smuggling (CL.TE / TE.CL desync probes), race conditions (gated bursts at
 explicit single-use URLs), CSRF (passive token-field analysis + active
-token harness on explicit URLs with a victim session), and
+token harness on explicit URLs with a victim session), MFA (bounded OTP
+rate probe, step-skip, OTP reuse on explicit config), and
 network-service detectors against local stdlib targets — currently
-**20 expected / 20 reported at F1 1.000**.
+**23 expected / 23 reported at F1 1.000**.
 
 ```bash
 python benchmarks/run.py            # detection benchmark (offline)
