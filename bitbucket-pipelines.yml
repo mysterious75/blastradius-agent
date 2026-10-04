@@ -1,0 +1,49 @@
+# Bitbucket Pipelines — BlastRadius Verified PR gate.
+#
+# Copy into the target repo as bitbucket-pipelines.yml (or merge the
+# `verified-pr` step into an existing file). The step fails (exit 1) when the
+# PR introduces confirmed exploitable findings without a re-verified fix, so
+# Bitbucket's merge checks block the merge; exit 0 lets it through.
+#
+# Required repository variables (Repository settings -> Pipelines):
+#   BLASTRADIUS_BASE   default destination branch, e.g. "main"
+#   BB_USER            Bitbucket username owning the app password below
+#   BB_APP_PASSWORD    app password with pullrequest:write (for PR comments)
+# Optional:
+#   FAIL_ON            critical|high|medium|low (default high)
+#
+# PR commenting is best-effort (the API call may fail on forks/restricted
+# repos); the merge gate itself is enforced by the step exit code, not the
+# comment.
+
+image: python:3.12
+
+pipelines:
+  pull-requests:
+    "**":
+      - step:
+          name: BlastRadius Verified PR
+          script:
+            - BASE="${BITBUCKET_PR_DESTINATION_BRANCH:-${BLASTRADIUS_BASE:-main}}"
+            - git fetch origin "$BASE" --depth=50 || true
+            - pip install -e ".[all]"
+            # Best-effort sandbox image; without Docker the documented
+            # unsandboxed dev fallback runs trusted template PoCs only.
+            - docker build -t blastradius-sandbox sandbox/ || true
+            - python -m blastradius.verified_pr
+              --repo "$BITBUCKET_CLONE_DIR"
+              --base "origin/$BASE"
+              --baseline-ref "origin/$BASE"
+              --fail-on "${FAIL_ON:-high}"
+              --out "$BITBUCKET_CLONE_DIR/verified-pr"
+            - |
+              if [ -n "${BB_APP_PASSWORD:-}" ] && [ -n "${BITBUCKET_PR_ID:-}" ] && [ -f verified-pr/verified-comment.md ]; then
+                python -c 'import json; print(json.dumps({"content": {"raw": open("verified-pr/verified-comment.md", encoding="utf-8").read()[:40000]}}))' > /tmp/vcomment.json
+                curl -sf -u "${BB_USER}:${BB_APP_PASSWORD}" \
+                  -X POST "https://api.bitbucket.org/2.0/repositories/${BITBUCKET_REPO_FULL_NAME}/pullrequests/${BITBUCKET_PR_ID}/comments" \
+                  -H "Content-Type: application/json" \
+                  -d @/tmp/vcomment.json \
+                  || echo "PR comment post failed (non-blocking; gate already enforced by exit code)"
+              fi
+          artifacts:
+            - verified-pr/**

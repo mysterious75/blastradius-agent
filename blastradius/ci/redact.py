@@ -33,6 +33,11 @@ _PATTERNS: List[Tuple[str, re.Pattern]] = [
         ),
     ),
     ("private-key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
+    ("aws-key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
+    (
+        "github-token",
+        re.compile(r"\b(?:ghp|ghs|ghu|ghr|github_pat)_[A-Za-z0-9_]{10,}"),
+    ),
     (
         "webhook",
         re.compile(

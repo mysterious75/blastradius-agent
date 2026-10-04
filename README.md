@@ -466,6 +466,7 @@ models are passed through as-is.
 | `python -m blastradius.net --target <host> --ports <preset\|list\|range>` | Network-service scan: bounded TCP connect + banner fingerprint + service-filtered detectors (cleartext FTP/Telnet, anonymous FTP, missing SMTP STARTTLS); `--scope` required for non-lab targets |
 | `python -m blastradius.scope add\|check\|list\|rm` | Program scope registry (default-deny for URL targets) |
 | `scripts/pr_scan.py --repo . --base origin/main` | PR diff-scoped scan (sandbox-verified, merge gate; auto-opens fix PRs — see `.github/workflows/pr-scan.yml`) |
+`python -m blastradius.verified_pr --repo . --base origin/main` | Verified PR gate: scan → prove → patch → **re-test on the patched tree** → dependency impact → MERGE/BLOCK (see `docs/verified-pr.md`, `.github/workflows/verified-pr.yml`, `bitbucket-pipelines.yml`) |
 | `python -m blastradius.pipeline_cli --target <url\|path>` | Full end-to-end pipeline |
 | `python -m blastradius.auto_hunt --strategy github --max 20` | Autonomous hunt over discovered targets (`--scope` required; `--repo` hunts named repos without discovery) |
 | `python -m blastradius.recon --strategy all` | Discover targets (GitHub code search / PyPI / Shodan) |
@@ -580,6 +581,17 @@ verification → findings comment + SARIF upload → **merge gate** (confirmed
 findings fail the check) → **autofix bot-PR** (`scripts/autofix_pr.py` applies
 only parse-safe, exact-match patches on a fresh branch and opens a fix PR).
 Patches that cannot be applied safely are left for manual review.
+
+## Verified PR Gate (GitHub + Bitbucket)
+
+`python -m blastradius.verified_pr` closes the loop the scan gate leaves
+open: every generated patch is **re-tested** — applied to a scratch copy of
+the real tree and re-scanned with the same rules. Only `FIXED` findings are
+excused; `STILL_VULNERABLE` and `UNVERIFIABLE` block the merge (exit 1,
+fail-closed). The run also reports dependency-manifest impact and posts a
+verdict comment + merge-blocking commit status. See [`docs/verified-pr.md`](docs/verified-pr.md),
+[`.github/workflows/verified-pr.yml`](.github/workflows/verified-pr.yml),
+and [`bitbucket-pipelines.yml`](bitbucket-pipelines.yml).
 
 ## Benchmark
 

@@ -1,0 +1,92 @@
+name: verified-pr
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+# Least privilege: each scope maps to exactly one step below.
+permissions:
+  contents: read # actions/checkout
+  pull-requests: write # verdict comment (github-script)
+  security-events: write # SARIF upload (code scanning)
+  statuses: write # merge-blocking commit status (--post-status)
+
+# One run per PR: a new push cancels the superseded run (saves minutes and
+# guarantees the verdict always matches the latest head).
+concurrency:
+  group: verified-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  verified:
+    runs-on: ubuntu-latest
+    # Fail-closed on hangs: a timed-out job fails the check, which blocks
+    # the merge under branch protection (never a silent pass).
+    timeout-minutes: 30
+    steps:
+      # Third-party actions pinned to full-length commit SHAs (immutable;
+      # tags are mutable). Verify SHAs against the upstream repos before
+      # upgrading.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0 # diff-scope needs full history
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: pip install -e ".[all]"
+
+      - name: Build sandbox image (best-effort)
+        run: docker build -t blastradius-sandbox sandbox/
+        continue-on-error: true
+
+      - name: Run BlastRadius Verified PR
+        id: verified
+        env:
+          # Optional: enables AI patches; without keys rule-based patches run
+          OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # gh CLI needs an explicit token inside Actions (GITHUB_TOKEN is
+          # not auto-consumed); used only for the merge-blocking status post.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Status goes to the PR head SHA so branch protection evaluates it
+          # on the head commit (the checkout itself is the merge commit).
+          BLASTRADIUS_STATUS_SHA: ${{ github.event.pull_request.head.sha }}
+          # Indirect expression via env (script-injection best practice: the
+          # value never participates in shell parsing).
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          python -m blastradius.verified_pr \
+            --repo "$GITHUB_WORKSPACE" \
+            --base "origin/$BASE_REF" \
+            --baseline-ref "origin/$BASE_REF" \
+            --fail-on high \
+            --post-status \
+            --out "$GITHUB_WORKSPACE/verified-pr"
+
+      - name: Upload SARIF to code scanning
+        if: ${{ always() && hashFiles('verified-pr/verified.sarif') != '' }}
+        continue-on-error: true # a failed upload must not flip the gate verdict
+        uses: github/codeql-action/upload-sarif@87ef0dc97def48aa960fbf026a2563ee9dbdb470 # v3
+        with:
+          sarif_file: verified-pr/verified.sarif
+
+      - name: Comment verdict on PR
+        if: always()
+        continue-on-error: true # a failed comment must not flip the gate verdict
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = 'verified-pr/verified-comment.md';
+            if (!fs.existsSync(path)) { console.log('no comment body produced'); return; }
+            const body = fs.readFileSync(path, 'utf8');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body.slice(0, 65000)
+            });
