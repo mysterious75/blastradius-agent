@@ -99,3 +99,29 @@ def test_auto_hunt_filters_out_of_scope(scopes, monkeypatch):
     rows = hunt.run("github", max_targets=10, scope="acme-repos")
     assert seen == ["https://github.com/acme/ok"]
     assert all("evil" not in r["repo"] for r in rows)
+
+
+# --- net CLI: mandatory scope for non-lab targets -------------------------
+
+
+def test_net_cli_blocks_external_without_scope(scopes, capsys):
+    from blastradius.net.cli import main
+
+    rc = main(["--target", "scanme.nmap.org", "--ports", "22"])
+    assert rc == 2
+    assert "BLOCKED" in capsys.readouterr().out
+
+
+def test_net_cli_blocks_external_out_of_scope(scopes):
+    from blastradius.net.cli import main
+
+    rc = main(["--target", "evil.acme.com", "--ports", "22", "--scope", "acme"])
+    assert rc == 2
+
+
+def test_net_cli_lab_target_needs_no_scope(scopes, tmp_path):
+    from blastradius.net.cli import main
+
+    # Port 1 is closed in CI sandboxes: scan completes with 0 findings.
+    rc = main(["--target", "127.0.0.1", "--ports", "1", "--reports-dir", str(tmp_path)])
+    assert rc == 0

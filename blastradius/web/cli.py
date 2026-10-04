@@ -79,6 +79,12 @@ def main(argv=None) -> int:
         help="probe crawled URLs for web cache poisoning (unkeyed headers + WCD)",
     )
     ap.add_argument(
+        "--graphql-probe",
+        action="store_true",
+        help="discover a GraphQL endpoint and run read-only checks "
+        "(introspection, field suggestions, alias batching)",
+    )
+    ap.add_argument(
         "--scope",
         default=None,
         help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
@@ -108,6 +114,7 @@ def main(argv=None) -> int:
         sqli_probe=args.sqli_probe or args.sqli_time_probe,
         sqli_time_probe=args.sqli_time_probe,
         cachepoison_probe=args.cachepoison_probe,
+        graphql_probe=args.graphql_probe,
     )
     scanner.browser.timeout = args.timeout
 

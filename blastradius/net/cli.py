@@ -77,23 +77,19 @@ def main(argv=None) -> int:
                 "with a registered program (no silent opt-out)"
             )
             return 2
-        if not require_scope(args.target, args.scope):
+        # Bare hostnames never match the URL-gated require_scope, so present
+        # the target as a URL for the scope check only (scan still uses TCP).
+        scope_target = args.target if "://" in args.target else f"http://{args.target}"
+        if not require_scope(scope_target, args.scope):
             return 2
 
     ports = args.ports
-    if (
-        "," not in ports
-        and "-" not in ports
-        and ports
-        not in (
-            "common",
-            "web",
-            "mail",
-            "db",
-            "remote",
-        )
-    ):
-        print(f"[!] unknown port spec: {ports}")
+    from blastradius.net.scanner import parse_ports
+
+    try:
+        parse_ports(ports)
+    except ValueError as exc:
+        print(f"[!] unknown port spec: {ports} ({exc})")
         return 2
 
     scanner = NetworkServiceScanner(

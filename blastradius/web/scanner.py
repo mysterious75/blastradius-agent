@@ -17,6 +17,8 @@ Checks (vuln_type -> CWE):
     listing   CWE-538  directory listing
     takeover  CWE-706  dangling third-party service fingerprint (candidate)
     idor      CWE-639  live authorization diff (opt-in: two identity sessions)
+    graphql-* CWE-200/209/400 introspection, field suggestions, alias batching
+                       (opt-in: endpoint discovery + read-only checks)
 
 Usage:
     scanner = DynamicWebScanner()
@@ -88,7 +90,7 @@ class DynamicFinding:
     """A black-box finding with HTTP-response evidence."""
 
     url: str
-    check: str  # xss | redirect | headers | cors | exposure | listing | takeover
+    check: str  # xss | redirect | headers | cors | exposure | listing | takeover | graphql-*
     severity: str
     cwe: str
     confidence: float
@@ -142,6 +144,7 @@ class DynamicWebScanner:
         sqli_probe: bool = False,
         sqli_time_probe: bool = False,
         cachepoison_probe: bool = False,
+        graphql_probe: bool = False,
     ):
         self.browser = browser or BrowserSession()
         # Probe browser never follows redirects (so Location-based checks work).
@@ -160,6 +163,8 @@ class DynamicWebScanner:
         self.sqli_time_probe = sqli_time_probe
         # Optional web-cache-poisoning probing (opt-in: extra requests).
         self.cachepoison_probe = cachepoison_probe
+        # Optional GraphQL probing (opt-in: endpoint discovery + 3 read-only checks).
+        self.graphql_probe = graphql_probe
         # Real HackerOne payloads (defaults always included) for reflected XSS.
         self.xss_payloads = xss_payloads()
         # Budget guard: total JS fetches allowed per scan() call.
@@ -205,6 +210,8 @@ class DynamicWebScanner:
             findings.extend(self._check_sqli(visited))
         if self.cachepoison_probe:
             findings.extend(self._check_cachepoison(visited))
+        if self.graphql_probe:
+            findings.extend(self._check_graphql(target))
         return findings
 
     # ------------------------------------------------------------------
@@ -368,6 +375,27 @@ class DynamicWebScanner:
         checker = CachePoisonChecker(session=self._probe_browser)
         findings: List[DynamicFinding] = []
         for hit in checker.check(urls):
+            findings.append(
+                DynamicFinding(
+                    url=hit.url,
+                    check=hit.check,
+                    severity=hit.severity,
+                    cwe=hit.cwe,
+                    confidence=hit.confidence,
+                    evidence=hit.evidence,
+                    remediation=hit.remediation,
+                    description=hit.description,
+                )
+            )
+        return findings
+
+    def _check_graphql(self, target: str) -> List[DynamicFinding]:
+        """Discover a GraphQL endpoint and run the read-only check set (opt-in)."""
+        from blastradius.web.graphql import GraphqlChecker
+
+        checker = GraphqlChecker(session=self._probe_browser)
+        findings: List[DynamicFinding] = []
+        for hit in checker.check(target):
             findings.append(
                 DynamicFinding(
                     url=hit.url,

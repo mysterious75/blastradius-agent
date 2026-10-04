@@ -161,6 +161,12 @@ def run_cachepoison_target(base: str, manifest: dict, target_dir=None):
     return CachePoisonChecker().check(urls)
 
 
+def run_graphql_target(base: str, manifest: dict, target_dir=None):
+    from blastradius.web.graphql import GraphqlChecker
+
+    return GraphqlChecker().check(base)
+
+
 def run_netservices_target(base: str, manifest: dict, target_dir: Path):
     """Boot the fake FTP/SMTP/Telnet/SSH services and run the net scanner."""
     from blastradius.net.scanner import NetworkServiceScanner
@@ -188,6 +194,7 @@ _RUNNERS = {
     "live-sqli": run_sqli_target,
     "live-massassign": run_massassign_target,
     "live-cachepoison": run_cachepoison_target,
+    "live-graphql": run_graphql_target,
     "live-netservices": run_netservices_target,
 }
 

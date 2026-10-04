@@ -1,0 +1,10 @@
+{
+  "target": "live-graphql",
+  "description": "Fake GraphQL endpoint with introspection on, field suggestions on, and alias batching unthrottled.",
+  "probe_urls": ["/graphql"],
+  "expected": [
+    {"check": "graphql-introspection", "url_suffix": "/graphql"},
+    {"check": "graphql-suggestions", "url_suffix": "/graphql"},
+    {"check": "graphql-batching", "url_suffix": "/graphql"}
+  ]
+}

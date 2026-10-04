@@ -13,6 +13,12 @@ All notable changes to BlastRadius Agent are documented here.
   probed; no brute force, no exploit payloads. `python -m blastradius.net`
   requires `--scope` for any non-lab target. Dynamic benchmark gains the
   `live-netservices` target (11/11 at F1 1.000).
+- Live GraphQL checks (`blastradius/web/graphql.py`, opt-in `--graphql-probe`):
+  endpoint discovery via the universal `__typename` probe, then read-only
+  introspection, field-suggestion (Clairvoyance pattern), and alias-batching
+  (10 aliased `__typename` fields — the rate-limit-bypass primitive) checks,
+  plus an offline sensitive-resolver review helper. Dynamic benchmark gains
+  the `live-graphql` target (14/14 at F1 1.000).
 - Solidity smart-contract scanner (`blastradius/scanners/solidity.py`): Slither-aligned
   reentrancy (structural checks-effects-interactions analysis), tx.origin auth, controlled
   delegatecall, arbitrary send, weak randomness, unchecked low-level calls, unchecked ERC20
