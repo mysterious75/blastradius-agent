@@ -54,6 +54,12 @@ class PatchLoop:
             verification = self.verifier.verify(finding, patch)
             if verification.confidence == 100:
                 return PatchResult(patch, verification, attempt, needs_human=False)
+            if patch.kind == "line":
+                # Single-line surgical edits cannot pass snippet-level checks
+                # by construction (no standalone function to execute) — the
+                # real verdict comes from re-testing on the patched tree.
+                # Retrying a deterministic rule is pure waste, so stop here.
+                return PatchResult(patch, verification, attempt, needs_human=True)
             failures.append(
                 f"Attempt {attempt}: {verification.failure_reasons or 'confidence below 100'}"
             )

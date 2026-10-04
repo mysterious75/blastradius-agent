@@ -5,6 +5,18 @@ All notable changes to BlastRadius Agent are documented here.
 ## [Unreleased]
 
 ### Added
+- BlastRadius Verified PR gate (`blastradius/verified_pr/`,
+  `python -m blastradius.verified_pr`): closes the scan→prove→patch loop with
+  **re-testing** — each generated patch is applied to a scratch copy of the
+  real tree (original never modified) and verified at two evidence levels:
+  exploit replay (real payloads executed against the real patched function:
+  canonical PoC + mutated bypass battery + benign check) with static rescan
+  as a labeled weaker fallback. Only FIXED findings are excused, so the gate
+  is fail-closed. Adds a manifest-level dependency-impact diff (base vs head),
+  KEV blocking limited to findings without a verified fix, Markdown/JSON/
+  SARIF artifacts, optional verdict notifications and GitHub commit status
+  (`blastradius/verified-pr`), `.github/workflows/verified-pr.yml`,
+  `bitbucket-pipelines.yml`, and `docs/verified-pr.md`.
 - CI gate hardening audit fixes (`blastradius/ci/`):
   - missing optional AI credentials now degrade visibly to deterministic-only
     mode (warning in stdout + report) instead of ANALYSIS_ERROR, via a new
