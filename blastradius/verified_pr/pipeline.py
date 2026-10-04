@@ -345,20 +345,26 @@ def run_verified_pr(
     return gate.exit_code, summary
 
 
-def _post_github_status(repo: str, verdict: str) -> None:
-    """Best-effort GitHub commit status for merge blocking (never raises)."""
+def _post_github_status(repo: str, verdict: str, sha: str = "") -> None:
+    """Best-effort GitHub commit status for merge blocking (never raises).
+
+    Status goes to the PR head SHA when provided (``--status-sha``), so
+    branch protection sees it on the head commit; otherwise the local HEAD
+    (e.g. the merge checkout) is used.
+    """
     import os
 
     slug = os.getenv("GITHUB_REPOSITORY", "")
-    sha_proc = subprocess.run(
-        ["git", "-C", repo, "rev-parse", "HEAD"],
-        capture_output=True,
-        text=True,
-        timeout=30,
-    )
-    sha = sha_proc.stdout.strip() if sha_proc.returncode == 0 else ""
+    if not sha:
+        sha_proc = subprocess.run(
+            ["git", "-C", repo, "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        sha = sha_proc.stdout.strip() if sha_proc.returncode == 0 else ""
     if not slug or not sha:
-        print("[status] GITHUB_REPOSITORY or HEAD sha unavailable; skipping status post")
+        print("[status] GITHUB_REPOSITORY or target sha unavailable; skipping status post")
         return
     state = "success" if verdict == VERDICT_MERGE else "failure"
     description = (
@@ -425,8 +431,18 @@ def main(argv=None) -> int:
         action="store_true",
         help="post a GitHub commit status (blastradius/verified-pr)",
     )
+    ap.add_argument(
+        "--status-sha",
+        default="",
+        help="commit SHA for --post-status (default: local HEAD; workflows "
+        "pass the PR head SHA so protection sees it on the head commit)",
+    )
     ap.add_argument("--out", default="verified-pr", help="output dir")
     args = ap.parse_args(argv)
+    if not args.status_sha:
+        import os
+
+        args.status_sha = os.getenv("BLASTRADIUS_STATUS_SHA", "")
 
     try:
         exit_code, summary = run_verified_pr(
@@ -461,7 +477,7 @@ def main(argv=None) -> int:
 
     if args.post_status:
         try:
-            _post_github_status(args.repo, summary["gate"]["verdict"])
+            _post_github_status(args.repo, summary["gate"]["verdict"], args.status_sha)
         except Exception as exc:
             print(f"[status] failed (non-blocking): {exc}")
 
