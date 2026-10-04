@@ -1,11 +1,13 @@
 """Release supply-chain tests — release workflow config, ci.yml publish-job
 stability, and scripts/verify_release.py behavior. Offline, no Docker."""
 
+import json
 import subprocess
 import sys
 import zipfile
 from pathlib import Path
 
+import pytest
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,6 +26,8 @@ def test_release_workflow_valid_yaml():
     assert "attest-build-provenance" in text
     assert "id-token: write" in text
     assert "PYPI_API_TOKEN" not in text
+    assert "scripts/verify_release.py" in text
+    assert "--require-sbom-components" in text
 
 
 def test_ci_publish_unchanged():
@@ -39,6 +43,37 @@ def _make_wheel(path: Path, metadata: str) -> None:
     with zipfile.ZipFile(path, "w") as zf:
         zf.writestr("demo-1.0.0.dist-info/METADATA", metadata)
         zf.writestr("demo/__init__.py", "")
+
+
+def _write_sbom(path: Path, payload) -> Path:
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _valid_sbom(include_components=True):
+    bom = {
+        "bomFormat": "CycloneDX",
+        "specVersion": "1.5",
+        "version": 1,
+        "metadata": {
+            "tools": [{"name": "BlastRadius", "version": "1.1.0"}],
+            "component": {
+                "type": "application",
+                "name": "blastradius-agent",
+                "version": "1.1.0",
+            },
+        },
+    }
+    if include_components:
+        bom["components"] = [
+            {
+                "type": "library",
+                "name": "requests",
+                "version": "2.31.0",
+                "purl": "pkg:pypi/requests@2.31.0",
+            }
+        ]
+    return bom
 
 
 def test_verify_release_wheel(tmp_path):
@@ -72,3 +107,49 @@ def test_verify_release_wheel(tmp_path):
     )
     assert result.returncode == 1
     assert "license" in (result.stdout + result.stderr).lower()
+
+
+def test_verify_release_sbom_validates_structure(tmp_path):
+    from scripts.verify_release import validate_cyclonedx_sbom
+
+    good = _write_sbom(tmp_path / "good.json", _valid_sbom())
+    stats = validate_cyclonedx_sbom(good, require_components=True)
+    assert stats == {"components": 2, "root": True}
+
+    metadata_only = _write_sbom(tmp_path / "metadata.json", _valid_sbom(False))
+    assert validate_cyclonedx_sbom(metadata_only)["components"] == 1
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts" / "verify_release.py"),
+            str(metadata_only),
+            "--sbom",
+            str(metadata_only),
+            "--require-sbom-components",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 1
+    assert "no dependency components" in (result.stdout + result.stderr).lower()
+
+
+def test_verify_release_sbom_rejects_bad_documents(tmp_path):
+    from scripts.verify_release import validate_cyclonedx_sbom
+
+    bad_format = _write_sbom(tmp_path / "format.json", {"specVersion": "1.5"})
+    with pytest.raises(ValueError, match="bomFormat"):
+        validate_cyclonedx_sbom(bad_format)
+
+    bad_component = _valid_sbom()
+    bad_component["components"] = [{"type": "library", "name": "requests"}]
+    bad_path = _write_sbom(tmp_path / "component.json", bad_component)
+    with pytest.raises(ValueError, match="missing version"):
+        validate_cyclonedx_sbom(bad_path)
+
+    duplicate = _valid_sbom()
+    duplicate["components"].append(dict(duplicate["components"][0]))
+    duplicate_path = _write_sbom(tmp_path / "duplicate.json", duplicate)
+    with pytest.raises(ValueError, match="duplicate SBOM component"):
+        validate_cyclonedx_sbom(duplicate_path)

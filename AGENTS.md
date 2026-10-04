@@ -44,7 +44,7 @@ python -m pytest tests/ -q                              # 943 tests, offline (ne
 - `blastradius/sandbox/` — SandboxRunner: docker `--network none --read-only`
   (gVisor runsc), **fail-closed**: unsandboxed local execution is opt-in only
 - `blastradius/patcher/` — PatchLoop / PatchVerifier (3 checks, needs_human gate)
-- `blastradius/providers/` — 15 LLM providers, auto-select, rate limit, cost
+- `blastradius/providers/` — 16 LLM providers, auto-select, rate limit, cost
 - `blastradius/db/` — SQLite persistence + dedup; `blastradius/learning/` —
   self-improving scanner (learned FP rules)
 - `blastradius/dashboard/`, `blastradius/api/` — local UI + REST API (Bearer auth)

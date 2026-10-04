@@ -46,6 +46,36 @@ MIN_REQUEST_INTERVAL_S = 0.5
 
 _last_request_at = 0.0
 
+#: Canonical display names for DeFiLlama lending-project slugs observed in the
+#: committed yields snapshot. DeFiLlama uses versioned slugs (``aave-v3``,
+#: ``compound-v3``); the graph keeps raw slugs as stable node IDs and records
+#: the canonical protocol separately, so existing snapshots do not change.
+LENDING_PROTOCOL_ALIASES = {
+    "aave-v3": "Aave",
+    "aave-v4": "Aave",
+    "sparklend": "SparkLend",
+    "compound-v2": "Compound",
+    "compound-v3": "Compound",
+    "morpho-blue": "Morpho",
+}
+
+
+def normalize_lending_protocol(project: str | None) -> str:
+    """Map a DeFiLlama lending-project slug to its canonical protocol name."""
+    slug = str(project or "").strip().lower()
+    return LENDING_PROTOCOL_ALIASES.get(slug, str(project or "unknown"))
+
+
+def _project_filters(project: str | Iterable[str] | None) -> tuple[str, ...]:
+    """Accept one project substring, a comma-separated string, or an iterable."""
+    if project is None:
+        return ()
+    if isinstance(project, str):
+        parts = project.split(",")
+    else:
+        parts = [str(item) for item in project]
+    return tuple(part.strip() for part in parts if part and part.strip())
+
 
 def _get_json(url: str, timeout: float = DEFAULT_TIMEOUT) -> Any:
     global _last_request_at
@@ -74,7 +104,7 @@ def _split_symbol(symbol: str) -> List[str]:
 
 
 def fetch_pools(
-    project: Optional[str] = None,
+    project: str | Iterable[str] | None = None,
     chain: Optional[str] = None,
     min_tvl_usd: float = 0.0,
     timeout: float = DEFAULT_TIMEOUT,
@@ -82,14 +112,17 @@ def fetch_pools(
     """Live pool rows from DeFiLlama, filtered and TVL-descending.
 
     Exposure only — see :func:`fetch_lending_markets` for supply/borrow.
+    ``project`` accepts one substring, a comma-separated string, or an
+    iterable of substrings (for example ``"sparklend,compound-v3"``).
     """
     payload = _get_json(POOLS_URL, timeout=timeout)
+    wanted = tuple(item.lower() for item in _project_filters(project))
     rows: List[Dict[str, Any]] = []
     for row in (payload or {}).get("data", []) or []:
         tvl = float(row.get("tvlUsd") or 0.0)
         if tvl < min_tvl_usd:
             continue
-        if project and project.lower() not in str(row.get("project", "")).lower():
+        if wanted and not any(part in str(row.get("project", "")).lower() for part in wanted):
             continue
         if chain and chain.lower() != str(row.get("chain", "")).lower():
             continue
@@ -128,7 +161,7 @@ def fetch_lend_borrow(timeout: float = DEFAULT_TIMEOUT) -> Dict[str, Dict[str, A
 
 
 def fetch_lending_markets(
-    project: Optional[str] = None,
+    project: str | Iterable[str] | None = None,
     chain: Optional[str] = None,
     min_tvl_usd: float = 0.0,
     timeout: float = DEFAULT_TIMEOUT,
@@ -221,6 +254,7 @@ def build_graph_from_lending_markets(
             meta={
                 "pool_id": pool_id,
                 "pool_meta": m.get("pool_meta") or "",
+                "protocol_canonical": normalize_lending_protocol(project),
                 "token_supplied_usd": supplied,
                 "debt_against_token_usd": borrowed,
                 "backstop_buffer_usd": buffer_usd,

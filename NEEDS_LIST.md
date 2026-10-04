@@ -110,3 +110,18 @@ plus exploit-chain reporting in the findings output + JSON.
 - Benchmark: **F1 = 1.000 (15/15)** — no regression.
 - New tests this session: **43** (7 contagion + 6 SSRF + 8 JWT + 9 chains + 13 authz).
 - Bug fixes: 2 (dedup ordering flake; missing pyyaml dep).
+
+---
+
+## 6. 2026-10-04 update — remaining Track A/B gaps closed in code
+
+- SparkLend/Compound coverage is now first-class in the DeFiLlama lending
+  path: multi-project filters plus canonical protocol labels. The committed
+  yields snapshot contains 118 joinable SparkLend/Compound rows.
+- Backstop reads remain Ethereum-only for verified Umbrella deployments;
+  Base/Arbitrum/Optimism RPC endpoints are configured, but non-Ethereum
+  sources require `verified_by` provenance and no unverified addresses are
+  included.
+- Optional Zhipu GLM provider added without changing default selection.
+- Local HackerOne-style staged disclosure added; staging never submits.
+- Release SBOM verification is now fail-closed in the release workflow.

@@ -57,6 +57,31 @@ def load_sources(path: Optional[Path] = None) -> Dict[str, Any]:
         return {}
 
 
+def validate_backstop_sources(sources: Optional[Dict[str, Any]] = None) -> List[str]:
+    """Validate operator-supplied backstop configuration without network use.
+
+    Umbrella activation starts on Ethereum; a non-Ethereum source is only
+    accepted with explicit ``verified_by`` provenance naming the verified
+    deployment reference. This prevents guessing cross-chain addresses while
+    keeping the reader ready for verified future deployments.
+    """
+    cfg = sources if sources is not None else load_sources()
+    errors: List[str] = []
+    rpcs_by_chain = cfg.get("rpcs", {}) or {}
+    for entry in cfg.get("sources", []) or []:
+        entry_id = str(entry.get("id", "<missing id>"))
+        if not entry.get("address"):
+            errors.append(f"{entry_id}: missing contract address")
+        if entry.get("kind") not in ("erc20-totalSupply", "erc4626-totalAssets"):
+            errors.append(f"{entry_id}: unknown backstop kind {entry.get('kind')!r}")
+        chain = str(entry.get("chain", "1"))
+        if not rpcs_by_chain.get(chain):
+            errors.append(f"{entry_id}: no RPC configured for chain {chain}")
+        if chain != "1" and not entry.get("verified_by"):
+            errors.append(f"{entry_id}: non-Ethereum backstop requires verified_by provenance")
+    return errors
+
+
 def _rpc_call(rpc: str, to_addr: str, data: str, timeout: float = DEFAULT_TIMEOUT) -> str:
     global _last_request_at
     wait = MIN_REQUEST_INTERVAL_S - (time.monotonic() - _last_request_at)

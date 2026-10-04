@@ -195,3 +195,73 @@ def test_published_snapshot_has_real_markets():
     assert markets, "published snapshot must contain real markets"
     assert any(n.meta.get("token_supplied_usd", 0) > 0 for n in markets)
     assert any(n.meta.get("source") == "defillama:yields+lendBorrow" for n in markets)
+
+
+def test_lending_protocol_aliases_are_canonical():
+    assert collateral.normalize_lending_protocol("sparklend") == "SparkLend"
+    assert collateral.normalize_lending_protocol("compound-v3") == "Compound"
+    assert collateral.normalize_lending_protocol("aave-v4") == "Aave"
+    assert collateral.normalize_lending_protocol("unknown-dex") == "unknown-dex"
+
+
+def test_fetch_pools_accepts_multiple_project_filters(monkeypatch):
+    def fake_get(url, timeout=42.0):
+        if url.endswith("/pools"):
+            return {
+                "data": [
+                    {
+                        "pool": "spark-1",
+                        "project": "sparklend",
+                        "chain": "Ethereum",
+                        "symbol": "WSTETH",
+                        "tvlUsd": 10.0,
+                    },
+                    {
+                        "pool": "compound-1",
+                        "project": "compound-v3",
+                        "chain": "Ethereum",
+                        "symbol": "USDC",
+                        "tvlUsd": 5.0,
+                    },
+                    {
+                        "pool": "other-1",
+                        "project": "uniswap-v3",
+                        "chain": "Ethereum",
+                        "symbol": "USDC-WETH",
+                        "tvlUsd": 7.0,
+                    },
+                ]
+            }
+        raise AssertionError(f"unexpected network call in test: {url}")
+
+    monkeypatch.setattr(collateral, "_get_json", fake_get)
+    rows = collateral.fetch_pools(project="sparklend,compound-v3")
+    assert {row["pool_id"] for row in rows} == {"spark-1", "compound-1"}
+
+
+def test_lending_graph_records_canonical_protocol():
+    rows = [
+        {
+            "pool_id": "spark-1",
+            "project": "sparklend",
+            "chain": "Ethereum",
+            "symbol": "WSTETH",
+            "tvl_usd": 10.0,
+            "total_supply_usd": 10.0,
+            "total_borrow_usd": 4.0,
+        },
+        {
+            "pool_id": "compound-1",
+            "project": "compound-v3",
+            "chain": "Ethereum",
+            "symbol": "USDC",
+            "tvl_usd": 5.0,
+            "total_supply_usd": 5.0,
+            "total_borrow_usd": 1.0,
+        },
+    ]
+    graph = collateral.build_graph_from_lending_markets(rows)
+    spark = graph.backend.node(graph.seed_id(NodeKind.MARKET, "sparklend WSTETH (Ethereum)"))
+    compound = graph.backend.node(graph.seed_id(NodeKind.MARKET, "compound-v3 USDC (Ethereum)"))
+    assert spark.meta["protocol_canonical"] == "SparkLend"
+    assert compound.meta["protocol_canonical"] == "Compound"

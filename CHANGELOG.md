@@ -5,6 +5,25 @@ All notable changes to BlastRadius Agent are documented here.
 ## [Unreleased]
 
 ### Added
+- Optional Zhipu GLM provider (`zhipu` in `blastradius/providers/registry.py`):
+  OpenAI-compatible BigModel endpoint with `ZHIPU_API_KEY`; default provider
+  selection is unchanged and no network is used without a key.
+- Local staged-disclosure packages (`blastradius/hunter/disclosure.py`):
+  impact-first HackerOne-style drafts with numbered reproduction steps,
+  severity/CWE metadata, sanitized evidence manifest, pre-submit checklist,
+  and local-only status tracking. Staging redacts cookies, bearer tokens,
+  and email addresses, rejects theoretical language/placeholders, and never
+  submits a report.
+- Broader lending-market coverage (`blastradius/contagion/loaders/collateral.py`):
+  comma-separated/multi-project DeFiLlama filters plus canonical protocol
+  labels (`sparklend` → SparkLend, `compound-v2/v3` → Compound, Aave/Morpho aliases).
+  Backstop configuration now supports Base/Arbitrum/Optimism RPC endpoints and
+  requires `verified_by` provenance for non-Ethereum sources; no unverified
+  cross-chain addresses are included.
+- Fail-closed SBOM verification (`scripts/verify_release.py`): offline CycloneDX
+  structure validation (format/spec/root identity/components/purls/duplicates)
+  with optional `--require-sbom-components`; the release workflow now verifies
+  distributions and the generated SBOM before attaching artifacts.
 - Network-service scanner (`blastradius/net/`): Tsunami-style plugin foundation —
   bounded TCP connect with mandatory connect/read timeouts, read-first banner grab
   plus one light service probe per port, Nmap-style banner fingerprinting, and

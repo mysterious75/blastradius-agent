@@ -6,7 +6,12 @@ from pathlib import Path
 import pytest
 
 from blastradius.hunter.cli import main as cli_main
-from blastradius.hunter.disclosure import DisclosureReport
+from blastradius.hunter.disclosure import (
+    DisclosureReport,
+    redact_evidence,
+    stage_disclosure_package,
+    validate_disclosure_package,
+)
 from blastradius.hunter.scanner import CVEHunter, reconstruct_target_code
 from blastradius.hunter.targets import DEFAULT_TARGETS
 from blastradius.tools.sandbox_tool import run_exploit_sandbox
@@ -483,6 +488,83 @@ def test_save_report_writes_markdown_file(repo, tmp_path):
     content = path.read_text(encoding="utf-8")
     assert "# Vulnerability Disclosure: SQLI in myrepo" in content
     assert "## Suggested patch" in content
+
+
+def _staged_context():
+    return {
+        "program": "demo-program",
+        "asset": "GET /search?name=",
+        "asset_type": "URL",
+        "bug_class": "SQL injection",
+        "attacker": "an unauthenticated attacker",
+        "impact": "read user email addresses from the search response",
+        "summary": "The search endpoint concatenates the name parameter into SQL and returns matching user rows.",
+        "steps": [
+            "Send GET /search?name=' OR '1'='1 with no login session.",
+            "Observe the response contains multiple user rows and email addresses.",
+        ],
+        "severity": "High",
+        "cvss": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N",
+        "weakness": "CWE-89",
+        "proof": "GET /search?name=' OR '1'='1 returned victim@example.com",
+        "remediation": "Use a parameterized query for the name value.",
+    }
+
+
+def test_staged_package_is_ready_and_never_submits(repo, tmp_path):
+    hunter = CVEHunter()
+    sqli = _finding(hunter, repo, "sqli")
+    package = stage_disclosure_package(
+        sqli, _staged_context(), out_dir=str(tmp_path), status="ready-for-review"
+    )
+
+    assert package["status"] == "ready-for-review"
+    assert package["submitted"] is False
+    assert package["platform"] is None
+    assert package["validation"]["ok"] is True
+    package_dir = tmp_path / package["directory"].split(str(tmp_path) + "/")[-1]
+    report = (tmp_path / package["directory"]).joinpath("report.md").read_text(encoding="utf-8")
+    assert "SQL injection in GET /search?name= allows" in report
+    assert "victim@example.com" not in report
+    assert "[REDACTED]" in report
+    assert (tmp_path / package["directory"]).joinpath("evidence.json").exists()
+    assert (tmp_path / package["directory"]).joinpath("checklist.md").exists()
+    assert (tmp_path / package["directory"]).joinpath("status.json").exists()
+    assert package_dir.exists()
+
+
+def test_staged_package_rejects_theoretical_language(repo, tmp_path):
+    hunter = CVEHunter()
+    sqli = _finding(hunter, repo, "sqli")
+    context = _staged_context()
+    context["summary"] = "This issue could potentially expose user data."
+    package = stage_disclosure_package(sqli, context, out_dir=str(tmp_path))
+
+    assert package["status"] == "draft"
+    assert package["validation"]["ok"] is False
+    assert any("theoretical language" in blocker for blocker in package["validation"]["blockers"])
+
+
+def test_redact_evidence_masks_auth_material():
+    redacted, warnings = redact_evidence(
+        "Cookie: session=abc123\nAuthorization: Bearer secret-token\nContact victim@example.com"
+    )
+
+    assert "abc123" not in redacted
+    assert "secret-token" not in redacted
+    assert "victim@example.com" not in redacted
+    assert set(warnings) == {"cookie", "bearer-token", "email"}
+
+
+def test_validate_disclosure_package_requires_reproduction_steps():
+    validation = validate_disclosure_package(
+        "SQL injection in /search allows attacker to read emails",
+        {**_staged_context(), "steps": ["only one step"]},
+        [],
+    )
+
+    assert validation["ok"] is False
+    assert any("at least two" in blocker for blocker in validation["blockers"])
 
 
 # --- CLI --------------------------------------------------------------------

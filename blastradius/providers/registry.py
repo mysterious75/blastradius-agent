@@ -263,6 +263,16 @@ PROVIDER_REGISTRY = {
             "grok-4.3",
         ],
     },
+    "zhipu": {
+        "base_url": "https://open.bigmodel.cn/api/paas/v4",
+        "key_env": "ZHIPU_API_KEY",
+        "models": [
+            "glm-5.2",
+            "glm-5.1",
+            "glm-5",
+            "glm-4.7",
+        ],
+    },
     "ollama": {
         "base_url": "http://localhost:11434/v1",
         "key_env": None,
@@ -309,6 +319,7 @@ PROVIDER_PRIORITY = [
     "xai",
     "qwen",
     "kimi",
+    "zhipu",
     "ollama",
     "lmstudio",
 ]

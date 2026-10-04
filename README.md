@@ -219,7 +219,7 @@ python -m blastradius.cli.wizard
 # docker build -t blastradius-sandbox sandbox/
 pip install pytest jinja2 lxml
 python -m pytest tests/ -q
-# Expected: 1026 passed, 1 skipped
+# Expected: 1038 passed, 1 skipped
 
 # 8. Run your first scan
 # URL targets require a registered scope (fail-closed — register once):
@@ -419,6 +419,7 @@ models are passed through as-is.
 | openrouter | https://openrouter.ai/api/v1 | `OPENROUTER_API_KEY` | openai/gpt-4o, deepseek/deepseek-chat, qwen/qwen3.8-max |
 | qwen | https://dashscope.aliyuncs.com/compatible-mode/v1 | `QWEN_API_KEY` | qwen-max, qwen3.7-max, qwen2.5-coder-32b-instruct |
 | kimi | https://api.moonshot.cn/v1 | `KIMI_API_KEY` | moonshot-v1-128k, kimi-k3 |
+| zhipu | https://open.bigmodel.cn/api/paas/v4 | `ZHIPU_API_KEY` | glm-5.2, glm-5.1, glm-5, glm-4.7 |
 | groq | https://api.groq.com/openai/v1 | `GROQ_API_KEY` | llama-3.3-70b-versatile, groq/compound, gemma2-9b-it |
 | together | https://api.together.xyz/v1 | `TOGETHER_API_KEY` | Qwen/Qwen3.7-Max, deepseek-ai/DeepSeek-V4-Pro |
 | mistral | https://api.mistral.ai/v1 | `MISTRAL_API_KEY` | mistral-large-latest, codestral-2508 |
@@ -450,7 +451,7 @@ models are passed through as-is.
 │             │        │ --memory --runsc │        │ github issues     │
 └─────────────┘        └─────────────────┘        └──────────────────┘
         ▲                       ▲
-        └── LLM provider system (15 providers, auto-select, rate-limit, cost)
+         └── LLM provider system (16 providers, auto-select, rate-limit, cost)
 ```
 
 ## All CLI Commands
@@ -460,7 +461,7 @@ models are passed through as-is.
 | `python -m blastradius.cli.wizard` | Interactive setup (providers, keys, notifications, schedule) |
 | `python -m blastradius.hunter --target <url\|path>` | Scan a repo, sandbox-validate, save disclosure reports |
 | `python -m blastradius.agents --target <url\|path>` | Multi-agent graph: recon → exploit (parallel) → patch, shared blackboard + chains |
-| `python -m blastradius.web --target <url>` | Dynamic web testing: reflected XSS, open redirect, security headers, CORS, exposed files, directory listing |
+| `python -m blastradius.web --target <url>` | Dynamic web testing: reflected XSS, open redirect, security headers, CORS, exposed files, directory listing, plus opt-in GraphQL, smuggling, race, CSRF, and MFA checks |
 | `python -m blastradius.net --target <host> --ports <preset\|list\|range>` | Network-service scan: bounded TCP connect + banner fingerprint + service-filtered detectors (cleartext FTP/Telnet, anonymous FTP, missing SMTP STARTTLS); `--scope` required for non-lab targets |
 | `python -m blastradius.scope add\|check\|list\|rm` | Program scope registry (default-deny for URL targets) |
 | `scripts/pr_scan.py --repo . --base origin/main` | PR diff-scoped scan (sandbox-verified, merge gate; auto-opens fix PRs — see `.github/workflows/pr-scan.yml`) |

@@ -126,3 +126,25 @@ def test_unknown_kind_skipped():
         "sources": [{"id": "weird", "chain": 1, "kind": "nope", "address": "0xT"}],
     }
     assert backstop.fetch_backstops(cfg) == {}
+
+
+def test_default_backstop_config_is_valid():
+    assert backstop.validate_backstop_sources() == []
+
+
+def test_non_ethereum_backstop_requires_verified_provenance():
+    base = {
+        "id": "base-vault",
+        "chain": 8453,
+        "kind": "erc4626-totalAssets",
+        "address": "0xV",
+        "underlying": "USDC",
+        "decimals": 6,
+    }
+    cfg = {"rpcs": {"8453": ["http://x"]}, "sources": [dict(base)]}
+    assert backstop.validate_backstop_sources(cfg) == [
+        "base-vault: non-Ethereum backstop requires verified_by provenance"
+    ]
+
+    verified = dict(base, verified_by="Aave governance deployment record")
+    assert backstop.validate_backstop_sources({"rpcs": cfg["rpcs"], "sources": [verified]}) == []

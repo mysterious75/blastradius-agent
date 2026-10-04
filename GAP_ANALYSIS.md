@@ -113,3 +113,15 @@ The repo is a **mature static+light-dynamic product**; our workspace is a **runt
 > **Port our catalog + Faav methodology into the repo's dynamic layer as first-class checks**, and port the repo's "prove/gate" discipline into our hunting workflow.
 
 Concrete build targets (Step 3): an `IDORScanner` (static hints) + a `blastradius/web` extension with **authz-diff (2-identity), SSRF-oracle, traversal, SQLi-live, JWT, mass-assignment, chain** checks, backed by our payload catalogs and a new benchmark corpus seeded from our findings.
+
+---
+
+## 7. 2026-10-04 addendum — dynamic-layer gaps now shipped
+
+Sections 2b, 3, and 4 above describe the pre-expansion baseline. The live
+checks marked missing there now exist as opt-in/explicit modules with
+localhost benchmark targets: GraphQL, request smuggling, race conditions,
+CSRF, MFA, network services, SQLi, mass assignment, and cache poisoning.
+Remaining dynamic work is narrower: stored-XSS-via-notification chains,
+blind BOLA/async-worker oracles, cross-tenant state confusion, and
+field-name/type parser-disagreement probes.

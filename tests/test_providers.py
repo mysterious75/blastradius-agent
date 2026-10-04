@@ -41,7 +41,7 @@ def _raise_http(exc=None):
 # --- registry ----------------------------------------------------------------
 
 
-def test_registry_has_15_providers():
+def test_registry_has_16_providers():
     assert set(PROVIDER_REGISTRY) == {
         "openai",
         "anthropic",
@@ -51,6 +51,7 @@ def test_registry_has_15_providers():
         "openrouter",
         "qwen",
         "kimi",
+        "zhipu",
         "groq",
         "together",
         "mistral",
@@ -69,6 +70,24 @@ def test_registry_has_15_providers():
 def test_local_providers_always_configured():
     assert provider_key_set("ollama") is True
     assert provider_key_set("lmstudio") is True
+
+
+def test_zhipu_optional_provider_uses_openai_compatible_endpoint(monkeypatch):
+    monkeypatch.setenv("ZHIPU_API_KEY", "test-key")
+    assert provider_key_set("zhipu") is True
+    seen = {}
+
+    def fake_http(url, headers, payload, timeout):
+        seen["url"] = url
+        seen["headers"] = headers
+        seen["payload"] = payload
+        return {"choices": [{"message": {"content": "ok"}}]}
+
+    client = LLMClient(provider="zhipu", model="glm-5.2", http=fake_http, verbose=False)
+    assert client.chat(["hi"]) == "ok"
+    assert seen["url"] == "https://open.bigmodel.cn/api/paas/v4/chat/completions"
+    assert seen["headers"]["Authorization"] == "Bearer test-key"
+    assert seen["payload"]["model"] == "glm-5.2"
 
 
 # --- auto_select -------------------------------------------------------------

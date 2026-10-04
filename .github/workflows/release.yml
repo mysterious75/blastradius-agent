@@ -57,6 +57,17 @@ jobs:
         run: |
           if [ ! -s sbom.cdx.json ]; then echo "SBOM empty/missing - skipping attach"; rm -f sbom.cdx.json; fi
 
+      # Fail-closed release verification: license metadata for every
+      # distribution, plus CycloneDX structure/component validation whenever
+      # an SBOM was produced. A missing SBOM still checks distributions.
+      - name: Verify release distributions and SBOM
+        run: |
+          if [ -f sbom.cdx.json ]; then
+            python scripts/verify_release.py dist/* --sbom sbom.cdx.json --require-sbom-components
+          else
+            python scripts/verify_release.py dist/*
+          fi
+
       # Sigstore keyless signing (Fulcio OIDC cert + Rekor log) — produces a
       # PEP 740-compatible bundle (<artifact>.sigstore). Best-effort.
       - name: Sigstore sign artifacts

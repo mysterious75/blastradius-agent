@@ -1,7 +1,10 @@
 {
-  "_note": "Safety-module / Umbrella backstop sources. Each entry is read on-chain via public RPC (no key). Umbrella StakeToken slots are intentionally left for the operator to fill with verified deployment addresses — never guess an address. Legacy Safety Module stkAAVE is well-known and verified on-chain.",
+  "_note": "Safety-module / Umbrella backstop sources. Each entry is read on-chain via public RPC (no key). Umbrella StakeToken slots are intentionally left for the operator to fill with verified deployment addresses — never guess an address. Non-Ethereum entries additionally require verified_by provenance. Legacy Safety Module stkAAVE is well-known and verified on-chain.",
   "rpcs": {
-    "1": ["https://ethereum-rpc.publicnode.com", "https://eth.llamarpc.com", "https://eth.drpc.org"]
+    "1": ["https://ethereum-rpc.publicnode.com", "https://eth.llamarpc.com", "https://eth.drpc.org"],
+    "8453": ["https://base-rpc.publicnode.com", "https://mainnet.base.org"],
+    "42161": ["https://arbitrum-one-rpc.publicnode.com", "https://arb1.arbitrum.io/rpc"],
+    "10": ["https://optimism-rpc.publicnode.com", "https://mainnet.optimism.io"]
   },
   "chainlink_usd_feeds": {
     "AAVE": "0x547a514d5e3769680Ce22B2361c10Ea13619e8a9",

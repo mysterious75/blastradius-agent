@@ -138,3 +138,20 @@ No new features; verified the tool works on real targets, not just fixtures:
 | **Sandbox PoCs** | 9/15 execute+confirm via documented fallback (no Docker daemon here) |
 
 Honest gaps confirmed: Docker daemon unavailable (sandbox fallback used); PyPI publish needs owner Trusted-Publisher setup; CI lint red from 1241 pre-existing violations (own new code is clean); Umbrella per-asset slots operator-filled.
+
+---
+
+## Session 5 — remaining gaps (2026-10-04, research-first)
+
+- Verified that network-service, GraphQL, smuggling, race, CSRF, MFA, and
+  fail-closed scope work was already shipped with tests/benchmarks; updated
+  the stale gap/roadmap docs instead of duplicating it.
+- Added optional Zhipu GLM provider config (default selection unchanged).
+- Added local staged-disclosure packaging with redaction and pre-submit
+  validation; no external submission path.
+- Expanded lending coverage to SparkLend/Compound aliases and staged
+  multi-chain backstop support behind verified provenance.
+- Made release SBOM verification fail-closed in `release.yml`.
+
+Final gates: **1038 passed, 1 skipped**; static **16/16 F1 1.000 (12/16
+proven)**; dynamic **23/23 F1 1.000**; Ruff check/format clean.

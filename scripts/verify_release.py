@@ -9,8 +9,10 @@ Checks, in order:
       ``License :: OSI Approved`` classifier;
   (b) a Sigstore bundle supplied via ``--bundle`` verifies against its
       artifact (keyless: identity + OIDC issuer read from the bundle cert);
-  (c) an SBOM supplied via ``--sbom`` is parsed and its component count is
-      printed.
+  (c) an SBOM supplied via ``--sbom`` is a structurally valid CycloneDX
+      document with root-component identity, valid component/purl entries,
+      and no duplicates. ``--require-sbom-components`` additionally fails
+      metadata-only documents.
 
 Fail-closed: any failing check exits 1.
 """
@@ -27,6 +29,22 @@ from pathlib import Path
 LICENSE_CLASSIFIER = re.compile(r"^Classifier:\s*License\s*::", re.MULTILINE)
 LICENSE_EXPRESSION = re.compile(r"^License-Expression:\s*\S+", re.MULTILINE)
 LICENSE_FIELD = re.compile(r"^License:\s*\S+", re.MULTILINE)
+
+#: CycloneDX JSON versions accepted by local verification. The repository
+#: emits 1.5; newer release-tool SBOMs may use later 1.x documents.
+ALLOWED_CYCLONEDX_SPEC_VERSIONS = {"1.5", "1.6", "1.7"}
+ALLOWED_COMPONENT_TYPES = {
+    "application",
+    "framework",
+    "library",
+    "container",
+    "platform",
+    "operating-system",
+    "device",
+    "device-driver",
+    "firmware",
+    "file",
+}
 
 
 def metadata_texts(artifact: Path) -> list[str]:
@@ -127,16 +145,74 @@ def bundle_identity(bundle: Path) -> tuple[str | None, str | None]:
     return identity, issuer
 
 
-def sbom_component_count(sbom: Path) -> int:
-    """Print and return the component count of a CycloneDX SBOM."""
+def validate_cyclonedx_sbom(sbom: Path, require_components: bool = False) -> dict:
+    """Validate a CycloneDX SBOM document without network access.
+
+    Checks the required ``bomFormat``/``specVersion`` envelope, root metadata
+    component identity, component shape/purls, and duplicate components.
+    Returns ``{"components": n, "root": bool}``. Fail-closed: malformed or
+    incomplete documents raise ``ValueError``.
+    """
     if not sbom.exists():
         raise ValueError(f"SBOM not found: {sbom}")
-    data = json.loads(sbom.read_text(encoding="utf-8"))
-    count = len(data.get("components", []))
-    if data.get("metadata", {}).get("component"):
-        count += 1  # root component
+    try:
+        data = json.loads(sbom.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        raise ValueError(f"SBOM is not valid JSON: {sbom}") from exc
+    if not isinstance(data, dict):
+        raise ValueError(f"SBOM must be a JSON object: {sbom}")
+    if data.get("bomFormat") != "CycloneDX":
+        raise ValueError(f"SBOM bomFormat must be 'CycloneDX': {sbom}")
+    spec_version = str(data.get("specVersion", ""))
+    if spec_version not in ALLOWED_CYCLONEDX_SPEC_VERSIONS:
+        raise ValueError(
+            f"unsupported CycloneDX specVersion {spec_version!r}: {sbom} "
+            f"(expected one of {sorted(ALLOWED_CYCLONEDX_SPEC_VERSIONS)})"
+        )
+
+    metadata = data.get("metadata")
+    if not isinstance(metadata, dict):
+        raise ValueError(f"SBOM metadata must be an object: {sbom}")
+    root = metadata.get("component")
+    if not isinstance(root, dict):
+        raise ValueError(f"SBOM metadata.component must be an object: {sbom}")
+    for field in ("type", "name", "version"):
+        if not root.get(field):
+            raise ValueError(f"SBOM root component is missing {field}: {sbom}")
+
+    components = data.get("components", [])
+    if components is None:
+        components = []
+    if not isinstance(components, list):
+        raise ValueError(f"SBOM components must be a list: {sbom}")
+    seen = set()
+    for index, component in enumerate(components):
+        if not isinstance(component, dict):
+            raise ValueError(f"SBOM component {index} must be an object: {sbom}")
+        for field in ("type", "name", "version", "purl"):
+            if not component.get(field):
+                raise ValueError(f"SBOM component {index} is missing {field}: {sbom}")
+        if component["type"] not in ALLOWED_COMPONENT_TYPES:
+            raise ValueError(
+                f"SBOM component {index} has unsupported type {component['type']!r}: {sbom}"
+            )
+        if not str(component["purl"]).startswith("pkg:"):
+            raise ValueError(f"SBOM component {index} has an invalid purl: {sbom}")
+        key = (str(component["name"]), str(component["version"]), str(component["purl"]))
+        if key in seen:
+            raise ValueError(f"duplicate SBOM component {key[0]}@{key[1]}: {sbom}")
+        seen.add(key)
+
+    count = len(components) + 1  # include the root application component
+    if require_components and not components:
+        raise ValueError(f"SBOM has no dependency components: {sbom}")
     print(f"SBOM components: {count}")
-    return count
+    return {"components": count, "root": True}
+
+
+def sbom_component_count(sbom: Path) -> int:
+    """Print and return the component count of a CycloneDX SBOM."""
+    return validate_cyclonedx_sbom(sbom)["components"]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -152,7 +228,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--sbom",
         metavar="FILE",
-        help="CycloneDX SBOM (e.g. sbom.cdx.json) to summarize",
+        help="CycloneDX SBOM (e.g. sbom.cdx.json) to validate and summarize",
+    )
+    parser.add_argument(
+        "--require-sbom-components",
+        action="store_true",
+        help="fail when the SBOM has metadata only and no dependency components",
     )
     args = parser.parse_args(argv)
 
@@ -176,7 +257,9 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.sbom:
         try:
-            sbom_component_count(Path(args.sbom))
+            validate_cyclonedx_sbom(
+                Path(args.sbom), require_components=args.require_sbom_components
+            )
         except (OSError, ValueError) as exc:
             failures.append(str(exc))
 
