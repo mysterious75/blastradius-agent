@@ -10,18 +10,26 @@ import os
 import re
 from typing import List, Tuple
 
+# NOTE on boundaries: the leading guard is (?<![a-zA-Z]) instead of \b on
+# purpose — secret names almost always arrive glued to identifier prefixes
+# (db_password, my_api_key, user_session). A bare \b misses those because _
+# is a word character, and a missed secret is a leak while an over-redacted
+# identifier is harmless. Trailing \b stays so "secretary" is not flagged.
 _PATTERNS: List[Tuple[str, re.Pattern]] = [
     ("anthropic-key", re.compile(r"sk-ant-[A-Za-z0-9\-_]{10,}")),
     ("openai-key", re.compile(r"sk-(?!ant-)[A-Za-z0-9\-_]{10,}")),
     (
         "generic-api-key",
-        re.compile(r"(?i)\b(api[_-]?key|apikey)\b\s*[:=]\s*['\"]?([A-Za-z0-9\-_.]{12,})"),
+        re.compile(
+            r"(?i)(?<![a-zA-Z])(api[_-]?key|apikey)\b\s*[:=]\s*['\"]?([A-Za-z0-9\-_.]{12,})"
+        ),
     ),
-    ("bearer", re.compile(r"(?i)\bbearer\s+[A-Za-z0-9\-_.~+/=]{8,}")),
+    ("bearer", re.compile(r"(?i)(?<![a-zA-Z])bearer\s+[A-Za-z0-9\-_.~+/=]{8,}")),
     (
         "cookie-session",
         re.compile(
-            r"(?i)\b(session|sessionid|sid|auth[_-]?token)\b\s*[:=]\s*['\"]?([A-Za-z0-9\-_.]{8,})"
+            r"(?i)(?<![a-zA-Z])(session|sessionid|sid|auth[_-]?token)\b"
+            r"\s*[:=]\s*['\"]?([A-Za-z0-9\-_.]{8,})"
         ),
     ),
     ("private-key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----")),
@@ -33,7 +41,9 @@ _PATTERNS: List[Tuple[str, re.Pattern]] = [
     ),
     (
         "password",
-        re.compile(r"(?i)\b(password|passwd|pwd|secret)\b\s*[:=]\s*['\"]?([^\s\"',;}]{4,})"),
+        re.compile(
+            r"(?i)(?<![a-zA-Z])(password|passwd|pwd|secret)\b\s*[:=]\s*['\"]?([^\s\"',;}]{4,})"
+        ),
     ),
 ]
 

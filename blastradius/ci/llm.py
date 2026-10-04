@@ -64,6 +64,15 @@ class LLMProvider(ABC):
     def review(self, request: ReviewRequest) -> str:
         """Return the model's raw text reply; raise ProviderError on failure."""
 
+    def is_configured(self) -> bool:
+        """Whether usable credentials exist (no network call).
+
+        Lets the CLI degrade visibly to deterministic-only mode when AI
+        credentials are absent, while genuine call failures still raise
+        (fail-closed) inside review().
+        """
+        return True
+
 
 def _sleep_backoff(attempt: int) -> None:
     time.sleep(min(2.0 * (2**attempt), 10.0))
@@ -133,6 +142,9 @@ class AnthropicAdapter(LLMProvider):
         ).rstrip("/")
         self.http = http or _default_http_json
         self.timeout = timeout
+
+    def is_configured(self) -> bool:
+        return bool(self.api_key)
 
     def review(self, request: ReviewRequest) -> str:
         if not self.api_key:
@@ -206,6 +218,24 @@ class OpenAICompatibleAdapter(LLMProvider):
         self.model = model
         self.timeout = timeout
         self._client = client
+
+    def is_configured(self) -> bool:
+        """Whether any provider in the fallback chain has credentials."""
+        try:
+            from blastradius.providers.client import provider_key_set
+            from blastradius.providers.registry import PROVIDER_PRIORITY, PROVIDER_REGISTRY
+        except Exception:
+            return True  # cannot tell: let review() fail loudly instead
+        if self.provider:
+            try:
+                return bool(provider_key_set(self.provider))
+            except Exception:
+                return True
+        return any(
+            PROVIDER_REGISTRY[name].get("key_env") and provider_key_set(name)
+            for name in PROVIDER_PRIORITY
+            if name in PROVIDER_REGISTRY
+        )
 
     def review(self, request: ReviewRequest) -> str:
         try:

@@ -173,23 +173,136 @@ def test_parse_ai_reply_valid():
             ]
         }
     )
-    findings, errors = parse_ai_reply(reply)
+    findings, errors, warnings = parse_ai_reply(reply)
     assert not errors
+    assert warnings == []
     assert len(findings) == 1
     assert findings[0].severity == Severity.HIGH
     assert findings[0].source == Source.AI
 
 
 def test_parse_ai_reply_malformed():
-    findings, errors = parse_ai_reply("totally not json {{{")
+    findings, errors, warnings = parse_ai_reply("totally not json {{{")
     assert findings == []
     assert errors and "not valid JSON" in errors[0]
+    assert warnings == []
 
 
 def test_parse_ai_reply_rejects_invalid_findings_only():
-    findings, errors = parse_ai_reply(json.dumps({"findings": [{"nope": 1}]}))
+    findings, errors, warnings = parse_ai_reply(json.dumps({"findings": [{"nope": 1}]}))
     assert findings == []
     assert errors  # invalid-only payload is an error, never silent
+    assert warnings == []
+
+
+def test_parse_ai_reply_partial_rejects_are_warnings():
+    reply = json.dumps(
+        {
+            "findings": [
+                {
+                    "id": "good",
+                    "category": "security",
+                    "severity": "high",
+                    "title": "Real issue",
+                    "description": "proved",
+                    "file": "app.py",
+                    "line": 2,
+                    "confidence": 0.9,
+                },
+                {"nope": 1},
+            ]
+        }
+    )
+    findings, errors, warnings = parse_ai_reply(reply)
+    assert len(findings) == 1
+    assert errors == []  # partial rejects must not become analysis errors
+    assert warnings and "dropped" in warnings[0]
+
+
+def test_parse_ai_reply_grounds_against_changeset():
+    from blastradius.ci.models import ChangeSet, FileChange, Hunk
+
+    changeset = ChangeSet(
+        files=[
+            FileChange(
+                path="app.py",
+                hunks=[Hunk(old_start=1, new_start=1, lines=["+line one", "+line two"])],
+            )
+        ]
+    )
+    reply = json.dumps(
+        {
+            "findings": [
+                {
+                    "id": "real",
+                    "category": "security",
+                    "severity": "high",
+                    "title": "Real",
+                    "description": "d",
+                    "file": "app.py",
+                    "line": 2,
+                    "confidence": 0.9,
+                },
+                {
+                    "id": "ghost-file",
+                    "category": "security",
+                    "severity": "critical",
+                    "title": "Ghost",
+                    "description": "d",
+                    "file": "nope.py",
+                    "line": 1,
+                    "confidence": 0.99,
+                },
+                {
+                    "id": "ghost-line",
+                    "category": "security",
+                    "severity": "critical",
+                    "title": "Ghost",
+                    "description": "d",
+                    "file": "app.py",
+                    "line": 99,
+                    "confidence": 0.99,
+                },
+            ]
+        }
+    )
+    findings, errors, warnings = parse_ai_reply(reply, changeset=changeset)
+    assert [f.id for f in findings] == ["real"]
+    assert errors == []  # the survivor decides; hallucinations are warnings
+    assert len(warnings) == 2
+
+
+def test_parse_ai_reply_all_hallucinated_is_error():
+    from blastradius.ci.models import ChangeSet, FileChange, Hunk
+
+    changeset = ChangeSet(
+        files=[
+            FileChange(
+                path="app.py",
+                hunks=[Hunk(old_start=1, new_start=1, lines=["+line one"])],
+            )
+        ]
+    )
+    reply = json.dumps(
+        {
+            "findings": [
+                {
+                    "id": "ghost",
+                    "category": "security",
+                    "severity": "critical",
+                    "title": "Ghost",
+                    "description": "d",
+                    "file": "ghost.py",
+                    "line": 1,
+                    "confidence": 0.99,
+                }
+            ]
+        }
+    )
+    findings, errors, warnings = parse_ai_reply(reply, changeset=changeset)
+    assert findings == []
+    assert errors  # zero usable findings: fail-closed, never silent
+    assert warnings == []
 
 
 def test_validate_ai_finding_rejects_bad_cwe():
@@ -407,6 +520,89 @@ def test_redact_secrets_never_raises():
     assert isinstance(redact_secrets(None) if False else "x", str)
 
 
+def test_ai_analyzer_redacts_secrets_before_transport():
+    """Secret-shaped values in the diff must never reach the provider."""
+    from blastradius.ci.models import ChangeSet, FileChange, Hunk
+
+    captured = {}
+
+    class SniffingProvider:
+        name = "sniffer"
+
+        def is_configured(self):
+            return True
+
+        def review(self, request):
+            captured["user"] = request.user
+            return '{"findings": []}'
+
+    changeset = ChangeSet(
+        files=[
+            FileChange(
+                path="settings.py",
+                hunks=[
+                    Hunk(
+                        old_start=1,
+                        new_start=1,
+                        lines=[
+                            '+API_KEY = "sk-ant-TESTKEY0123456789abcdef"',
+                            '+db_password = "hunter2-secret-value"',
+                            "+debug = True",
+                        ],
+                    )
+                ],
+            )
+        ]
+    )
+    outcome = AiReviewAnalyzer(provider=SniffingProvider()).analyze(changeset)
+    assert outcome.errors == []
+    sent = captured["user"]
+    assert "sk-ant-TESTKEY0123456789abcdef" not in sent
+    assert "hunter2-secret-value" not in sent
+    assert "[REDACTED]" in sent
+    # Structure survives redaction: file header + line numbers intact.
+    assert "### settings.py" in sent
+    assert "3: " in sent
+
+
+def test_gate_never_executes_pr_code(tmp_path):
+    """A payload that runs on import/exec must leave no trace after the gate."""
+    from blastradius.ci.cli import main as ci_main
+
+    marker = tmp_path / "PWNED_BY_GATE"
+    payload = (
+        "import os\n"
+        f'os.system("touch {marker}")\n'
+        "__import__('os').popen('touch IMPORT_MARKER').read()\n"
+        "eval(\"__import__('os').system('touch EVAL_MARKER')\")\n"
+    )
+    (tmp_path / "evil.py").write_text(payload + "x = 1\n", encoding="utf-8")
+    diff_lines = "\n".join(f"+{line}" for line in payload.splitlines())
+    diff_file = tmp_path / "c.diff"
+    diff_file.write_text(
+        "diff --git a/evil.py b/evil.py\n"
+        "new file mode 100644\n"
+        "--- /dev/null\n"
+        "+++ b/evil.py\n"
+        "@@ -0,0 +1,4 @@\n" + diff_lines + "\n",
+        encoding="utf-8",
+    )
+    rc = ci_main(
+        [
+            "gate",
+            "--repo",
+            str(tmp_path),
+            "--diff-file",
+            str(diff_file),
+            "--no-ai",
+            "--out",
+            str(tmp_path / "out"),
+        ]
+    )
+    assert rc in (PASS, POLICY_FAILURE)  # decided, never crashed
+    assert not marker.exists()  # nothing executed the payload
+
+
 # ------------------------------------------------------------- reporting
 
 
@@ -512,9 +708,10 @@ def test_cli_gate_passes_on_fixed_fixture(tmp_path):
     assert rc == PASS
 
 
-def test_cli_gate_analysis_error_without_key(tmp_path):
+def test_cli_gate_deterministic_only_without_key(tmp_path, capsys, monkeypatch):
     from blastradius.ci.cli import main as ci_main
 
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     (tmp_path / "app.py").write_text("x = 1\n", encoding="utf-8")
     diff_file = tmp_path / "c.diff"
     diff_file.write_text(FIXED_DIFF, encoding="utf-8")
@@ -529,7 +726,47 @@ def test_cli_gate_analysis_error_without_key(tmp_path):
             str(tmp_path / "out"),
         ]
     )
-    # No ANTHROPIC_API_KEY in this env -> AI review errors -> fail-closed.
+    # Missing optional credentials degrade VISIBLY to deterministic-only.
+    assert rc == PASS
+    out = capsys.readouterr().out
+    assert "deterministic-only" in out
+    payload = json.loads((tmp_path / "out" / "ci-gate.json").read_text(encoding="utf-8"))
+    assert payload["status"] == "PASS"
+    assert any("deterministic-only" in w for w in payload["warnings"])
+
+
+def test_cli_gate_configured_provider_failure_is_analysis_error(tmp_path, monkeypatch):
+    from blastradius.ci import cli as cli_mod
+    from blastradius.ci.cli import main as ci_main
+    from blastradius.ci.llm import ProviderError
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+
+    class FailingProvider:
+        name = "anthropic"
+
+        def is_configured(self):
+            return True
+
+        def review(self, request):
+            raise ProviderError("boom 500")
+
+    monkeypatch.setattr(cli_mod, "AnthropicAdapter", lambda: FailingProvider())
+    (tmp_path / "app.py").write_text("x = 1\n", encoding="utf-8")
+    diff_file = tmp_path / "c.diff"
+    diff_file.write_text(FIXED_DIFF, encoding="utf-8")
+    rc = ci_main(
+        [
+            "gate",
+            "--repo",
+            str(tmp_path),
+            "--diff-file",
+            str(diff_file),
+            "--out",
+            str(tmp_path / "out"),
+        ]
+    )
+    # Genuine configured-provider failure still respects fail-closed policy.
     assert rc == ANALYSIS_ERROR
 
 

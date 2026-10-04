@@ -5,6 +5,22 @@ All notable changes to BlastRadius Agent are documented here.
 ## [Unreleased]
 
 ### Added
+- CI gate hardening audit fixes (`blastradius/ci/`):
+  - missing optional AI credentials now degrade visibly to deterministic-only
+    mode (warning in stdout + report) instead of ANALYSIS_ERROR, via a new
+    `LLMProvider.is_configured()`; genuine configured-provider failures stay
+    fail-closed. Dropped warnings are now threaded into reports (they were
+    silently lost).
+  - secret-shaped values are redacted locally before the AI request is built
+    (structure preserved); identifier-glued names (`db_password`,
+    `my_api_key`) are now caught.
+  - AI findings are mechanically grounded against the ChangeSet (real changed
+    file + real added line required); hallucinated evidence is dropped and a
+    reply with zero usable findings is an analysis error.
+  - partial malformed AI output yields warnings, not analysis errors, while
+    fully unusable responses remain errors.
+  - no-execution regression test locks in that the gate never runs PR code
+    (verified: scanners are pure pattern matching).
 - CI security & quality gate (`blastradius/ci/` + `blastradius ci review|gate`):
   provider-neutral PR pipeline (diff → deterministic analyzers reusing
   `blastradius.scanners` + optional Claude review via `AnthropicAdapter`)

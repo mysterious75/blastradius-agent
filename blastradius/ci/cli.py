@@ -81,9 +81,10 @@ def _select_provider(ai_provider: str, no_ai: bool) -> Optional[LLMProvider]:
     return AnthropicAdapter()
 
 
-def run_review(args) -> tuple[GateResult | None, List, List[str], ChangeSet, Policy]:
-    """Collect + analyze. Returns (None, findings, errors, changeset, policy).
+def run_review(args) -> tuple[GateResult | None, List, List[str], List[str], ChangeSet, Policy]:
+    """Collect + analyze.
 
+    Returns (None, findings, errors, warnings, changeset, policy).
     ``review`` never evaluates policy; callers use the findings directly.
     Analysis errors are returned (not raised) so the caller can report them.
     """
@@ -92,7 +93,7 @@ def run_review(args) -> tuple[GateResult | None, List, List[str], ChangeSet, Pol
     try:
         policy, policy_warnings = _load(args.policy)
     except ValueError as exc:
-        return None, [], [f"invalid policy: {exc}"], ChangeSet(), Policy()
+        return None, [], [f"invalid policy: {exc}"], [], ChangeSet(), Policy()
     changeset, collect_errors = collect_changeset(
         repo=args.repo,
         base=args.base,
@@ -112,12 +113,27 @@ def run_review(args) -> tuple[GateResult | None, List, List[str], ChangeSet, Pol
         errors.extend(outcome.errors)
         warnings.extend(outcome.warnings)
         provider = _select_provider(args.ai_provider, args.no_ai)
+        if provider is not None and not provider.is_configured():
+            # Missing optional credentials: degrade VISIBLY to
+            # deterministic-only mode instead of erroring. Genuine call
+            # failures (key present but unusable) still raise inside
+            # review() and stay fail-closed.
+            warnings.append(
+                f"AI review skipped: no credentials configured for "
+                f"'{provider.name}' — running deterministic-only "
+                f"(set ANTHROPIC_API_KEY to enable)"
+            )
+            print(
+                f"[!] AI review skipped (no credentials for '{provider.name}'); "
+                f"deterministic-only mode"
+            )
+            provider = None
         if provider is not None:
             ai_outcome = AiReviewAnalyzer(provider=provider).analyze(changeset)
             findings.extend(ai_outcome.findings)
             errors.extend(ai_outcome.errors)
             warnings.extend(ai_outcome.warnings)
-    return None, findings, errors, changeset, policy
+    return None, findings, errors, warnings, changeset, policy
 
 
 def _write_reports(result: GateResult, out_dir: str, run_ref: str) -> tuple[str, str]:
@@ -130,7 +146,7 @@ def _write_reports(result: GateResult, out_dir: str, run_ref: str) -> tuple[str,
 
 
 def cmd_review(args) -> int:
-    _, findings, errors, changeset, policy = run_review(args)
+    _, findings, errors, review_warnings, changeset, policy = run_review(args)
     metadata = {
         "files": len(changeset.files),
         "excluded": changeset.excluded,
@@ -149,7 +165,7 @@ def cmd_review(args) -> int:
         failing=[],
         reported=result.failing + result.reported,
         errors=result.errors,
-        warnings=result.warnings,
+        warnings=list(review_warnings) + list(result.warnings),
         policy=policy,
         metadata=metadata,
     )
@@ -163,13 +179,14 @@ def cmd_review(args) -> int:
 
 
 def cmd_gate(args) -> int:
-    _, findings, errors, changeset, policy = run_review(args)
+    _, findings, errors, gate_warnings, changeset, policy = run_review(args)
     metadata = {
         "files": len(changeset.files),
         "excluded": changeset.excluded,
         "truncated": changeset.truncated,
     }
     result = evaluate(findings, policy, errors=errors, metadata=metadata)
+    result.warnings = list(gate_warnings) + list(result.warnings)
     json_path, md_path = _write_reports(result, args.out, args.run_ref)
     print(
         f"[*] gate: {result.status.value} "

@@ -200,10 +200,51 @@ def validate_ai_finding(raw: Any) -> Optional[CiFinding]:
     )
 
 
-def parse_ai_reply(reply: str) -> Tuple[List[CiFinding], List[str]]:
-    """Parse + validate an AI reply; returns (findings, errors)."""
+def ground_findings(
+    findings: List[CiFinding], changeset: ChangeSet
+) -> Tuple[List[CiFinding], List[str]]:
+    """Drop AI findings that do not reference the actual change set.
+
+    A finding survives only when its file is a changed file in the
+    ChangeSet and, when a line is supplied (non-zero), that line is an
+    actual ADDED line of the file. Returns (kept, rejection reasons).
+    This is mechanical citation verification: the model cannot fabricate
+    evidence that triggers the deterministic gate.
+    """
+    by_file = {f.path: f for f in changeset.files}
+    kept: List[CiFinding] = []
+    rejected: List[str] = []
+    for finding in findings:
+        target = by_file.get(finding.file)
+        if target is None:
+            rejected.append(
+                f"dropped ungrounded finding {finding.id}: "
+                f"file {finding.file!r} is not in the change set"
+            )
+            continue
+        if finding.line and finding.line not in target.added_lines():
+            rejected.append(
+                f"dropped ungrounded finding {finding.id}: "
+                f"line {finding.line} is not an added line of {finding.file!r}"
+            )
+            continue
+        kept.append(finding)
+    return kept, rejected
+
+
+def parse_ai_reply(
+    reply: str, changeset: Optional[ChangeSet] = None
+) -> Tuple[List[CiFinding], List[str], List[str]]:
+    """Parse + validate an AI reply; returns (findings, errors, warnings).
+
+    Structural problems (empty reply, bad JSON, missing list, zero usable
+    findings) are ERRORS. Entries rejected alongside surviving entries are
+    WARNINGS — they must never flip a gate that valid findings decide.
+    When ``changeset`` is given, surviving findings are additionally
+    grounded against it (hallucinated files/lines are dropped).
+    """
     if not (reply or "").strip():
-        return [], ["AI reply was empty"]
+        return [], ["AI reply was empty"], []
     text = reply.strip()
     try:
         data = json.loads(text)
@@ -211,30 +252,33 @@ def parse_ai_reply(reply: str) -> Tuple[List[CiFinding], List[str]]:
         # Tolerate a single fenced block; anything else is malformed.
         fenced = re.search(r"```(?:json)?\s*(\{.*\})\s*```", text, re.DOTALL)
         if not fenced:
-            return [], ["AI reply was not valid JSON"]
+            return [], ["AI reply was not valid JSON"], []
         try:
             data = json.loads(fenced.group(1))
         except ValueError:
-            return [], ["AI reply was not valid JSON"]
+            return [], ["AI reply was not valid JSON"], []
     if not isinstance(data, dict) or not isinstance(data.get("findings"), list):
-        return [], ["AI reply missing a 'findings' list"]
+        return [], ["AI reply missing a 'findings' list"], []
     findings: List[CiFinding] = []
-    rejected = 0
+    invalid = 0
     for raw in data["findings"]:
         validated = validate_ai_finding(raw)
         if validated is None:
-            rejected += 1
+            invalid += 1
         else:
             findings.append(validated)
-    errors = (
-        [f"AI reply had {rejected} invalid finding(s); none were accepted"]
-        if rejected and not findings
-        else []
-    )
-    warnings = (
-        [f"AI reply had {rejected} invalid finding(s) dropped"] if rejected and findings else []
-    )
-    return findings, errors + warnings
+    warnings: List[str] = []
+    if invalid:
+        warnings.append(f"AI reply had {invalid} structurally invalid finding(s) dropped")
+    grounded = findings
+    if changeset is not None and findings:
+        grounded, grounding_rejections = ground_findings(findings, changeset)
+        warnings.extend(grounding_rejections)
+    if not grounded:
+        if invalid or (changeset is not None and findings):
+            return [], ["AI reply contained no usable findings; none were accepted"], []
+        return [], [], []
+    return grounded, [], warnings
 
 
 class AiReviewAnalyzer:
@@ -256,14 +300,19 @@ class AiReviewAnalyzer:
             return AnalysisOutcome(
                 findings=[], errors=[f"AI input over budget/blocked: {exc}"], warnings=[]
             )
+        # Redact secret-shaped values LOCALLY before anything leaves the
+        # machine: the provider transport must never see raw credentials,
+        # even when they sit inside the PR diff. Structure (file headers,
+        # line numbers) is preserved for useful review.
+        redacted_bundle = redact_secrets(bundle)
         request = ReviewRequest(
             system=AI_SYSTEM_PROMPT,
             user=(
                 "Review the changed lines below for security vulnerabilities "
                 "and code-quality regressions. Changed files: "
-                f"{len(changeset.files)}.\n<UNTRUSTED_DIFF>\n{bundle}\n</UNTRUSTED_DIFF>"
+                f"{len(changeset.files)}.\n<UNTRUSTED_DIFF>\n{redacted_bundle}\n</UNTRUSTED_DIFF>"
             ),
-            metadata={"analyzer": self.name},
+            metadata={"analyzer": self.name, "redacted": redacted_bundle != bundle},
         )
         try:
             reply = self.provider.review(request)
@@ -279,8 +328,8 @@ class AiReviewAnalyzer:
                 errors=[f"AI review failed: {redact_secrets(str(exc))}"],
                 warnings=[],
             )
-        findings, problems = parse_ai_reply(reply)
-        return AnalysisOutcome(findings=findings, errors=problems, warnings=[])
+        findings, errors, warnings = parse_ai_reply(reply, changeset=changeset)
+        return AnalysisOutcome(findings=findings, errors=errors, warnings=warnings)
 
     def _bundle(self, changeset: ChangeSet) -> str:
         parts: List[str] = []

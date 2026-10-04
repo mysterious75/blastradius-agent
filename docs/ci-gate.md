@@ -132,12 +132,14 @@ python -m blastradius.ci gate --repo demos/ci-gate \
   --diff-file demos/ci-gate/fixed.diff --policy blastradius-ci.example.yml \
   --no-ai --out /tmp/ci-fixed; echo $?
 
-# Missing API key with AI enabled -> ANALYSIS_ERROR (exit 2, fail-closed)
+# Missing API key with AI enabled -> deterministic-only PASS (exit 0) with a
+# visible warning. (A *configured* provider that then fails still exits 2.)
 python -m blastradius.ci gate --repo demos/ci-gate \
   --diff-file demos/ci-gate/fixed.diff --out /tmp/ci-nokey; echo $?
 ```
 
-Expected: `1`, `0`, `2`. Nothing leaves the machine in any of these runs.
+Expected: `1`, `0`, `0` (with a deterministic-only warning on the third).
+Nothing leaves the machine in any of these runs.
 
 ## Security model
 
@@ -145,15 +147,27 @@ Expected: `1`, `0`, `2`. Nothing leaves the machine in any of these runs.
   prompts wrap diffs in `<UNTRUSTED_DIFF>` delimiters with an explicit
   instruction hierarchy, and `validate_target_code` caps/bombs prompt-injection
   patterns before anything reaches a model.
-- Oversized diffs, unreadable files, malformed AI JSON, and missing keys are
-  **analysis errors**, never silent passes (fail-closed default; `fail-open`
-  requires explicit opt-in and is reported as a warning).
+- Secret-shaped values are redacted **locally before the AI request is built**;
+  the provider transport only ever sees `[REDACTED]` placeholders, with file
+  headers and line numbers preserved for useful review.
+- AI findings are mechanically grounded against the change set: fabricated
+  files/lines are dropped, and a reply with zero usable findings is an
+  analysis error — the model cannot invent evidence that triggers the gate.
+- Oversized diffs, unreadable files, and malformed AI JSON are **analysis
+  errors**, never silent passes (fail-closed default; `fail-open`
+  requires explicit opt-in and is reported as a warning). A missing optional
+  credential is NOT an error: the gate visibly degrades to deterministic-only
+  mode instead.
 - Findings carry `source: deterministic|ai` so triagers can tell them apart;
   CWE/OWASP are only set when evidence supports them, never fabricated.
 - Reports truncate evidence (500 chars) and redact secrets; notifications
   carry summaries only, never source or credentials.
 - Deterministic findings are limited to **added lines** — the gate judges the
   PR, not pre-existing code.
+- The gate never executes PR code: deterministic analysis is pure pattern
+  matching over source text (locked in by a regression test that runs a
+  `os.system`/`eval` payload through the gate and asserts no marker file
+  appears).
 
 ## Troubleshooting
 
@@ -161,7 +175,8 @@ Expected: `1`, `0`, `2`. Nothing leaves the machine in any of these runs.
 |---|---|---|
 | Exit 2, "no diff source" | neither `--diff-file` nor git history | pass `--diff-file` or fetch full history (`fetch-depth: 0`) |
 | Exit 2, "oversized change set" | PR exceeds policy budgets | split the PR, or raise limits consciously in policy |
-| Exit 2, "ANTHROPIC_API_KEY is not set" | AI enabled without key | add the secret, or run `--no-ai` |
+| AI review skipped with warning | no credentials for the AI provider | expected without a key (deterministic-only); add the secret or run `--no-ai` to silence |
+| Exit 2 although a key is set | provider call failed (quota, outage, bad key) | genuine failure, fail-closed by design; check provider status/quota |
 | AI findings dropped with warning | model returned invalid entries | invalid entries are rejected; valid ones still evaluated |
 | Gate passes but AI was down | `on_error: fail-open` in policy | intended only with risk acceptance; default is fail-closed |
 
