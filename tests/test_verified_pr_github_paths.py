@@ -344,6 +344,7 @@ def test_path10_workflow_hardening():
         assert _re.search(r"@[0-9a-f]{40}( # v\d+)?$", line), line
     assert wf.count("continue-on-error: true") >= 3  # sandbox build + 2 post steps
     assert "BASE_REF:" in wf  # no inline ${{ }} in shell
+    assert "BLASTRADIUS_STATUS_SHA:" in wf  # status lands on the PR head SHA
     # Collect run: script blocks (indented content after a "run:" line) and
     # require zero expression interpolation there (script-injection surface).
     run_lines = []
