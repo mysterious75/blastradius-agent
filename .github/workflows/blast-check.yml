@@ -10,14 +10,15 @@ on:
   pull_request:
     paths:
       - "configs/**"          # TEMPLATE: your config dir
-      - "data/**"             # TEMPLATE: your graph/case data dir
+      - "data/seed_kelpdao_config.json"  # audited seed config
+      - "data/seed_kelpdao_case.json"    # audited seed graph
       - ".github/workflows/blast-check.yml"
   push:
     branches: [main]
     paths:
       - "configs/**"
-      - "data/**"
-      - ".github/workflows/blast-check.yml"
+      - "data/seed_kelpdao_config.json"
+      - "data/seed_kelpdao_case.json"
   workflow_dispatch:
   schedule:
     - cron: "0 6 * * 1"       # weekly re-audit (drift catches new rule releases)

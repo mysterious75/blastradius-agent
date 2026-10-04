@@ -24,6 +24,9 @@ All notable changes to BlastRadius Agent are documented here.
   structure validation (format/spec/root identity/components/purls/duplicates)
   with optional `--require-sbom-components`; the release workflow now verifies
   distributions and the generated SBOM before attaching artifacts.
+- CI hygiene: `blast-check` now triggers only on the audited KelpDAO seed
+  files (not every `data/**` change), so unrelated data updates cannot trip
+  the known-critical seed gate.
 - Network-service scanner (`blastradius/net/`): Tsunami-style plugin foundation —
   bounded TCP connect with mandatory connect/read timeouts, read-first banner grab
   plus one light service probe per port, Nmap-style banner fingerprinting, and

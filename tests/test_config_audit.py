@@ -1,6 +1,9 @@
 """ConfigAuditor tests — offline, driven by the real KelpDAO config snapshot."""
 
 import json
+from pathlib import Path
+
+import yaml
 
 from blastradius.contagion.cli import main as cli_main
 from blastradius.contagion.config_audit import ConfigAuditor
@@ -191,3 +194,17 @@ def test_cli_audit_exits_nonzero_on_bad_config(capsys):
 
 def test_cli_audit_missing_config_exits_two():
     assert cli_main(["audit", "--config", "data/nope.json"]) == 2
+
+
+def test_blast_check_only_watches_audited_seed_files():
+    """Unrelated data changes must not trigger the known-critical seed gate."""
+    root = Path(__file__).resolve().parents[1]
+    workflow = yaml.safe_load(
+        (root / ".github" / "workflows" / "blast-check.yml").read_text(encoding="utf-8")
+    )
+    triggers = workflow.get("on") or workflow.get(True)
+    for event in ("pull_request", "push"):
+        paths = triggers[event]["paths"]
+        assert "data/seed_kelpdao_config.json" in paths
+        assert "data/seed_kelpdao_case.json" in paths
+        assert "data/**" not in paths
