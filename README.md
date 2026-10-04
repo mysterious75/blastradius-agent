@@ -456,6 +456,7 @@ models are passed through as-is.
 | `python -m blastradius.hunter --target <url\|path>` | Scan a repo, sandbox-validate, save disclosure reports |
 | `python -m blastradius.agents --target <url\|path>` | Multi-agent graph: recon → exploit (parallel) → patch, shared blackboard + chains |
 | `python -m blastradius.web --target <url>` | Dynamic web testing: reflected XSS, open redirect, security headers, CORS, exposed files, directory listing |
+| `python -m blastradius.net --target <host> --ports <preset\|list\|range>` | Network-service scan: bounded TCP connect + banner fingerprint + service-filtered detectors (cleartext FTP/Telnet, anonymous FTP, missing SMTP STARTTLS); `--scope` required for non-lab targets |
 | `python -m blastradius.scope add\|check\|list\|rm` | Program scope registry (default-deny for URL targets) |
 | `scripts/pr_scan.py --repo . --base origin/main` | PR diff-scoped scan (sandbox-verified, merge gate; auto-opens fix PRs — see `.github/workflows/pr-scan.yml`) |
 | `python -m blastradius.pipeline_cli --target <url\|path>` | Full end-to-end pipeline |
@@ -587,9 +588,9 @@ labeled a candidate. Latest run (detection F1 / sandbox-proven):
 have no meaningful execution proof — reported as candidates, never silently "proven".
 
 A second gate covers the live web checks (`benchmarks/run_dynamic.py`): IDOR
-authz-diff, JWT acceptance, SSRF/OOB, SQLi, mass assignment and cache poisoning
-against six local stdlib-HTTP targets — currently **7 expected / 7 reported at
-F1 1.000**.
+authz-diff, JWT acceptance, SSRF/OOB, SQLi, mass assignment, cache poisoning,
+and network-service detectors against local stdlib targets — currently
+**11 expected / 11 reported at F1 1.000**.
 
 ```bash
 python benchmarks/run.py            # detection benchmark (offline)

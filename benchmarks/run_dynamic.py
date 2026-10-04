@@ -31,9 +31,22 @@ if str(_REPO_ROOT) not in sys.path:
 
 
 def _load_server(target_dir: Path):
-    spec = importlib.util.spec_from_file_location(
-        f"bench_{target_dir.name}", str(target_dir / "server.py")
-    )
+    server_py = target_dir / "server.py"
+    if not server_py.is_file():
+        # Targets that boot their own fixtures in the runner (e.g. the
+        # multi-service live-netservices target) need no generic HTTP server.
+        import http.server as _http
+
+        class _Dummy(_http.BaseHTTPRequestHandler):
+            def do_GET(self):  # pragma: no cover - never actually served
+                self.send_response(404)
+                self.end_headers()
+
+            def log_message(self, *args):
+                pass
+
+        return _Dummy
+    spec = importlib.util.spec_from_file_location(f"bench_{target_dir.name}", str(server_py))
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.Handler
@@ -53,7 +66,7 @@ def _matches(finding, expected: dict) -> bool:
     return check == expected["check"] and url.endswith(expected.get("url_suffix", ""))
 
 
-def run_idor_target(base: str, manifest: dict):
+def run_idor_target(base: str, manifest: dict, target_dir=None):
     from blastradius.web.authz import AuthzDiffChecker
     from blastradius.web.browser import BrowserSession
 
@@ -66,7 +79,7 @@ def run_idor_target(base: str, manifest: dict):
     return checker.check(urls)
 
 
-def run_jwt_target(base: str, manifest: dict):
+def run_jwt_target(base: str, manifest: dict, target_dir=None):
     import base64
 
     from blastradius.web.browser import BrowserSession
@@ -103,7 +116,7 @@ def run_jwt_target(base: str, manifest: dict):
     return [f for f in findings if f.check == "jwt-none"]
 
 
-def run_ssrf_target(base: str, manifest: dict):
+def run_ssrf_target(base: str, manifest: dict, target_dir=None):
     from blastradius.web.oob import OobListener
     from blastradius.web.ssrf import SsrfChecker
 
@@ -114,14 +127,14 @@ def run_ssrf_target(base: str, manifest: dict):
         return checker.check(urls)
 
 
-def run_sqli_target(base: str, manifest: dict):
+def run_sqli_target(base: str, manifest: dict, target_dir=None):
     from blastradius.web.sqli import SqliChecker
 
     urls = [base + p for p in manifest.get("probe_urls", [])]
     return SqliChecker().check(urls)
 
 
-def run_massassign_target(base: str, manifest: dict):
+def run_massassign_target(base: str, manifest: dict, target_dir=None):
     from blastradius.web.massassign import MassassignChecker
 
     checker = MassassignChecker(
@@ -141,11 +154,31 @@ def run_massassign_target(base: str, manifest: dict):
     return findings
 
 
-def run_cachepoison_target(base: str, manifest: dict):
+def run_cachepoison_target(base: str, manifest: dict, target_dir=None):
     from blastradius.web.cachepoison import CachePoisonChecker
 
     urls = [base + p for p in manifest.get("probe_urls", [])]
     return CachePoisonChecker().check(urls)
+
+
+def run_netservices_target(base: str, manifest: dict, target_dir: Path):
+    """Boot the fake FTP/SMTP/Telnet/SSH services and run the net scanner."""
+    from blastradius.net.scanner import NetworkServiceScanner
+
+    spec = importlib.util.spec_from_file_location(
+        "bench_live_netservices_services", str(target_dir / "services.py")
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    servers = module.make_servers()
+    try:
+        ports = ",".join(str(s.server_address[1]) for _, s in servers)
+        scanner = NetworkServiceScanner(connect_timeout=2, read_timeout=2, workers=8)
+        return scanner.scan("127.0.0.1", ports=ports)
+    finally:
+        for _, server in servers:
+            server.shutdown()
+            server.server_close()
 
 
 _RUNNERS = {
@@ -155,6 +188,7 @@ _RUNNERS = {
     "live-sqli": run_sqli_target,
     "live-massassign": run_massassign_target,
     "live-cachepoison": run_cachepoison_target,
+    "live-netservices": run_netservices_target,
 }
 
 
@@ -172,7 +206,7 @@ def run_target(target_dir: Path):
                 "hits": 0,
                 "skipped": True,
             }
-        findings = runner(base, manifest)
+        findings = runner(base, manifest, target_dir)
         expected = manifest.get("expected", [])
         hits = sum(1 for exp in expected if any(_matches(f, exp) for f in findings))
         return {

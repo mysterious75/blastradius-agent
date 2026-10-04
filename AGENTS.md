@@ -48,6 +48,9 @@ python -m pytest tests/ -q                              # 943 tests, offline (ne
 - `blastradius/db/` — SQLite persistence + dedup; `blastradius/learning/` —
   self-improving scanner (learned FP rules)
 - `blastradius/dashboard/`, `blastradius/api/` — local UI + REST API (Bearer auth)
+- `blastradius/net/` — network-service plugin (Tsunami-style: discovery ->
+  banner fingerprint -> service-filtered detectors, timeout-enforced sockets,
+  `--scope` mandatory for non-lab targets)
 - `blastradius/mcp/` — MCP stdio server (7 tools)
 - `blastradius/github_app/` — webhook + PR commenter; `scripts/pr_scan.py` —
   PR scan used by the `pr-security-scan` GitHub Action

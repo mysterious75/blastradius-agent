@@ -5,6 +5,14 @@ All notable changes to BlastRadius Agent are documented here.
 ## [Unreleased]
 
 ### Added
+- Network-service scanner (`blastradius/net/`): Tsunami-style plugin foundation —
+  bounded TCP connect with mandatory connect/read timeouts, read-first banner grab
+  plus one light service probe per port, Nmap-style banner fingerprinting, and
+  service-filtered detectors (cleartext FTP/Telnet, anonymous FTP via a read-only
+  no-password probe, missing SMTP STARTTLS). SSH is fingerprinted but never
+  probed; no brute force, no exploit payloads. `python -m blastradius.net`
+  requires `--scope` for any non-lab target. Dynamic benchmark gains the
+  `live-netservices` target (11/11 at F1 1.000).
 - Solidity smart-contract scanner (`blastradius/scanners/solidity.py`): Slither-aligned
   reentrancy (structural checks-effects-interactions analysis), tx.origin auth, controlled
   delegatecall, arbitrary send, weak randomness, unchecked low-level calls, unchecked ERC20

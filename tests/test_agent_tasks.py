@@ -6,6 +6,13 @@ from blastradius.agent_tasks import run_focused_hunt, run_focused_task
 from blastradius.hunter.scanner import Finding
 
 
+@pytest.fixture(params=["asyncio"])
+def anyio_backend(request):
+    """agent_tasks is asyncio-native (asyncio.gather + asyncio.run entry);
+    the trio backend is not a supported runtime, so don't test it here."""
+    return request.param
+
+
 class Call:
     def __init__(self, name, arguments, call_id="call_1"):
         self.function = type("F", (), {"name": name, "arguments": arguments})()

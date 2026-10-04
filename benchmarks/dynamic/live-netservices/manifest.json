@@ -1,0 +1,10 @@
+{
+  "target": "live-netservices",
+  "description": "Fake FTP (anonymous allowed), SMTP without STARTTLS, Telnet, and an SSH negative control on 127.0.0.1 ephemeral ports.",
+  "expected": [
+    {"check": "cleartext-ftp"},
+    {"check": "anonymous-ftp"},
+    {"check": "missing-starttls"},
+    {"check": "cleartext-telnet"}
+  ]
+}
