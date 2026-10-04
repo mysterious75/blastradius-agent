@@ -49,6 +49,9 @@ jobs:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # gh CLI needs an explicit token inside Actions (GITHUB_TOKEN is
+          # not auto-consumed); used only for the merge-blocking status post.
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Indirect expression via env (script-injection best practice: the
           # value never participates in shell parsing).
           BASE_REF: ${{ github.event.pull_request.base.ref }}
@@ -67,6 +70,17 @@ jobs:
         uses: github/codeql-action/upload-sarif@87ef0dc97def48aa960fbf026a2563ee9dbdb470 # v3
         with:
           sarif_file: verified-pr/verified.sarif
+
+      # TEMPORARY beta-validation scaffolding (removed before merge): keep
+      # the exact submitted SARIF as a downloadable artifact for diagnosis.
+      - name: Keep submitted SARIF (beta debug)
+        if: always()
+        continue-on-error: true
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verified-sarif-debug
+          path: verified-pr/verified.sarif
+          if-no-files-found: ignore
 
       - name: Comment verdict on PR
         if: always()
