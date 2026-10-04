@@ -21,7 +21,9 @@ def main(argv=None) -> int:
     parser.add_argument(
         "--scope",
         default=None,
-        help="program name in the scope registry — hunts only in-scope discovered targets",
+        help="program name in the scope registry — REQUIRED: the autonomous hunt "
+        "clones and scans discovered repos, so unguided runs are blocked "
+        "(default deny)",
     )
     parser.add_argument(
         "--iterations",
@@ -31,6 +33,16 @@ def main(argv=None) -> int:
     )
     parser.add_argument("--seed", type=int, default=0, help="fixed seed for iterated runs")
     args = parser.parse_args(argv)
+
+    # Fail-closed: an autonomous hunt clones and scans whatever discovery
+    # returns — running it with no registered scope is never allowed.
+    if not args.scope:
+        print(
+            "[!] BLOCKED: autonomous hunts require --scope with a registered "
+            "program (default deny — no silent opt-out). Register one with:\n"
+            "      python -m blastradius.scope add <program> --in <host-or-url>"
+        )
+        return 2
 
     AutoHunt(reports_dir=args.reports_dir).run(
         args.strategy,

@@ -25,13 +25,14 @@ def main(argv=None) -> int:
     ap.add_argument(
         "--scope",
         default=None,
-        help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
+        help="program name in the scope registry — REQUIRED for URL targets "
+        "(default deny; local paths and lab targets are exempt)",
     )
     args = ap.parse_args(argv)
 
-    from blastradius.scope import require_scope
+    from blastradius.scope import enforce_scope
 
-    if not require_scope(args.target, args.scope):
+    if not enforce_scope(args.target, args.scope):
         return 2
 
     graph = AgentGraph(exploit_workers=args.exploit_workers, min_confidence=args.min_confidence)

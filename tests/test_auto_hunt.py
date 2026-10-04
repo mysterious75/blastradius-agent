@@ -90,6 +90,10 @@ def test_auto_hunt_runs_and_saves_reports(vuln_repo, tmp_path, monkeypatch, caps
 
 
 def test_auto_hunt_cli(vuln_repo, tmp_path, monkeypatch):
+    from blastradius.scope import save_scope
+
+    monkeypatch.setenv("BLASTRADIUS_SCOPES_DIR", str(tmp_path / "scopes"))
+    save_scope("demo", ["https://github.com/org/demo"], [])
     monkeypatch.setattr(
         "blastradius.recon.dorker.DorkEngine.find_targets",
         lambda self, strategy, min_stars=0, limit=200: [
@@ -115,9 +119,19 @@ def test_auto_hunt_cli(vuln_repo, tmp_path, monkeypatch):
             "0",
             "--reports-dir",
             str(tmp_path / "reports"),
+            "--scope",
+            "demo",
         ]
     )
     assert rc == 0
+
+
+def test_auto_hunt_cli_blocks_without_scope(tmp_path, capsys):
+    from blastradius.auto_hunt import main as auto_hunt_main
+
+    rc = auto_hunt_main(["--strategy", "github", "--max", "1"])
+    assert rc == 2
+    assert "BLOCKED" in capsys.readouterr().out
 
 
 def test_auto_hunt_handles_target_errors(vuln_repo, tmp_path, monkeypatch):

@@ -45,7 +45,8 @@ def main(argv=None) -> int:
     parser.add_argument(
         "--scope",
         default=None,
-        help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
+        help="program name in the scope registry — REQUIRED for URL targets "
+        "(default deny; local paths and lab targets are exempt)",
     )
     parser.add_argument(
         "--no-fp-filter",
@@ -66,9 +67,9 @@ def main(argv=None) -> int:
     hunter = CVEHunter(min_confidence=args.min_confidence)
     target = args.target or DEFAULT_TARGETS[0]
 
-    from blastradius.scope import require_scope
+    from blastradius.scope import enforce_scope
 
-    if not require_scope(target, args.scope):
+    if not enforce_scope(target, args.scope):
         return 2
 
     if target.startswith(("http://", "https://")):

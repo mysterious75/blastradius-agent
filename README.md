@@ -528,7 +528,11 @@ behavioral checks (`blastradius.web` — stdlib only):
 - **Exploit-chain linking** — findings are linked into A→B→C chains
   (open-redirect→OAuth, IDOR→ATO, SSRF→metadata) with combined severity
 - **Scope gating** — every URL-accepting command honors `--scope` against the
-  scope registry (default deny); discovery commands filter to in-scope targets
+  scope registry (default deny); discovery commands filter to in-scope targets.
+  URL targets without a registered program are BLOCKED (fail-closed — no
+  silent opt-out); local paths and lab targets (loopback, `.invalid`, LAN)
+  are exempt. Register once per program:
+  `python -m blastradius.scope add myprogram --in app.example.com`
 - HTTP interception proxy (records + replays traffic, builds sitemaps)
 
 ```bash
@@ -617,8 +621,12 @@ Advisory (see [SECURITY.md](SECURITY.md)) and add it here.
 ## Trust & Safety
 
 - **Authorized use only.** Every URL-accepting command supports `--scope`
-  against a local scope registry that defaults to **deny**. Discovery commands
-  filter to in-scope targets. See `python -m blastradius.scope --help`.
+  against a local scope registry that defaults to **deny** — and since this
+  release the deny is fail-closed: a URL target with no registered program
+  is BLOCKED, not silently scanned. Local paths and lab targets
+  (loopback, `.invalid`, RFC-1918 LAN) stay frictionless for offline work.
+  Discovery commands filter to in-scope targets. See
+  `python -m blastradius.scope --help`.
 - **Fail-closed verification.** No finding is ever reported as confirmed
   without execution evidence (`[VULNERABLE]` marker or HTTP-response proof);
   everything else stays labeled a *candidate*.

@@ -44,8 +44,15 @@ All notable changes to BlastRadius Agent are documented here.
   silence-free K attempts is no-rate-limit MEDIUM), pre-MFA step-skip, and
   double-submit OTP reuse. HTTP error statuses surface as responses (a 429
   IS the throttle signal); transport silence never becomes a finding.
-  Dynamic benchmark gains the `live-mfa` target with a throttling twin
+  Dynamic benchmark gains the   `live-mfa` target with a throttling twin
   (23/23 at F1 1.000).
+- Fail-closed scope enforcement (`enforce_scope` in `blastradius/scope.py`):
+  URL targets (and bare hostnames) with no registered `--scope` program are
+  now BLOCKED instead of silently scanned — closing the opt-in gap across
+  the hunter, web, agents, pipeline, net, and auto-hunt CLIs. Local paths
+  and lab targets (loopback, RFC-2606 names, RFC-1918 LAN) stay exempt via
+  the shared `is_lab_target`. The autonomous hunt CLI requires `--scope`
+  unconditionally.
 - Solidity smart-contract scanner (`blastradius/scanners/solidity.py`): Slither-aligned
   reentrancy (structural checks-effects-interactions analysis), tx.origin auth, controlled
   delegatecall, arbitrary send, weak randomness, unchecked low-level calls, unchecked ERC20

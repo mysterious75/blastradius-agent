@@ -21,17 +21,7 @@ from pathlib import Path
 from blastradius.cli.display import RichDisplay
 from blastradius.hunter.scanner import Finding
 from blastradius.net.scanner import NetworkServiceScanner
-
-_LAB_SUFFIXES = (".invalid", ".example", ".test", ".localhost")
-
-
-def _is_lab_target(target: str) -> bool:
-    host = target.strip().lower().split("/")[0].split(":")[0]
-    return (
-        host in ("localhost", "127.0.0.1", "::1")
-        or host.startswith("127.")
-        or host.endswith(_LAB_SUFFIXES)
-    )
+from blastradius.scope import is_lab_target
 
 
 def _to_finding(f: "object") -> Finding:
@@ -68,20 +58,19 @@ def main(argv=None) -> int:
     ap.add_argument("--reports-dir", default="reports")
     args = ap.parse_args(argv)
 
-    from blastradius.scope import require_scope
+    from blastradius.scope import enforce_scope
 
-    if not _is_lab_target(args.target):
-        if not args.scope:
-            print(
-                "[!] BLOCKED: network scans of non-lab targets require --scope "
-                "with a registered program (no silent opt-out)"
-            )
-            return 2
-        # Bare hostnames never match the URL-gated require_scope, so present
-        # the target as a URL for the scope check only (scan still uses TCP).
-        scope_target = args.target if "://" in args.target else f"http://{args.target}"
-        if not require_scope(scope_target, args.scope):
-            return 2
+    # Fail-closed: lab targets scan freely, everything else needs a
+    # registered --scope program (no silent opt-out for network probing).
+    if not is_lab_target(args.target) and not args.scope:
+        print(
+            "[!] BLOCKED: network scans of non-lab targets require --scope "
+            "with a registered program (no silent opt-out)"
+        )
+        return 2
+    scope_target = args.target if "://" in args.target else f"http://{args.target}"
+    if not enforce_scope(scope_target, args.scope):
+        return 2
 
     ports = args.ports
     from blastradius.net.scanner import parse_ports

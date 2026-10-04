@@ -9,6 +9,15 @@ as ``<program>.json``:
 The default is DENY: a target that matches no registered scope is out of
 scope. Out-of-scope entries always win over in-scope entries.
 
+Two gates are offered:
+
+* ``require_scope`` — the historical opt-in gate: only URL targets WITH an
+  explicit program are checked (kept for backward compatibility);
+* ``enforce_scope`` — the fail-closed gate every network CLI must use:
+  URL targets (and bare hostnames) without a registered program are
+  BLOCKED; only local paths and lab targets (loopback, RFC-2606 names,
+  RFC-1918 LAN) pass ungated.
+
 Entries can be domains (``example.com`` matches the host and any subdomain)
 or URLs/repos (``https://github.com/org/repo`` matches that repo prefix).
 
@@ -160,6 +169,73 @@ def require_scope(target: str, program: Optional[str] = None) -> bool:
     """
     if not program or not target.startswith(("http://", "https://")):
         return True
+    result = check_scope(target, program)
+    if not result["in_scope"]:
+        print(f"[!] BLOCKED: {result['reason']} (program={program})")
+        return False
+    return True
+
+
+#: Host suffixes reserved for documentation and lab use (RFC 2606 + localhost).
+_LAB_SUFFIXES = (".invalid", ".example", ".test", ".localhost")
+
+
+def is_lab_target(target: str) -> bool:
+    """Whether a target is a local lab that needs no registered scope.
+
+    Loopback addresses and RFC-2606 documentation names can never leave the
+    machine (or never resolve), so gating them would only add friction to
+    offline testing. Everything else is a real network target.
+    """
+    text = target.strip().lower()
+    if "://" in text:
+        text = text.split("://", 1)[1]  # strip scheme: host lives after it
+    host = text.split("/")[0].split(":")[0].split("@")[-1].strip("[]")
+    return (
+        host in ("localhost", "127.0.0.1", "::1")
+        or host.startswith("127.")
+        or host.startswith("10.")
+        or host.startswith("192.168.")
+        or host.endswith(_LAB_SUFFIXES)
+    )
+
+
+def enforce_scope(target: str, program: Optional[str] = None) -> bool:
+    """Fail-closed scope gate for every CLI that touches the network.
+
+    This closes the opt-in gap in ``require_scope`` (URL target + omitted
+    ``--scope`` used to sail through silently):
+
+    * local paths ................. always pass (no network involved);
+    * lab targets (loopback, RFC-2606 names, RFC-1918 LAN) ... pass;
+    * URL target + registered program matching ... pass;
+    * URL target + wrong/missing program ... BLOCKED (guidance printed).
+
+    Returns True when the scan may proceed, False when it must not.
+    """
+    if not target.startswith(("http://", "https://")):
+        if "://" in target:
+            return True  # non-HTTP scheme: this tool cannot use it anyway
+        if (
+            Path(target).exists()
+            or "/" in target
+            or "\\" in target
+            or target in (".", "..")
+            or "." not in target
+        ):
+            return True  # local path (dotless names are paths, not hosts)
+        # Dotted bare hostname (scanme.nmap.org, 10.0.0.5): a network
+        # target — present it as a URL for the checks below.
+        target = f"http://{target}"
+    if is_lab_target(target):
+        return True
+    if not program:
+        print(
+            "[!] BLOCKED: URL targets require --scope with a registered program "
+            "(default deny — no silent opt-out). Register one with:\n"
+            "      python -m blastradius.scope add <program> --in <host-or-url>"
+        )
+        return False
     result = check_scope(target, program)
     if not result["in_scope"]:
         print(f"[!] BLOCKED: {result['reason']} (program={program})")
