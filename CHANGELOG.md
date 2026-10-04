@@ -51,7 +51,7 @@ All notable changes to BlastRadius Agent are documented here.
   now BLOCKED instead of silently scanned — closing the opt-in gap across
   the hunter, web, agents, pipeline, net, and auto-hunt CLIs. Local paths
   and lab targets (loopback, RFC-2606 names, RFC-1918 LAN) stay exempt via
-  the shared `is_lab_target`. The   autonomous hunt CLI requires `--scope`
+  the shared `is_lab_target`. The autonomous hunt CLI requires `--scope`
   unconditionally.
 - Scheduled heartbeat hunt repaired: the CI `scheduled_hunt` job hunted
   random PyPI-metadata URLs (whose dead/suffixed links made git prompt for
@@ -63,6 +63,13 @@ All notable changes to BlastRadius Agent are documented here.
 - Scope matching fix: entries were lowercased but target paths compared
   case-sensitively, so mixed-case repo URLs (every Hello-World style repo)
   never matched — `_normalize` now lowers both sides.
+- Sandbox image repaired (`sandbox/Dockerfile`): it COPYied per-run PoC
+  files that only exist inside the temp-dir volume mount, so the image
+  could never build — locally or in CI, where `continue-on-error: true`
+  silently hid the failure and the "sandbox proof" gate ran UNSANDBOXED.
+  COPY lines removed (the mount supplies the files), PoC runtime deps
+  added (jinja2, lxml, defusedxml), and the CI build step is now hard
+  required instead of best-effort.
 - Solidity smart-contract scanner (`blastradius/scanners/solidity.py`): Slither-aligned
   reentrancy (structural checks-effects-interactions analysis), tx.origin auth, controlled
   delegatecall, arbitrary send, weak randomness, unchecked low-level calls, unchecked ERC20

@@ -75,9 +75,11 @@ jobs:
           python-version: "3.12"
       - name: Install
         run: pip install -e ".[dev]"
-      - name: Build sandbox image (best-effort)
+      # The sandbox image must build: --verify proves exploits inside it,
+      # so a broken Dockerfile must fail the pipeline (fail-closed), never
+      # silently fall back to unsandboxed local execution.
+      - name: Build sandbox image
         run: docker build -t blastradius-sandbox sandbox/
-        continue-on-error: true
       - name: "Run verified benchmark (CI gate: F1 >= 0.5)"
         run: python benchmarks/run.py --verify --min-f1 0.5
       - name: "Run dynamic benchmark (CI gate: F1 >= 1.0)"

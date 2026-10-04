@@ -213,13 +213,18 @@ python -m blastradius.cli.wizard
 
 # 7. Verify installation
 # Sandbox proof tests reconstruct SSTI (jinja2) and XXE (lxml) PoCs and
-# execute them, so those two libs are required to run the test suite:
+# execute them, so those two libs are required to run the test suite.
+# For REAL sandboxed proofs (not the unsandboxed fallback), build the
+# sandbox image once — Docker Desktop works fine:
+# docker build -t blastradius-sandbox sandbox/
 pip install pytest jinja2 lxml
 python -m pytest tests/ -q
-# Expected: 943 passed, 1 skipped
+# Expected: 1026 passed, 1 skipped
 
 # 8. Run your first scan
-python -m blastradius.hunter --target https://github.com/WebGoat/WebGoat
+# URL targets require a registered scope (fail-closed — register once):
+python -m blastradius.scope add training --in https://github.com/WebGoat/WebGoat
+python -m blastradius.hunter --target https://github.com/WebGoat/WebGoat --scope training
 ```
 
 > **Kali Linux note:** If you see `externally-managed-environment` error,
