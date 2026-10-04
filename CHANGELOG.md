@@ -24,6 +24,13 @@ All notable changes to BlastRadius Agent are documented here.
   differential probe over raw timeout-enforced sockets, our own connection
   only — no poisoning, no victim requests, no depth/DoS or H2 variants.
   Dynamic benchmark gains the `live-smuggle` target (16/16 at F1 1.000).
+- Live race-condition checks (`blastradius/web/race.py`, explicit `--race-url`
+  + `--race-marker`): one gated parallel burst (thread barrier, default 10,
+  capped 25) at analyst-named single-use URLs, counting marker-bearing
+  successes — the coupon double-redeem / wallet double-spend primitive
+  (CWE-367). The crawler never auto-races; without a success oracle no
+  finding is possible. Dynamic benchmark gains the `live-race` target with
+  an atomic twin that must stay silent (17/17 at F1 1.000).
 - Solidity smart-contract scanner (`blastradius/scanners/solidity.py`): Slither-aligned
   reentrancy (structural checks-effects-interactions analysis), tx.origin auth, controlled
   delegatecall, arbitrary send, weak randomness, unchecked low-level calls, unchecked ERC20

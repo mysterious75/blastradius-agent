@@ -1,0 +1,9 @@
+{
+  "target": "live-race",
+  "description": "Racy single-use coupon endpoint (check-then-act with a delay) beside an atomic twin that must stay silent.",
+  "probe_urls": ["/redeem"],
+  "success_markers": ["\"redeemed\": true"],
+  "expected": [
+    {"check": "race-condition", "url_suffix": "/redeem"}
+  ]
+}

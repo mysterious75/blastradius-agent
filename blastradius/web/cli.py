@@ -92,6 +92,26 @@ def main(argv=None) -> int:
         "raw sockets, our own connection only)",
     )
     ap.add_argument(
+        "--race-url",
+        action="append",
+        default=[],
+        help="explicit single-use URL to race (repeatable); the crawler never "
+        "auto-races endpoints — parallel bursts are only fired at URLs you name",
+    )
+    ap.add_argument(
+        "--race-marker",
+        action="append",
+        default=[],
+        help="success string present only on success (repeatable); the race "
+        "oracle — without it no finding is possible",
+    )
+    ap.add_argument(
+        "--race-burst",
+        type=int,
+        default=10,
+        help="parallel requests per race burst (default 10, max 25)",
+    )
+    ap.add_argument(
         "--scope",
         default=None,
         help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
@@ -123,6 +143,9 @@ def main(argv=None) -> int:
         cachepoison_probe=args.cachepoison_probe,
         graphql_probe=args.graphql_probe,
         smuggle_probe=args.smuggle_probe,
+        race_urls=args.race_url,
+        race_markers=args.race_marker,
+        race_burst=args.race_burst,
     )
     scanner.browser.timeout = args.timeout
 

@@ -53,7 +53,7 @@ def _load_server(target_dir: Path):
 
 
 def _serve(handler_cls):
-    server = http.server.HTTPServer(("127.0.0.1", 0), handler_cls)
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler_cls)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     return server
@@ -167,6 +167,14 @@ def run_graphql_target(base: str, manifest: dict, target_dir=None):
     return GraphqlChecker().check(base)
 
 
+def run_race_target(base: str, manifest: dict, target_dir=None):
+    from blastradius.web.race import RaceChecker
+
+    urls = [base + p for p in manifest.get("probe_urls", [])]
+    checker = RaceChecker(body=dict(manifest.get("body", {})))
+    return checker.check(urls, manifest.get("success_markers", []))
+
+
 def run_smuggle_target(base: str, manifest: dict, target_dir=None):
     from blastradius.web.smuggle import SmuggleChecker
 
@@ -218,6 +226,7 @@ _RUNNERS = {
     "live-cachepoison": run_cachepoison_target,
     "live-graphql": run_graphql_target,
     "live-netservices": run_netservices_target,
+    "live-race": run_race_target,
     "live-smuggle": run_smuggle_target,
 }
 

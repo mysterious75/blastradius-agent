@@ -21,6 +21,8 @@ Checks (vuln_type -> CWE):
                        (opt-in: endpoint discovery + read-only checks)
     smuggle-* CWE-444  CL.TE / TE.CL desync probes, Kettle-ordered, raw-socket
                        (opt-in: timing + differential on our own connection)
+    race      CWE-367  gated parallel burst at EXPLICIT single-use URLs only
+                       (opt-in: never auto-raced from the crawl)
 
 Usage:
     scanner = DynamicWebScanner()
@@ -148,6 +150,9 @@ class DynamicWebScanner:
         cachepoison_probe: bool = False,
         graphql_probe: bool = False,
         smuggle_probe: bool = False,
+        race_urls: Optional[List[str]] = None,
+        race_markers: Optional[List[str]] = None,
+        race_burst: int = 10,
     ):
         self.browser = browser or BrowserSession()
         # Probe browser never follows redirects (so Location-based checks work).
@@ -171,6 +176,12 @@ class DynamicWebScanner:
         # Optional request-smuggling probing (opt-in: Kettle-ordered desync
         # probes over raw sockets; timing differential on our own connection).
         self.smuggle_probe = smuggle_probe
+        # Explicit race targets only — the crawler NEVER auto-races: parallel
+        # state-changing bursts at arbitrary endpoints would themselves be
+        # the attack. Mirrors the --idor-url explicitness discipline.
+        self.race_urls = list(race_urls or [])
+        self.race_markers = list(race_markers or [])
+        self.race_burst = race_burst
         # Real HackerOne payloads (defaults always included) for reflected XSS.
         self.xss_payloads = xss_payloads()
         # Budget guard: total JS fetches allowed per scan() call.
@@ -220,6 +231,8 @@ class DynamicWebScanner:
             findings.extend(self._check_graphql(target))
         if self.smuggle_probe:
             findings.extend(self._check_smuggle(visited))
+        if self.race_urls:
+            findings.extend(self._check_race(self.race_urls))
         return findings
 
     # ------------------------------------------------------------------
@@ -425,6 +438,27 @@ class DynamicWebScanner:
         checker = SmuggleChecker()
         findings: List[DynamicFinding] = []
         for hit in checker.check(urls):
+            findings.append(
+                DynamicFinding(
+                    url=hit.url,
+                    check=hit.check,
+                    severity=hit.severity,
+                    cwe=hit.cwe,
+                    confidence=hit.confidence,
+                    evidence=hit.evidence,
+                    remediation=hit.remediation,
+                    description=hit.description,
+                )
+            )
+        return findings
+
+    def _check_race(self, urls: List[str]) -> List[DynamicFinding]:
+        """Gated burst at explicit single-use URLs (explicit opt-in only)."""
+        from blastradius.web.race import RaceChecker
+
+        checker = RaceChecker(session=self._probe_browser, burst=self.race_burst)
+        findings: List[DynamicFinding] = []
+        for hit in checker.check(urls, self.race_markers):
             findings.append(
                 DynamicFinding(
                     url=hit.url,

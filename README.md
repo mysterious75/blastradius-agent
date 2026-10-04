@@ -590,9 +590,10 @@ have no meaningful execution proof — reported as candidates, never silently "p
 A second gate covers the live web checks (`benchmarks/run_dynamic.py`): IDOR
 authz-diff, JWT acceptance, SSRF/OOB, SQLi, mass assignment, cache poisoning,
 GraphQL (introspection, field suggestions, alias batching), request
-smuggling (CL.TE / TE.CL desync probes), and
+smuggling (CL.TE / TE.CL desync probes), race conditions (gated bursts at
+explicit single-use URLs), and
 network-service detectors against local stdlib targets — currently
-**16 expected / 16 reported at F1 1.000**.
+**17 expected / 17 reported at F1 1.000**.
 
 ```bash
 python benchmarks/run.py            # detection benchmark (offline)
