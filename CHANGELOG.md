@@ -5,6 +5,36 @@ All notable changes to BlastRadius Agent are documented here.
 ## [Unreleased]
 
 ### Added
+- Real-GitHub beta validation of the Verified PR gate (4 draft PRs on a
+  disposable branch, all closed, `main` untouched): vulnerable→BLOCK,
+  proven-fix-pushed→PASS, weak-patch→BLOCK via bypass-variant confirm,
+  clean→PASS, multi-finding→BLOCK with gate math, secrets redacted in
+  comment/logs, branch protection showing BLOCKED vs CLEAN. Real runs
+  exposed and fixed three bugs: missing-PyYAML crash in SARIF enrichment
+  (now degrades gracefully), `security-severity` must be a JSON string for
+  code scanning, and `gh` needs explicit `GH_TOKEN` in Actions (status now
+  targets the PR head SHA).
+- Content-based gate correction: a confirmed finding present in the diff
+  BLOCKS even when a verified fix exists — a scratch-tree fix proves the
+  patch, never the PR (same rule Semgrep/Snyk enforce). Blocking entries
+  carry `fix_verified` so reviewers see proven patches; KEV blocks on any
+  match.
+- Bypass-variant confirmation: when the canonical PoC is dead but a
+  mutated variant still reaches the real sink, the finding confirms via
+  the bypass battery (weak-fix blind spot closed), with method + evidence
+  recorded (`real-code` / `bypass-variant` / `synthetic`).
+- BlastRadius Verified PR gate (`blastradius/verified_pr/`,
+  `python -m blastradius.verified_pr`): closes the scan→prove→patch loop with
+  **re-testing** — each generated patch is applied to a scratch copy of the
+  real tree (original never modified) and verified at two evidence levels:
+  exploit replay (real payloads executed against the real patched function:
+  canonical PoC + mutated bypass battery + benign check) with static rescan
+  as a labeled weaker fallback. Only FIXED findings are excused, so the gate
+  is fail-closed. Adds a manifest-level dependency-impact diff (base vs head),
+  KEV blocking limited to findings without a verified fix, Markdown/JSON/
+  SARIF artifacts, optional verdict notifications and GitHub commit status
+  (`blastradius/verified-pr`), `.github/workflows/verified-pr.yml`,
+  `bitbucket-pipelines.yml`, and `docs/verified-pr.md`.
 - CI gate hardening audit fixes (`blastradius/ci/`):
   - missing optional AI credentials now degrade visibly to deterministic-only
     mode (warning in stdout + report) instead of ANALYSIS_ERROR, via a new

@@ -70,6 +70,54 @@ _RULE_EXPLANATIONS = {
 DEFAULT_MODEL = "deepseek-v4-flash"
 
 
+# Strict single-line sanitizers for line-surgical patches. Deliberately
+# conservative (allowlist, no imports needed): they may reject exotic-but-valid
+# input, but they cannot leave a metacharacter in the sink. A patch that is
+# too strict fails the benign check loudly instead of passing silently.
+_SQLI_ALLOWLIST = '"".join(c for c in {var} if c.isalnum() or c in " _-")'
+_XSS_CONCAT_VAR = re.compile(r"\+\s*([A-Za-z_]\w*)")
+_XSS_ASSIGN_VAR = re.compile(r"=\s*([A-Za-z_]\w*)\s*;?\s*$")
+_SQLI_CONCAT_VAR = re.compile(r"""(['"])(?:(?!\1).){0,200}\1\s*\+\s*([A-Za-z_]\w*)""")
+
+
+def _line_surgical_patch(vuln_type: str, line: str):
+    """Rewrite one tainted expression on a single source line.
+
+    Returns ``(patched_line, explanation)`` or None when no surgical rewrite
+    applies (caller falls back to the whole-snippet template). The output is
+    always a single line so in-file application stays possible.
+    """
+    if vuln_type == "sqli":
+        match = _SQLI_CONCAT_VAR.search(line)
+        if not match:
+            return None
+        var = match.group(2)
+        start, end = match.span(2)
+        # Replace only the variable span: ``+ name`` -> ``+ "<allowlist>"``.
+        patched = line[:start] + _SQLI_ALLOWLIST.format(var=var) + line[end:]
+        return (
+            patched,
+            "Strict allowlist sanitization: only alphanumerics, space, "
+            "underscore and hyphen survive into the SQL string, so quotes, "
+            "comment markers and statement separators cannot reach the sink.",
+        )
+    if vuln_type == "xss":
+        if "html.escape" in line:
+            return None  # already escaped
+        match = _XSS_CONCAT_VAR.search(line) or _XSS_ASSIGN_VAR.search(line)
+        if not match:
+            return None
+        var = match.group(1)
+        start, end = match.span(1)
+        patched = line[:start] + f"html.escape({var})" + line[end:]
+        return (
+            patched,
+            "Escaped the tainted expression with html.escape() so markup and "
+            "event-handler payloads are reflected inert.",
+        )
+    return None
+
+
 def _make_diff(original: str, patched: str) -> str:
     return "\n".join(
         difflib.unified_diff(
@@ -91,6 +139,7 @@ class Patch:
     diff: str = ""
     explanation: str = ""
     source: str = "rule"  # "api" | "rule"
+    kind: str = "snippet"  # "snippet" | "line" (single-line surgical edit)
 
     def __post_init__(self):
         if not self.diff:
@@ -250,6 +299,22 @@ class PatchGenerator:
                 explanation=f"No patch rule for vuln_type {finding.vuln_type!r}.",
                 source="rule",
             )
+        # Line-surgical patch: when the vulnerable material is a single source
+        # line, rewrite just the tainted expression instead of replacing a whole
+        # snippet. Single-line output stays applicable in-file (exact-match +
+        # parse-safe). Multi-line originals keep the legacy whole-snippet
+        # template below, so existing behavior is unchanged.
+        if "\n" not in original.strip():
+            surgical = _line_surgical_patch(finding.vuln_type, original.strip())
+            if surgical is not None:
+                patched_line, explanation = surgical
+                return Patch(
+                    original_code=original.strip(),
+                    patched_code=patched_line,
+                    explanation=explanation,
+                    source="rule",
+                    kind="line",
+                )
         return Patch(
             original_code=original,
             patched_code=_RULE_PATCHES[finding.vuln_type],
