@@ -1,10 +1,10 @@
 # BlastRadius Benchmark
 
-Generated: `2026-09-30T16:16:48Z`  
+Generated: `2026-10-04T01:22:58Z`  
 Corpus: `D:\deepseek\blastradius-agent\benchmarks\corpus`  
 Verify (sandbox PoC): `False`  
 Min confidence: `0.7`  
-Elapsed: `0.35s`
+Elapsed: `0.37s`
 
 | Target | Expected | Reported | Hits | Precision | Recall | F1 | Proven |
 |---|---|---|---|---|---|---|---|
