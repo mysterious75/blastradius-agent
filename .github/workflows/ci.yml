@@ -98,8 +98,27 @@ jobs:
           python-version: "3.12"
       - name: Install
         run: pip install -e ".[all]"
-      - name: Run scheduled auto-hunt (pypi targets)
-        run: python -m blastradius.auto_hunt --strategy pypi --max 5
+      # Fail-closed scope needs a registered program, and non-interactive
+      # clones need credentials. The heartbeat hunt therefore runs over
+      # FIXED deliberately-vulnerable training repos (never random PyPI
+      # metadata URLs, whose dead/suffixed links used to make git prompt
+      # for credentials and kill the job). GITHUB_TOKEN is auto-provided
+      # by Actions — no manual secret setup required.
+      - name: Register CI training scope
+        run: |
+          mkdir -p ~/.blastradius/scopes
+          printf '%s' '{"program":"ci-training","in_scope":["https://github.com/WebGoat/WebGoat","https://github.com/digininja/DVWA","https://github.com/juice-shop/juice-shop"],"out_of_scope":[],"notes":"deliberately vulnerable training apps for the scheduled heartbeat hunt"}' > ~/.blastradius/scopes/ci-training.json
+      - name: Configure git credentials
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
+      - name: Run scheduled auto-hunt (training targets)
+        run: >-
+          python -m blastradius.auto_hunt --scope ci-training
+          --repo https://github.com/WebGoat/WebGoat
+          --repo https://github.com/digininja/DVWA
+          --repo https://github.com/juice-shop/juice-shop
+          --max 3
       - name: Export findings to SARIF
         run: python -m blastradius.export --format sarif --output report.sarif || true
       - name: Upload SARIF to GitHub Security

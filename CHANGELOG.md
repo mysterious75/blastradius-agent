@@ -51,8 +51,18 @@ All notable changes to BlastRadius Agent are documented here.
   now BLOCKED instead of silently scanned — closing the opt-in gap across
   the hunter, web, agents, pipeline, net, and auto-hunt CLIs. Local paths
   and lab targets (loopback, RFC-2606 names, RFC-1918 LAN) stay exempt via
-  the shared `is_lab_target`. The autonomous hunt CLI requires `--scope`
+  the shared `is_lab_target`. The   autonomous hunt CLI requires `--scope`
   unconditionally.
+- Scheduled heartbeat hunt repaired: the CI `scheduled_hunt` job hunted
+  random PyPI-metadata URLs (whose dead/suffixed links made git prompt for
+  credentials and kill the job) with no scope. It now hunts three fixed
+  deliberately-vulnerable training repos via the new explicit `--repo`
+  flag (discovery skipped, each repo scope-gated) with a registered
+  `ci-training` scope and `GITHUB_TOKEN` git credentials (auto-provided by
+  Actions, no manual secret needed).
+- Scope matching fix: entries were lowercased but target paths compared
+  case-sensitively, so mixed-case repo URLs (every Hello-World style repo)
+  never matched — `_normalize` now lowers both sides.
 - Solidity smart-contract scanner (`blastradius/scanners/solidity.py`): Slither-aligned
   reentrancy (structural checks-effects-interactions analysis), tx.origin auth, controlled
   delegatecall, arbitrary send, weak randomness, unchecked low-level calls, unchecked ERC20

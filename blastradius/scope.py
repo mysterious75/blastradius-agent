@@ -106,7 +106,11 @@ def _normalize(url: str) -> str:
     if "://" not in url:
         url = "http://" + url
     parsed = urlparse(url)
-    return f"{parsed.hostname.lower()}{parsed.path.rstrip('/')}"
+    # Fully lowered: entries are lowered in _matches, and repo hosts
+    # (github.com/...) treat paths case-insensitively — a mixed-case entry
+    # must still match its target, otherwise the gate blocks everything
+    # with an uppercase letter (e.g. every Hello-World style repo).
+    return f"{parsed.hostname.lower()}{parsed.path.rstrip('/')}".lower()
 
 
 def _matches(entry: str, target: str) -> bool:

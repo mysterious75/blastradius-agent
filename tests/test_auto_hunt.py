@@ -134,6 +134,48 @@ def test_auto_hunt_cli_blocks_without_scope(tmp_path, capsys):
     assert "BLOCKED" in capsys.readouterr().out
 
 
+def test_auto_hunt_explicit_repos_skip_discovery(vuln_repo, tmp_path, monkeypatch):
+    """--repo hunts named repos without touching discovery; scope still gates."""
+    from blastradius.auto_hunt import main as auto_hunt_main
+    from blastradius.scope import save_scope
+
+    monkeypatch.setenv("BLASTRADIUS_SCOPES_DIR", str(tmp_path / "scopes"))
+    save_scope("demo", ["https://github.com/org/demo"], [])
+
+    def no_discovery(self, strategy, min_stars=0, limit=200):
+        raise AssertionError("discovery must not run with explicit --repo")
+
+    monkeypatch.setattr("blastradius.recon.dorker.DorkEngine.find_targets", no_discovery)
+    monkeypatch.setattr(
+        "blastradius.hunter.scanner.CVEHunter.clone_repo",
+        lambda self, url: str(vuln_repo),
+    )
+    rc = auto_hunt_main(
+        [
+            "--repo",
+            "https://github.com/org/demo",
+            "--max",
+            "5",
+            "--reports-dir",
+            str(tmp_path / "reports"),
+            "--scope",
+            "demo",
+        ]
+    )
+    assert rc == 0
+
+
+def test_auto_hunt_cli_blocks_out_of_scope_repo(tmp_path, capsys, monkeypatch):
+    from blastradius.auto_hunt import main as auto_hunt_main
+    from blastradius.scope import save_scope
+
+    monkeypatch.setenv("BLASTRADIUS_SCOPES_DIR", str(tmp_path / "scopes"))
+    save_scope("demo", ["https://github.com/org/demo"], [])
+    rc = auto_hunt_main(["--repo", "https://github.com/evil/bad", "--scope", "demo"])
+    assert rc == 2
+    assert "BLOCKED" in capsys.readouterr().out
+
+
 def test_auto_hunt_handles_target_errors(vuln_repo, tmp_path, monkeypatch):
     monkeypatch.setattr(
         "blastradius.recon.dorker.DorkEngine.find_targets",

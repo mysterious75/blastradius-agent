@@ -70,6 +70,8 @@ def cmd_hunt(args) -> int:
             "--reports-dir",
             args.reports_dir,
         ]
+        + (["--scope", args.scope] if args.scope else [])
+        + [item for repo in (args.repo or []) for item in ("--repo", repo)]
     )
 
 
@@ -302,6 +304,17 @@ def main(argv=None) -> int:
     hunt_p.add_argument("--max", type=int, default=10)
     hunt_p.add_argument("--min-stars", type=int, default=0)
     hunt_p.add_argument("--reports-dir", default="reports/auto_hunt")
+    hunt_p.add_argument(
+        "--scope",
+        default=None,
+        help="program name in the scope registry — REQUIRED (default deny)",
+    )
+    hunt_p.add_argument(
+        "--repo",
+        action="append",
+        default=[],
+        help="explicit repo URL to hunt (repeatable); skips discovery",
+    )
 
     blast_p = sub.add_parser("blast", help="map dependency blast radius")
     blast_p.add_argument("--repo", required=True)

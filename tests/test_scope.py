@@ -76,3 +76,12 @@ def test_matches_edge_cases():
     assert _matches("example.com", "EXAMPLE.COM")
     assert _matches("https://github.com/a/b", "https://github.com/a/b/c")
     assert not _matches("example.com", "notexample.com")
+
+
+def test_repo_url_matching_is_case_insensitive(scopes):
+    """Mixed-case repo URLs must match: entries are lowered at match time,
+    so the target side must be lowered too (Hello-World style repos)."""
+    save_scope("mixed", ["https://github.com/octocat/Hello-World"], [])
+    assert check_scope("https://github.com/octocat/Hello-World", "mixed")["in_scope"] is True
+    assert check_scope("https://github.com/OCTOCAT/hello-world", "mixed")["in_scope"] is True
+    assert check_scope("https://github.com/octocat/Hello-World-2", "mixed")["in_scope"] is False

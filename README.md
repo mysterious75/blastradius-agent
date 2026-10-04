@@ -460,7 +460,7 @@ models are passed through as-is.
 | `python -m blastradius.scope add\|check\|list\|rm` | Program scope registry (default-deny for URL targets) |
 | `scripts/pr_scan.py --repo . --base origin/main` | PR diff-scoped scan (sandbox-verified, merge gate; auto-opens fix PRs — see `.github/workflows/pr-scan.yml`) |
 | `python -m blastradius.pipeline_cli --target <url\|path>` | Full end-to-end pipeline |
-| `python -m blastradius.auto_hunt --strategy github --max 20` | Autonomous hunt over discovered targets |
+| `python -m blastradius.auto_hunt --strategy github --max 20` | Autonomous hunt over discovered targets (`--scope` required; `--repo` hunts named repos without discovery) |
 | `python -m blastradius.recon --strategy all` | Discover targets (GitHub code search / PyPI / Shodan) |
 | `python -m blastradius.recon --shadow <org\|user>` | Shadow-repo recon: contributors → public repos/Gists/releases, bounded detection-only secret scoring |
 | `python -m blastradius.blast_radius --repo ./path` | Map dependency blast radius |

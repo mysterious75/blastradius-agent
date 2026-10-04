@@ -23,6 +23,13 @@ _fp_filter = fp_filter
 _SEVERITY_RANK = {"CRITICAL": 4, "HIGH": 3, "MEDIUM": 2, "LOW": 1, "INFO": 0}
 
 
+def _explicit_target(repo_url: str) -> Dict:
+    """Build a hunt target from an analyst-named repo URL (no discovery)."""
+    parts = repo_url.rstrip("/").split("/")
+    repo = "/".join(parts[-2:]) if len(parts) >= 2 else repo_url
+    return {"repo": repo, "file": None, "url": repo_url, "stars": 0, "source": "explicit"}
+
+
 class AutoHunt:
     """Orchestrate discovery -> scan -> filter -> sandbox -> report."""
 
@@ -50,6 +57,7 @@ class AutoHunt:
         scope: Optional[str] = None,
         iterations: int = 1,
         seed: int = 0,
+        repos: Optional[List[str]] = None,
     ) -> List[Dict]:
         """Hunt over up to ``max_targets`` discovered targets; returns result rows.
 
@@ -57,14 +65,16 @@ class AutoHunt:
         in-scope targets are hunted. ``iterations`` repeats the hunt with a
         fixed ``seed`` (same-seed runs): a finding confirmed in k-of-N runs
         carries ``runs`` evidence instead of a single pass/fail, which dampens
-        flaky network/timing outcomes.
+        flaky network/timing outcomes. ``repos`` (explicit repo URLs) skips
+        discovery entirely — used by the scheduled heartbeat hunt over
+        fixed training targets.
         """
         import random
 
         random.seed(seed)
         merged: Dict[tuple, Dict] = {}
         for _ in range(max(1, iterations)):
-            for row in self._run_once(strategy, max_targets, min_stars, scope):
+            for row in self._run_once(strategy, max_targets, min_stars, scope, repos):
                 key = (row.get("repo"), row.get("report"))
                 slot = merged.setdefault(key, {**row, "runs": 0})
                 slot["runs"] += 1
@@ -79,9 +89,13 @@ class AutoHunt:
         max_targets: int,
         min_stars: int,
         scope: Optional[str],
+        repos: Optional[List[str]] = None,
     ) -> List[Dict]:
         """One hunt pass; returns result rows."""
-        targets = self.dork.find_targets(strategy, min_stars=min_stars)[:max_targets]
+        if repos:
+            targets = [_explicit_target(r) for r in repos][:max_targets]
+        else:
+            targets = self.dork.find_targets(strategy, min_stars=min_stars)[:max_targets]
         if scope:
             from blastradius.scope import check_scope
 

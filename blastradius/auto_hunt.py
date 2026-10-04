@@ -26,6 +26,13 @@ def main(argv=None) -> int:
         "(default deny)",
     )
     parser.add_argument(
+        "--repo",
+        action="append",
+        default=[],
+        help="explicit repo URL to hunt (repeatable); skips discovery entirely. "
+        "Each repo must be in scope — out-of-scope repos are BLOCKED.",
+    )
+    parser.add_argument(
         "--iterations",
         type=int,
         default=1,
@@ -44,6 +51,15 @@ def main(argv=None) -> int:
         )
         return 2
 
+    # Explicit repos skip discovery but never skip the gate: each named repo
+    # must be in scope, otherwise the whole run is blocked.
+    if args.repo:
+        from blastradius.scope import enforce_scope
+
+        for repo in args.repo:
+            if not enforce_scope(repo, args.scope):
+                return 2
+
     AutoHunt(reports_dir=args.reports_dir).run(
         args.strategy,
         max_targets=args.max_targets,
@@ -51,6 +67,7 @@ def main(argv=None) -> int:
         scope=args.scope,
         iterations=args.iterations,
         seed=args.seed,
+        repos=args.repo or None,
     )
     return 0
 
