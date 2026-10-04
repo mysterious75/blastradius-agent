@@ -167,6 +167,17 @@ def run_graphql_target(base: str, manifest: dict, target_dir=None):
     return GraphqlChecker().check(base)
 
 
+def run_csrf_target(base: str, manifest: dict, target_dir=None):
+    from blastradius.web.browser import BrowserSession
+    from blastradius.web.csrf import CsrfChecker
+
+    cookie = manifest.get("victim_cookie", "")
+    session = BrowserSession(default_headers={"Cookie": cookie} if cookie else None)
+    checker = CsrfChecker(session=session)
+    urls = [base + p for p in manifest.get("probe_urls", [])]
+    return checker.check(urls, manifest.get("success_markers", []))
+
+
 def run_race_target(base: str, manifest: dict, target_dir=None):
     from blastradius.web.race import RaceChecker
 
@@ -224,6 +235,7 @@ _RUNNERS = {
     "live-sqli": run_sqli_target,
     "live-massassign": run_massassign_target,
     "live-cachepoison": run_cachepoison_target,
+    "live-csrf": run_csrf_target,
     "live-graphql": run_graphql_target,
     "live-netservices": run_netservices_target,
     "live-race": run_race_target,

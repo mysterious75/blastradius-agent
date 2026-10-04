@@ -112,6 +112,31 @@ def main(argv=None) -> int:
         help="parallel requests per race burst (default 10, max 25)",
     )
     ap.add_argument(
+        "--csrf-probe",
+        action="store_true",
+        help="inspect crawled POST forms for missing synchronizer-token fields",
+    )
+    ap.add_argument(
+        "--csrf-url",
+        action="append",
+        default=[],
+        help="explicit state-changing URL for the CSRF token harness "
+        "(repeatable); never invented from the crawl",
+    )
+    ap.add_argument(
+        "--csrf-marker",
+        action="append",
+        default=[],
+        help="success string present only when the state change happened "
+        "(repeatable); the CSRF oracle",
+    )
+    ap.add_argument(
+        "--csrf-cookie",
+        default=None,
+        help="victim session cookie for the active CSRF harness (ambient "
+        "authority is required — sessionless 200s prove nothing)",
+    )
+    ap.add_argument(
         "--scope",
         default=None,
         help="program name in the scope registry — blocks out-of-scope URL targets (default deny)",
@@ -146,6 +171,10 @@ def main(argv=None) -> int:
         race_urls=args.race_url,
         race_markers=args.race_marker,
         race_burst=args.race_burst,
+        csrf_probe=args.csrf_probe,
+        csrf_urls=args.csrf_url,
+        csrf_markers=args.csrf_marker,
+        csrf_cookie=args.csrf_cookie,
     )
     scanner.browser.timeout = args.timeout
 

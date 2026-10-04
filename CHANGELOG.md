@@ -30,7 +30,14 @@ All notable changes to BlastRadius Agent are documented here.
   successes — the coupon double-redeem / wallet double-spend primitive
   (CWE-367). The crawler never auto-races; without a success oracle no
   finding is possible. Dynamic benchmark gains the `live-race` target with
-  an atomic twin that must stay silent (17/17 at F1 1.000).
+  an   atomic twin that must stay silent (17/17 at F1 1.000).
+- Live CSRF checks (`blastradius/web/csrf.py`, `--csrf-probe` passive +
+  explicit `--csrf-url`/`--csrf-marker`/`--csrf-cookie` active): zero-risk
+  synchronizer-token-field analysis on crawled POST forms, plus the token
+  harness (missing token, garbage token, GET override, GET+_method=POST
+  SameSite-Lax-bypass shape) against analyst-named URLs with a victim
+  session — sessionless 200s never count. Dynamic benchmark gains the
+  `live-csrf` target with a token-enforcing twin (20/20 at F1 1.000).
 - Solidity smart-contract scanner (`blastradius/scanners/solidity.py`): Slither-aligned
   reentrancy (structural checks-effects-interactions analysis), tx.origin auth, controlled
   delegatecall, arbitrary send, weak randomness, unchecked low-level calls, unchecked ERC20

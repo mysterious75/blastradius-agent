@@ -591,9 +591,10 @@ A second gate covers the live web checks (`benchmarks/run_dynamic.py`): IDOR
 authz-diff, JWT acceptance, SSRF/OOB, SQLi, mass assignment, cache poisoning,
 GraphQL (introspection, field suggestions, alias batching), request
 smuggling (CL.TE / TE.CL desync probes), race conditions (gated bursts at
-explicit single-use URLs), and
+explicit single-use URLs), CSRF (passive token-field analysis + active
+token harness on explicit URLs with a victim session), and
 network-service detectors against local stdlib targets — currently
-**17 expected / 17 reported at F1 1.000**.
+**20 expected / 20 reported at F1 1.000**.
 
 ```bash
 python benchmarks/run.py            # detection benchmark (offline)

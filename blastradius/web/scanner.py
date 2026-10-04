@@ -23,6 +23,9 @@ Checks (vuln_type -> CWE):
                        (opt-in: timing + differential on our own connection)
     race      CWE-367  gated parallel burst at EXPLICIT single-use URLs only
                        (opt-in: never auto-raced from the crawl)
+    csrf-*    CWE-352  passive token-field analysis on crawled forms +
+                       active token harness on EXPLICIT URLs with a victim
+                       session (opt-in)
 
 Usage:
     scanner = DynamicWebScanner()
@@ -153,6 +156,10 @@ class DynamicWebScanner:
         race_urls: Optional[List[str]] = None,
         race_markers: Optional[List[str]] = None,
         race_burst: int = 10,
+        csrf_probe: bool = False,
+        csrf_urls: Optional[List[str]] = None,
+        csrf_markers: Optional[List[str]] = None,
+        csrf_cookie: Optional[str] = None,
     ):
         self.browser = browser or BrowserSession()
         # Probe browser never follows redirects (so Location-based checks work).
@@ -182,6 +189,13 @@ class DynamicWebScanner:
         self.race_urls = list(race_urls or [])
         self.race_markers = list(race_markers or [])
         self.race_burst = race_burst
+        # CSRF: passive form analysis on crawled pages + active harness on
+        # explicit URLs with a victim session (mirrors race explicitness:
+        # CSRF proofs fire real state changes, never invent targets).
+        self.csrf_probe = csrf_probe
+        self.csrf_urls = list(csrf_urls or [])
+        self.csrf_markers = list(csrf_markers or [])
+        self.csrf_cookie = csrf_cookie
         # Real HackerOne payloads (defaults always included) for reflected XSS.
         self.xss_payloads = xss_payloads()
         # Budget guard: total JS fetches allowed per scan() call.
@@ -233,6 +247,8 @@ class DynamicWebScanner:
             findings.extend(self._check_smuggle(visited))
         if self.race_urls:
             findings.extend(self._check_race(self.race_urls))
+        if self.csrf_probe or self.csrf_urls:
+            findings.extend(self._check_csrf(visited))
         return findings
 
     # ------------------------------------------------------------------
@@ -472,6 +488,40 @@ class DynamicWebScanner:
                 )
             )
         return findings
+
+    def _check_csrf(self, urls: List[str]) -> List[DynamicFinding]:
+        """Passive form analysis on crawled pages + active harness (opt-in)."""
+        from blastradius.web.csrf import CsrfChecker
+
+        checker = CsrfChecker(session=self._probe_browser)
+        findings: List[DynamicFinding] = []
+        if self.csrf_probe:
+            for url in urls:
+                try:
+                    page = self._probe_browser.get(url)
+                except Exception:
+                    continue
+                for hit in checker.check_forms(url, page.text):
+                    findings.append(self._to_dynamic(hit))
+        if self.csrf_urls and self.csrf_cookie:
+            victim = BrowserSession(default_headers={"Cookie": self.csrf_cookie})
+            active = CsrfChecker(session=victim)
+            for hit in active.check(self.csrf_urls, self.csrf_markers):
+                findings.append(self._to_dynamic(hit))
+        return findings
+
+    @staticmethod
+    def _to_dynamic(hit) -> "DynamicFinding":
+        return DynamicFinding(
+            url=hit.url,
+            check=hit.check,
+            severity=hit.severity,
+            cwe=hit.cwe,
+            confidence=hit.confidence,
+            evidence=hit.evidence,
+            remediation=hit.remediation,
+            description=hit.description,
+        )
 
     def _check_sqli(self, urls: List[str]) -> List[DynamicFinding]:
         """Probe crawled URLs with query strings for SQL injection (opt-in)."""

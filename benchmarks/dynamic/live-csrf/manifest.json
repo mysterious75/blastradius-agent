@@ -1,0 +1,12 @@
+{
+  "target": "live-csrf",
+  "description": "Transfer endpoints with missing/weak CSRF validation and a GET variant, plus a token-enforcing twin that must stay silent.",
+  "probe_urls": ["/transfer", "/transfer-weak", "/transfer-get", "/transfer-safe"],
+  "success_markers": ["\"transferred\": true"],
+  "victim_cookie": "victim=1",
+  "expected": [
+    {"check": "csrf-missing-token"},
+    {"check": "csrf-weak-validation"},
+    {"check": "csrf-get-override"}
+  ]
+}
