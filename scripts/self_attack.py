@@ -230,6 +230,9 @@ def attack_case(kind: str, repo_root: Path, *, retest: bool, keep: bool = False)
         if leak_count:
             held = False
             detail += f"; CANARY leaked x{leak_count}"
+        if not held:
+            tail = " ".join(output.split())[-700:]
+            detail += f"; output={tail}"
         return CaseResult(
             name=kind,
             held=held,

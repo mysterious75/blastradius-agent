@@ -1,11 +1,14 @@
 name: Deploy site to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "docs/**"
-      - ".github/workflows/pages.yml"
+  # Pages is not enabled on this repository yet; automatic runs would fail.
+  # Enable Pages (Settings → Pages → GitHub Actions) then restore the push
+  # trigger below.
+  # push:
+  #   branches: [main]
+  #   paths:
+  #     - "docs/**"
+  #     - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 # Least privilege: this workflow only builds and uploads the static docs/ folder.
@@ -31,8 +34,6 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
-        with:
-          enablement: true
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3

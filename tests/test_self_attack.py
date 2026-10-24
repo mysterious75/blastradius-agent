@@ -50,6 +50,23 @@ def test_report_fails_when_any_case_is_broken():
     assert report.ok
 
 
+@pytest.mark.unit
+def test_failed_case_detail_includes_pipeline_output(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    monkeypatch.setattr(sa, "build_case", lambda kind, root: (repo, "HEAD~1"))
+
+    class Proc:
+        returncode = 0
+        stdout = "NO FINDINGS INJECTED"
+        stderr = ""
+
+    monkeypatch.setattr(sa, "run_gate", lambda *args, **kwargs: Proc())
+    result = sa.attack_case(sa.CASE_PROMPT, ROOT, retest=False)
+    assert not result.held
+    assert "NO FINDINGS INJECTED" in result.detail
+
+
 # ---------------------------------------------------------------------------
 # Integration + adversarial — the real attack path
 # ---------------------------------------------------------------------------
