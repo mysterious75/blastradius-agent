@@ -51,6 +51,15 @@ def test_report_fails_when_any_case_is_broken():
 
 
 @pytest.mark.unit
+def test_env_isolates_cache_home(tmp_path):
+    home = tmp_path / "case-home"
+    env = sa._env(tmp_path, home)
+    assert env["BLASTRADIUS_HOME"] == str(home)
+    assert env["PYTHONHASHSEED"] == "0"
+    assert env["PYTHONIOENCODING"] == "utf-8"
+
+
+@pytest.mark.unit
 def test_failed_case_detail_includes_pipeline_output(tmp_path, monkeypatch):
     repo = tmp_path / "repo"
     repo.mkdir()

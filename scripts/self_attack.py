@@ -141,11 +141,16 @@ def build_case(kind: str, root: Path) -> tuple[Path, str]:
     return repo, base
 
 
-def _env(repo_root: Path) -> Dict[str, str]:
+def _env(repo_root: Path, home: Path | None = None) -> Dict[str, str]:
     env = dict(os.environ)
     env["PYTHONIOENCODING"] = "utf-8"
     env.setdefault("BLASTRADIUS_ALLOW_UNSANDBOXED", "1")
     env["PYTHONPATH"] = str(repo_root) + os.pathsep + env.get("PYTHONPATH", "")
+    # Each attack case gets its own cache/learned-rules home. Sharing the real
+    # ~/.blastradius makes verdicts order-dependent (a cached/ignored finding
+    # from another case can flip rc=1 to rc=0).
+    env["BLASTRADIUS_HOME"] = str(home or (repo_root.parent / ".selfattack-home"))
+    env["PYTHONHASHSEED"] = "0"
     return env
 
 
@@ -182,7 +187,7 @@ def run_gate(
         text=True,
         encoding="utf-8",
         errors="replace",
-        env=_env(repo_root),
+        env=_env(repo_root, repo.parent),
         timeout=timeout,
     )
 
