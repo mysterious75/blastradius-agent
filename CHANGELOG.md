@@ -20,6 +20,17 @@ All notable changes to BlastRadius Agent are documented here.
   `test_untracked_files_are_scanned_not_fail_open`.
 
 ### Added
+- Launch-readiness program: `docs/library/MANIFEST.md` (22 free/official
+  standards, NIST/OWASP/CISA/OpenSSF + DeFi sources), `READING-NOTES.md`
+  (control-by-control mapping), and `docs/LAUNCH-READINESS.md` (verdict,
+  evidence, P0/P1/P2 gaps, claim matrix). Re-fetch with
+  `python scripts/fetch_reference_library.py`; raw files stay local.
+- CI hardening: `pip-audit --local --strict` job, Python **3.13** in the
+  test matrix, Windows test job, coverage gate **60% → 80%** (measured 85%),
+  and every GitHub Actions `uses:` pinned to a commit SHA.
+- Supply-chain/image hygiene: `.dockerignore`, non-root `USER` + healthcheck
+  in the main Dockerfile.
+- README proof-scope callout: static 19/12 vs Python-first executed proof.
 - Enforced project rules: `PROJECT_RULES.md` (non-negotiables, unit +
   integration + e2e pyramid, Definition of Done), `docs/SELF-ATTACK.md`
   (attacker personas, hostile-input matrix, concurrent-user isolation), and

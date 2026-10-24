@@ -33,3 +33,6 @@ tasks/
 data/ingest/*.json
 data/ingest/defihacklabs-incidents/
 data/ingest/defi-hack-chronicle/
+
+# Reference library (large; official sources re-fetched by scripts/fetch_reference_library.py)
+docs/library/raw/

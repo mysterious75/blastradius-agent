@@ -70,7 +70,7 @@ jobs:
       - name: Upload SARIF to code scanning
         if: ${{ always() && hashFiles('verified-pr/verified.sarif') != '' }}
         continue-on-error: true # a failed upload must not flip the gate verdict
-        uses: github/codeql-action/upload-sarif@87ef0dc97def48aa960fbf026a2563ee9dbdb470 # v3
+        uses: github/codeql-action/upload-sarif@4bfa242aa49c5f7c6770b98670d354a7dfac05f8 # v3
         with:
           sarif_file: verified-pr/verified.sarif
 

@@ -61,6 +61,14 @@ private keys.
 
 ## Why BlastRadius: deterministic validation
 
+> [!IMPORTANT]
+> **Proof scope.** Static scanning covers 19 finding types across 12
+> languages. **Executed proof and patch re-testing are Python-first**: other
+> languages stop at "candidate" (or need explicit UNVERIFIABLE handling).
+> No tool in this class is perfect; read
+> [docs/LAUNCH-READINESS.md](docs/LAUNCH-READINESS.md) for the measured
+> evidence, known gaps, and what we do **not** claim.
+
 LLM-based scanners produce hypotheses; BlastRadius produces **proof**.
 Every finding is either executed in a sandbox (carrying the `[VULNERABLE]`
 marker) or honestly labeled a *candidate* — never silently asserted.
