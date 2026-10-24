@@ -29,6 +29,7 @@ python -m blastradius.blast_radius --repo ./path        # dependency blast-radiu
 python -m blastradius.dashboard                         # local dashboard :8080
 python -m blastradius.cli.wizard                        # provider/notification setup
 scripts/pr_scan.py --repo . --base origin/main          # PR diff-scoped scan (GitHub Action)
+python -m blastradius.verified_pr --repo . --base origin/main  # Verified PR gate: re-test patches on the patched tree, MERGE/BLOCK
 python benchmarks/run.py --verify                       # reproducible benchmark
 python -m pytest tests/ -q                              # 943 tests, offline (needs jinja2 + lxml)
 ```
@@ -58,6 +59,10 @@ python -m pytest tests/ -q                              # 943 tests, offline (ne
 - `blastradius/mcp/` — MCP stdio server (7 tools)
 - `blastradius/github_app/` — webhook + PR commenter; `scripts/pr_scan.py` —
   PR scan used by the `pr-security-scan` GitHub Action
+- `blastradius/verified_pr/` — Verified PR gate: diff scan → sandbox proof →
+  patch → re-test on the patched tree → dependency impact → MERGE/BLOCK/ERROR
+  (`python -m blastradius.verified_pr`; workflows `verified-pr.yml`,
+  `bitbucket-pipelines.yml`)
 
 ## Guardrails (do not bypass)
 

@@ -1500,7 +1500,11 @@ class CVEHunter:
     # ------------------------------------------------------------------
 
     def scan_repo(
-        self, repo_path: str, progress=None, use_cache: Optional[bool] = None
+        self,
+        repo_path: str,
+        progress=None,
+        use_cache: Optional[bool] = None,
+        only_files: Optional[list] = None,
     ) -> List[Finding]:
         """Scan every eligible file in ``repo_path`` (parallel by default).
 
@@ -1509,6 +1513,10 @@ class CVEHunter:
         >= ``min_confidence``, sorted by file/line. ``progress`` is an optional
         on_file_scanned(file, findings_count) callback. The content cache is
         used when BLASTRADIUS_SCAN_CACHE=1 (or ``use_cache=True``).
+
+        ``only_files`` (optional repo-relative paths) restricts the scan to a
+        file subset — e.g. a PR diff. Results for those files are identical
+        to a full scan (scanners are per-file); pass None for full coverage.
         """
         repo_path = validate_repo_path(repo_path)
         from blastradius.scanners.cache import ScanCache
@@ -1520,9 +1528,18 @@ class CVEHunter:
         if use_cache:
             cache = ScanCache()
         parallel = ParallelScanner(progress=progress, cache=cache)
-        findings = parallel.scan_repo_parallel(
-            repo_path, self._scan_file, list(self._iter_files(repo_path))
-        )
+        files = list(self._iter_files(repo_path))
+        if only_files is not None:
+            root = Path(repo_path).resolve()
+            wanted = set()
+            for name in only_files:
+                candidate = root / str(name).replace("\\", "/")
+                try:
+                    wanted.add(str(candidate.resolve()))
+                except OSError:
+                    continue
+            files = [p for p in files if str(p.resolve()) in wanted]
+        findings = parallel.scan_repo_parallel(repo_path, self._scan_file, files)
         self.files_scanned = parallel.file_count
         findings.sort(key=lambda f: (f.file, f.line, f.vuln_type))
         return findings

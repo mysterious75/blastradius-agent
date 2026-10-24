@@ -168,7 +168,11 @@ class FindingsExporter:
                     "fullDescription": {"text": description},
                     "help": {"text": help_md, "markdown": help_md},
                     "properties": {
-                        "security-severity": _SEVERITY_SCORE.get(severity, 0.0),
+                        # GitHub code scanning requires security-severity as a
+                        # STRING ("9.0"); a JSON number is rejected at upload
+                        # ("expected string near offset ..."). Proven against
+                        # the real code-scanning API during Verified PR beta.
+                        "security-severity": str(_SEVERITY_SCORE.get(severity, 0.0)),
                         "precision": "high" if confidence >= 0.85 else "medium",
                         "tags": [vuln_type],
                     },
