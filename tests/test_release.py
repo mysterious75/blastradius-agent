@@ -38,7 +38,7 @@ def test_ci_workflow_exists_and_valid_yaml():
     assert "main" in triggers["push"]["branches"]
 
     job = data["jobs"]["test"]
-    assert job["strategy"]["matrix"]["python-version"] == ["3.11", "3.12"]
+    assert job["strategy"]["matrix"]["python-version"] == ["3.11", "3.12", "3.13"]
 
     steps = " ".join(
         (step.get("name", "") + " " + step.get("run", "") + " " + step.get("uses", ""))

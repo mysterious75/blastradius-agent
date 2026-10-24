@@ -49,7 +49,7 @@ jobs:
       - name: Install project (all extras) + audit tool
         run: pip install -e ".[all]" pip-audit
       - name: Audit the installed dependency closure (fail closed)
-        run: pip-audit --local --strict
+        run: pip-audit --local --skip-editable --strict
 
   test:
     runs-on: ubuntu-latest

@@ -2,6 +2,7 @@
 stability, and scripts/verify_release.py behavior. Offline, no Docker."""
 
 import json
+import re
 import subprocess
 import sys
 import zipfile
@@ -34,8 +35,9 @@ def test_ci_publish_unchanged():
     text = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
     # The legacy publish job must stay untouched so tests/test_release.py stays
     # green — the OIDC trusted-publishing path lives in release.yml instead.
+    # Actions are SHA-pinned; the release/v1 comment preserves intent.
     assert "publish:" in text
-    assert "pypa/gh-action-pypi-publish@release/v1" in text
+    assert re.search(r"pypa/gh-action-pypi-publish@[0-9a-f]{40}\s+#\s+release/v1", text)
     assert "PYPI_API_TOKEN" in text
 
 
