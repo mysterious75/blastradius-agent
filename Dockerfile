@@ -13,7 +13,8 @@ RUN groupadd --system app \
     && useradd --system --gid app --create-home --home-dir /home/app app
 
 COPY --chown=app:app . .
-RUN pip install --no-cache-dir -e ".[all]"
+RUN pip install --no-cache-dir -e ".[all]" \
+    && pip install --no-cache-dir --upgrade "wheel>=0.48.0" "jaraco.context>=6.1.2"
 
 USER app
 
