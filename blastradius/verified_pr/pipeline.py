@@ -49,6 +49,24 @@ from blastradius.verified_pr.retest import retest_patches
 _GATE_CHOICES = ("critical", "high", "medium", "low")
 
 
+def _ref_exists(repo: str, ref: str) -> bool:
+    """Whether ``ref`` resolves to a commit in ``repo`` (fail-closed check)."""
+    if not ref:
+        return False
+    try:
+        proc = subprocess.run(
+            ["git", "-C", repo, "rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=30,
+        )
+    except Exception:
+        return False
+    return proc.returncode == 0
+
+
 def _key(repo: str, f: Finding) -> Tuple[str, int, str]:
     return (_normalise_file(f, repo), f.line, f.vuln_type)
 
@@ -114,6 +132,15 @@ def run_verified_pr(
 ) -> Tuple[int, Dict[str, Any]]:
     """Run the full verified-PR loop. Returns (exit_code, summary_dict)."""
     fail_on = fail_on.lower()
+    if not _ref_exists(repo, base):
+        raise RuntimeError(
+            f"base ref {base!r} does not resolve in {repo!r}; "
+            "refusing to guess a baseline (failing closed)"
+        )
+    if baseline_ref and not _ref_exists(repo, baseline_ref):
+        raise RuntimeError(
+            f"baseline ref {baseline_ref!r} does not resolve in {repo!r} (failing closed)"
+        )
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
 

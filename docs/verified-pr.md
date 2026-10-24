@@ -88,6 +88,11 @@ findings **without** a verified fix), `--no-retest` (reduces to a scan gate),
 `--post-status` (GitHub commit status `blastradius/verified-pr` for branch
 protection).
 
+Exit codes: `0` merge allowed, `1` blocked (unpatched exploitable findings),
+`2` error. A `--base`/`--baseline-ref` that does not resolve is an **error**
+(exit 2): the gate never silently degrades to a full scan, and a shallow
+checkout with a missing ref fails closed.
+
 ## CI wiring
 
 - GitHub: `.github/workflows/verified-pr.yml` (reusable pattern: checkout

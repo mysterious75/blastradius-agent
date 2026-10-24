@@ -71,23 +71,40 @@ def _git(repo: str, *args):
         ["git", "-C", repo, *args],
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         timeout=60,
     )
 
 
 def _changed_files(repo: str, base: str):
-    """Best-effort changed-file list (git diff) — None when unavailable."""
+    """Best-effort changed-file list (git diff) — None when unavailable.
+
+    ``-z`` + ``core.quotePath=false`` keep filenames byte-exact: without it
+    git quotes non-ASCII paths (``"\\303\\251vil.py"``), and a later
+    filter-by-name silently drops the finding — a fail-open.
+    """
     try:
         proc = subprocess.run(
-            ["git", "diff", "--name-only", f"{base}...HEAD"],
+            [
+                "git",
+                "-c",
+                "core.quotePath=false",
+                "diff",
+                "--name-only",
+                "-z",
+                f"{base}...HEAD",
+            ],
             cwd=repo,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=30,
         )
         if proc.returncode != 0:
             return None
-        names = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+        names = [line.strip() for line in proc.stdout.split("\0") if line.strip()]
         return names or None
     except Exception:
         return None

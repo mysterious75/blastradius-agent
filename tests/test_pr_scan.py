@@ -8,6 +8,7 @@ is what the assertions exercise.
 
 import json
 import subprocess
+from pathlib import Path
 
 import pytest
 
@@ -121,6 +122,34 @@ def test_baseline_dedup_without_baseline_keeps_all_findings(sqli_repo, tmp_path,
     results = json.loads((out / "pr-results.json").read_text(encoding="utf-8"))
     assert results["baseline"] is False
     assert len(results["new_findings"]) == 2
+
+
+@pytest.mark.integration
+def test_unicode_filename_diff_is_not_fail_open(tmp_path, confirm_all):
+    """git quotes non-ASCII paths by default; the scan must still see them."""
+    repo = _repo_with(
+        tmp_path,
+        "unicode",
+        [{"app.py": "value = 1\n"}, {"évil_名前.py": SQLI_LINE}],
+        ["base", "unicode sqli"],
+    )
+    out = tmp_path / "out-unicode"
+    rc = main(
+        [
+            "--repo",
+            str(repo),
+            "--base",
+            "HEAD~1",
+            "--out",
+            str(out),
+            "--fail-on",
+            "high",
+        ]
+    )
+    results = json.loads((out / "pr-results.json").read_text(encoding="utf-8"))
+    files = {Path(f["file"]).name for f in results["new_findings"]}
+    assert "évil_名前.py" in files
+    assert rc == 1
 
 
 def test_baseline_ref_invalid_falls_back_to_diff_only(sqli_repo, tmp_path, confirm_all):

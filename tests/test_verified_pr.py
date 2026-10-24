@@ -290,6 +290,34 @@ def test_render_comment_block_and_merge():
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.e2e
+@pytest.mark.integration
+def test_e2e_invalid_base_ref_fails_closed(tmp_path):
+    """A typo'd/absent base must be an error, never a silent full-scan MERGE."""
+    repo = _repo_with(
+        tmp_path,
+        "pr",
+        [{"ok.py": "def add(a, b):\n    return a + b\n"}],
+        ["base"],
+    )
+    out = tmp_path / "vout-invalid"
+    rc = pipeline.main(["--repo", str(repo), "--base", "no-such-base-ref", "--out", str(out)])
+    assert rc == 2
+    assert not (out / "verified-comment.md").exists()
+
+
+@pytest.mark.integration
+def test_run_verified_pr_rejects_unresolvable_baseline(tmp_path):
+    repo = _repo_with(tmp_path, "pr", [{"ok.py": "value = 1\n"}], ["base"])
+    with pytest.raises(RuntimeError, match="baseline ref"):
+        pipeline.run_verified_pr(
+            repo=str(repo),
+            base="HEAD",
+            baseline_ref="also-missing",
+            out_dir=str(tmp_path / "o"),
+        )
+
+
 def test_e2e_block_when_patch_cannot_apply(tmp_path, confirm_all, no_api_keys):
     """JS XSS: the generated patch cannot be applied in-file (multi-line
     non-Python guard) and replay has no harness — UNVERIFIABLE blocks."""

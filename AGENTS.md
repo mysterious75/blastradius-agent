@@ -1,5 +1,10 @@
 # AGENTS.md — for coding agents working in this repo
 
+> **Read `PROJECT_RULES.md` before starting any task.** It defines the test
+> pyramid (unit + integration + e2e), the Definition of Done checklist, and
+> the mandatory self-attack. `docs/SELF-ATTACK.md` is the execution guide.
+> Work is not done until the checklist passes and the self-attack held.
+
 BlastRadius Agent is an autonomous security engineer: it scans codebases for
 vulnerabilities, **proves** exploitability by executing a PoC in a sandbox,
 generates **patches**, and **re-verifies** them. It never claims a finding
@@ -31,7 +36,7 @@ python -m blastradius.cli.wizard                        # provider/notification 
 scripts/pr_scan.py --repo . --base origin/main          # PR diff-scoped scan (GitHub Action)
 python -m blastradius.verified_pr --repo . --base origin/main  # Verified PR gate: re-test patches on the patched tree, MERGE/BLOCK
 python benchmarks/run.py --verify                       # reproducible benchmark
-python -m pytest tests/ -q                              # 943 tests, offline (needs jinja2 + lxml)
+python -m pytest tests/ -q                              # 1175 tests, offline (needs jinja2 + lxml)
 ```
 
 ## Architecture map
@@ -73,6 +78,20 @@ python -m pytest tests/ -q                              # 943 tests, offline (ne
 - **Scope registry** — `blastradius scope` default-deny for URL targets.
 - **Tests** — keep them offline and mock-free where possible; run
   `python -m pytest tests/ -q` before finishing any change.
+- **Rules floor** — `python scripts/quality_gate.py --base <base>` must
+  pass; it enforces the unit/integration/e2e(+adversarial) tier set and
+  rejects unreferenced source changes and leaked secrets.
+- **Self-attack** — after every task run `python scripts/self_attack.py`
+  (hostile inputs + concurrent users). Fix what it finds; a failure
+  becomes a regression test before it becomes a fix.
+
+## Definition of Done
+
+Short form (full checklist in `PROJECT_RULES.md`): tests for all three
+tiers, adversarial test for security-sensitive paths, full suite green,
+benchmark F1 unchanged for scanner work, lint clean, rules gate green,
+self-attack held, docs/CHANGELOG updated, no secrets, honest `UNVERIFIED`
+labels for anything not executed.
 
 ## Benchmark
 

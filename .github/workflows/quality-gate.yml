@@ -1,0 +1,43 @@
+name: Quality Gate
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rules:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Project rules gate (tests, tiers, secrets, lint)
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          python scripts/quality_gate.py --base "origin/${{ github.base_ref }}" \
+            --checklist-out quality-gate.md
+      - name: Self-attack (hostile inputs + concurrent users)
+        run: python scripts/self_attack.py --quick --json | tee self-attack.json
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-gate-evidence
+          path: |
+            quality-gate.md
+            self-attack.json
+          if-no-files-found: ignore
+          retention-days: 14

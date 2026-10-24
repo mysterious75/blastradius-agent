@@ -4,7 +4,32 @@ All notable changes to BlastRadius Agent are documented here.
 
 ## [Unreleased]
 
+### Fixed
+- Verified PR gate now fails closed when `--base`/`--baseline-ref` does not
+  resolve: previously the ref lookup fell back to a full scan and could exit
+  0; it now raises and exits 2 (`test_e2e_invalid_base_ref_fails_closed`).
+- Unicode paths no longer cause a fail-open: `git diff` quotes non-ASCII
+  filenames (`"\303\251vil.py"`), so diff-scoping dropped the finding and
+  merged. Fixed with `-z` + `core.quotePath=false`, and UTF-8 decoding for
+  every git subprocess (non-UTF8 console could crash the diff collector).
+  Regression: `test_unicode_filename_diff_is_not_fail_open`; the self-attack
+  `unicode-filename` case now blocks.
+- Quality gate no longer ignores untracked files (new files bypassed the
+  tier/secret checks locally) and its secret scan had lost the patch diff;
+  both restored and covered by
+  `test_untracked_files_are_scanned_not_fail_open`.
+
 ### Added
+- Enforced project rules: `PROJECT_RULES.md` (non-negotiables, unit +
+  integration + e2e pyramid, Definition of Done), `docs/SELF-ATTACK.md`
+  (attacker personas, hostile-input matrix, concurrent-user isolation), and
+  `scripts/quality_gate.py` (lint, test-reference, tier markers, high-signal
+  secrets, untracked files, JSON/checklist output, exit 0/1/2).
+- `scripts/self_attack.py`: attacks the gate with unicode paths, huge lines,
+  binary-only and prompt-injection diffs, missing base refs, and N concurrent
+  PRs with per-repo canaries (own/foreign leak detection), `--quick`/`--full`,
+  `--json`, `--keep`; wired into `.github/workflows/quality-gate.yml`.
+
 - Real-GitHub beta validation of the Verified PR gate (4 draft PRs on a
   disposable branch, all closed, `main` untouched): vulnerable→BLOCK,
   proven-fix-pushed→PASS, weak-patch→BLOCK via bypass-variant confirm,
