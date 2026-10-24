@@ -5,6 +5,16 @@ All notable changes to BlastRadius Agent are documented here.
 ## [Unreleased]
 
 ### Fixed
+- Self-attack cases shared the real `~/.blastradius` cache/learned-rules
+  store, making verdicts order-dependent (Windows 3.12 returned rc=0 on the
+  prompt-injection case twice). Each case now gets a private
+  `BLASTRADIUS_HOME` and fixed `PYTHONHASHSEED`; full run 10/10 HELD.
+- Release tests expected a 2-version CI matrix and the moving
+  `pypa/...@release/v1` tag; both were updated for the 3.13 matrix and
+  SHA-pinned actions.
+- `pip-audit` on an editable install refused to audit the unpublished
+  project itself; CI now audits a frozen `pip freeze --exclude-editable`
+  snapshot.
 - Verified PR gate now fails closed when `--base`/`--baseline-ref` does not
   resolve: previously the ref lookup fell back to a full scan and could exit
   0; it now raises and exits 2 (`test_e2e_invalid_base_ref_fails_closed`).

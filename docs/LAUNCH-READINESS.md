@@ -21,7 +21,7 @@ prover*, not as an autonomous security authority.
 
 | Claim | Evidence | Status |
 |---|---|---|
-| Test suite | `pytest tests/ -q` → **1175 passed, 1 skipped** | ✅ |
+| Test suite | `pytest tests/ -q` → **1181 passed, 1 skipped** | ✅ |
 | Coverage | measured **85%** (11,981 stmts) | ✅ gate raised 60 → 80 |
 | Static benchmark | 16/16, **F1 1.000** (`benchmarks/run.py --verify`) | ✅ corpus is small |
 | Dynamic benchmark | 23/23 live checks (`benchmarks/run_dynamic.py`) | ✅ |
@@ -34,6 +34,7 @@ prover*, not as an autonomous security authority.
 | Dependency CVEs | project closure (49 pkgs) `pip-audit` → **0 known** | ✅; now a CI job |
 | Workflow pinning | 8 workflows, all `uses:` pinned to commit SHAs | ✅ fixed today |
 | Secret scanning | GitHub secret scanning + push protection enabled | ✅ |
+| CI matrix | 3.11/3.12/3.13 + **Windows** + pip-audit: all green (`run 40071220312`) | ✅ |
 | Branch protection | GitHub API → **404 Branch not protected** | ❌ P0 |
 | Dependabot security updates | **disabled** | ❌ P1 |
 | PyPI install | `blastradius-agent` → **404**, name not published | ⚠️ source install only |
@@ -79,6 +80,8 @@ prover*, not as an autonomous security authority.
   add gitleaks/trufflehog to CI (GitHub push protection already helps).
 - **Install story**: publish `blastradius-agent` to PyPI via the existing
   Trusted Publishing path, or make `pipx install git+…` the documented path.
+- **Docs site**: Pages is not enabled; the deploy workflow is manual-only so
+  `main` stays green. Enable Pages or delete the workflow.
 - **PII/data retention**: document what the SQLite DB stores, retention and
   deletion; add optional encryption at rest for API keys/tokens.
 - **Supported platforms**: explicitly state Linux/macOS/Windows, Python
