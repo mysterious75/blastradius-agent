@@ -191,6 +191,10 @@ is never executed. Every other shape or language is `INCONCLUSIVE` →
 `UNVERIFIABLE` → BLOCK; those findings still get the labeled
 `static-rescan` fallback, never a fabricated "verified" claim.
 
+Confirmed in a live GitHub Actions run (same-repo test PR): a
+method-based sqli fixture was proven `exploitable (real-code)` and its
+patch re-tested as `verified fixed (exploit-replay)`.
+
 ## Honest limits
 
 - Manifest-level dependency impact only (added/removed/upgraded) — no
