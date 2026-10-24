@@ -196,3 +196,16 @@ def test_cli_no_network(tmp_path, monkeypatch, capsys):
     assert enrich[0]["cwe"] == "CWE-89"
     assert enrich[0]["kev_cves"] == ["CVE-2021-0001"]
     assert enrich[0]["epss"]["CVE-2021-0001"]["epss"] == 0.975
+
+
+def test_kev_category_note_is_explicit_and_capped():
+    note = cve_hunt.kev_category_note([f"CVE-2021-{i:04d}" for i in range(8)])
+    assert "8 known-exploited CVE(s)" in note
+    assert "not this exact code" in note
+    assert "(+3 more)" in note
+    assert "CVE-2021-0007" not in note
+
+
+def test_kev_category_note_handles_empty():
+    note = cve_hunt.kev_category_note([])
+    assert note.startswith("0 known-exploited CVE(s)")

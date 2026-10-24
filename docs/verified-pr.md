@@ -144,11 +144,18 @@ Measured on django (shallow clone, 7,084 files, **906 eligible**):
 | 2-file PR with 1 sqli, end-to-end | **355.5s** | **52.3s (6.8x)** |
 | Peak RSS, same run | 51 MB | 45 MB |
 
-Runtime scales with **diff size, not repo size**: the ~50s is sandbox
+Large-repo check (synthetic, **10,001 eligible** tiny modules + a 2-file
+PR with one sqli): full scan **30.6s (327 files/s)**, diff-scoped PR gate
+**34.1s**, peak RSS **60 MB / 51 MB**. Per-file cost is content-sensitive
+(real django files average ~0.12s each; trivial modules ~0.003s), so the
+meaningful number is the second column: a small PR costs roughly the same
+regardless of repo size.
+
+Runtime scales with **diff size, not repo size**: the ~30–50s is sandbox
 spawns + PatchLoop/pytest + replay runs (per-finding, bounded), not the
-900 untouched files. A 10k-eligible-file repo would take ~20 min
-full-scan (projection, not measured) but a typical small PR stays near
-~1 min. Memory is a non-issue (<60 MB observed).
+untouched files. A 10k-file repo of *real* code would still cost minutes
+on a full-scan fallback; typical PRs stay under a minute. Memory is a
+non-issue (<60 MB observed).
 
 ## Fork-PR model
 
@@ -167,11 +174,22 @@ workflow never uses `pull_request_target`). Posture:
   completed in 82s with the correct BLOCK; the injection file was honestly
   downgraded to synthetic-confirm + static-rescan (never real-code); the
   fixture password appears **zero** times in comments and logs.
+- Proven live with a **true cross-owner fork PR** (head repository owned
+  by a different account, `fork: true`): the gate ran and returned
+  `BLOCK` / exit 1; the status post degraded with
+  `gh api failed: Resource not accessible by integration (HTTP 403)`;
+  the comment step hit the same 403 under `continue-on-error`. The
+  verdict was unaffected — exactly the fail-closed posture above.
 
-UNVERIFIED: a true cross-account fork PR (single test identity, no orgs
-available to fork into) — the fork path above is enforced by GitHub's
-platform, reviewed statically, and unit-tested for graceful denial, but
-no live fork run exists yet.
+## Replay coverage (honest)
+
+Exploit replay executes real code only inside the sandbox, and only for
+Python `sqli`/`xss` today. Supported shapes: module-level functions and
+methods whose class constructor is trivial (or `staticmethod` /
+`classmethod`), plus a top-level `if __name__ == "__main__":` guard that
+is never executed. Every other shape or language is `INCONCLUSIVE` →
+`UNVERIFIABLE` → BLOCK; those findings still get the labeled
+`static-rescan` fallback, never a fabricated "verified" claim.
 
 ## Honest limits
 

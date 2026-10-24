@@ -28,6 +28,18 @@ All notable changes to BlastRadius Agent are documented here.
   eligible files): 2-file PR end-to-end 355.5s → 52.3s (6.8x), peak RSS
   51→45 MB. Real hostile-PR run (15 MB file, prompt injection, binary,
   fixture password) completes correctly with secrets absent everywhere.
+- True cross-owner fork PR validated on runners: gate `BLOCK`/exit 1,
+  status post degraded with HTTP 403, comment 403 under
+  `continue-on-error`, verdict unaffected (read-only token by design).
+- Large-repo measured: 10,001 eligible synthetic files — full scan 30.6s
+  (327 files/s), diff-scoped PR gate 34.1s, peak RSS ≤60 MB.
+- Replay coverage widened: instance methods with trivial constructors,
+  `staticmethod`/`classmethod`, and an inert `if __name__ == "__main__"`
+  guard (proven not executed). Unsupported shapes/languages still fail
+  closed as `INCONCLUSIVE` → `UNVERIFIABLE`.
+- KEV annotation corrected to say what it is: a **category** signal
+  (CWE/keyword), capped at 5 CVEs, explicitly "not this exact code" — in
+  both the Verified PR comment and `pr_scan` output.
 - BlastRadius Verified PR gate (`blastradius/verified_pr/`,
   `python -m blastradius.verified_pr`): closes the scan→prove→patch loop with
   **re-testing** — each generated patch is applied to a scratch copy of the

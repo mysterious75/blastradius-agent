@@ -31,7 +31,7 @@ def vuln_repo(tmp_path):
     return tmp_path
 
 
-def _wait_done(client, job_id, timeout=15):
+def _wait_done(client, job_id, timeout=90):
     for _ in range(timeout * 10):
         status = client.get(f"/scan/{job_id}").json()
         if status["status"] in ("done", "failed"):

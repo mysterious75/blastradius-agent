@@ -68,15 +68,78 @@ def test_extract_harness_rejects_top_level_calls():
     assert harness is None and "outside the replay scope" in reason
 
 
-def test_extract_harness_rejects_methods():
-    code = "class A:\n    def f(self, name):\n        return name\n"
-    harness, reason = extract_harness(code, 3)
-    assert harness is None and "not inside a module-level" in reason
-
-
 def test_extract_harness_rejects_unparseable():
     harness, reason = extract_harness("def broken(:\n", 1)
     assert harness is None and "does not parse" in reason
+
+
+METHOD_SQLI = (
+    "class Repo:\n"
+    "    def find(self, name):\n"
+    '        q = "SELECT * FROM users WHERE name = \'" + name + "\'"\n'
+    "        return q\n"
+)
+
+
+def test_extract_harness_supports_instance_method():
+    harness, reason = extract_harness(METHOD_SQLI, 3)
+    assert harness is not None and reason == ""
+    assert harness.rstrip().endswith("target = Repo().find")
+
+
+def test_extract_harness_rejects_nontrivial_constructor():
+    code = (
+        "class Repo:\n"
+        "    def __init__(self):\n"
+        "        open('/tmp/x', 'w').write('side effect')\n"
+        "    def find(self, name):\n"
+        "        return name\n"
+    )
+    harness, reason = extract_harness(code, 5)
+    assert harness is None and "non-trivial constructor" in reason
+
+
+def test_extract_harness_supports_static_and_class_methods():
+    static = "class A:\n    @staticmethod\n    def f(name):\n        return name\n"
+    harness, reason = extract_harness(static, 4)
+    assert harness is not None and reason == ""
+    assert harness.rstrip().endswith("target = A.f")
+    cls = "class A:\n    @classmethod\n    def f(cls, name):\n        return name\n"
+    harness, reason = extract_harness(cls, 4)
+    assert harness is not None and reason == ""
+    assert harness.rstrip().endswith("target = A.f")
+
+
+def test_extract_harness_rejects_property_and_async():
+    prop = "class A:\n    @property\n    def f(self, name):\n        return name\n"
+    harness, reason = extract_harness(prop, 4)
+    assert harness is None and "property-style" in reason
+    asyncio = "class A:\n    async def f(self, name):\n        return name\n"
+    harness, reason = extract_harness(asyncio, 3)
+    assert harness is None and "async" in reason
+
+
+def test_method_real_code_is_genuinely_exploitable():
+    harness, reason = extract_harness(METHOD_SQLI, 3)
+    assert harness is not None and reason == ""
+    result = prove_real_exploit("sqli", harness, runner())
+    assert result.status == "STILL_VULNERABLE"
+    assert result.real_exploit_shown is True
+
+
+def test_main_guard_is_allowed_but_never_executed():
+    code = (
+        "def f(name):\n"
+        "    return name\n"
+        "\n"
+        'if __name__ == "__main__":\n'
+        "    raise SystemExit('guard ran')\n"
+    )
+    harness, reason = extract_harness(code, 2)
+    assert harness is not None and reason == ""
+    ns = {"__name__": "blastradius_harness"}
+    exec(compile(harness, "<harness>", "exec"), ns)
+    assert ns["target"]("alice") == "alice"
 
 
 def test_supported_types():

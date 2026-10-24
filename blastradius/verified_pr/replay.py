@@ -2,8 +2,9 @@
 
 The sandbox PoC templates only need a namespace with a callable named
 ``target``. Instead of feeding them a synthetic reconstruction, replay builds
-a harness from the actual file: the real enclosing function of the flagged
-line, aliased to ``target``, executed with the REAL exploit payloads:
+a harness from the actual file: the real enclosing function/method of the
+flagged line, aliased to ``target`` (methods need a trivial constructor or
+a static/class binding; a top-level ``__main__`` guard is never executed), executed with the REAL exploit payloads:
 
 - pre-patch replay: the original payloads must yield ``[VULNERABLE]`` —
   genuine exploitability of the real code (stronger than pattern matching);
@@ -64,6 +65,75 @@ _SAFE_TOP_LEVEL = (
     ast.Pass,
 )
 
+
+def _is_main_guard(node: ast.AST) -> bool:
+    """Whether ``node`` is ``if __name__ == "__main__":`` (either order)."""
+    if not isinstance(node, ast.If) or not isinstance(node.test, ast.Compare):
+        return False
+    test = node.test
+    if len(test.ops) != 1 or not isinstance(test.ops[0], ast.Eq):
+        return False
+
+    def is_name(n: ast.AST) -> bool:
+        return isinstance(n, ast.Name) and n.id == "__name__"
+
+    def is_main(n: ast.AST) -> bool:
+        return isinstance(n, ast.Constant) and n.value == "__main__"
+
+    right = test.comparators[0]
+    return (is_name(test.left) and is_main(right)) or (is_main(test.left) and is_name(right))
+
+
+def _decorator_name(node: ast.AST) -> str:
+    if isinstance(node, ast.Name):
+        return node.id
+    if isinstance(node, ast.Attribute):
+        return node.attr
+    return ""
+
+
+def _constructor_is_trivial(cls: ast.ClassDef) -> bool:
+    """True when instantiating ``cls`` cannot do anything but bind self."""
+    for stmt in cls.body:
+        if not isinstance(stmt, ast.FunctionDef) or stmt.name != "__init__":
+            continue
+        args = stmt.args
+        if args.vararg or args.kwarg or args.kwonlyargs:
+            return False
+        positional = list(args.posonlyargs) + list(args.args)
+        if len(positional) != 1 or positional[0].arg != "self":
+            return False
+        for inner in stmt.body:
+            if isinstance(inner, ast.Pass):
+                continue
+            if isinstance(inner, ast.Expr) and isinstance(inner.value, ast.Constant):
+                continue
+            return False
+        return True
+    return True
+
+
+def _find_enclosing(tree: ast.Module, line_no: int):
+    """Innermost function/method containing ``line_no``, plus its class."""
+    best = None
+
+    def walk(nodes, cls):
+        nonlocal best
+        for node in nodes:
+            if isinstance(node, ast.ClassDef):
+                walk(node.body, "nested" if cls is not None else node)
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                start = node.lineno
+                end = getattr(node, "end_lineno", start)
+                if start <= line_no <= end:
+                    if best is None or start >= best[0].lineno:
+                        best = (node, cls)
+                    walk(node.body, cls)
+
+    walk(tree.body, None)
+    return best
+
+
 REPLAY_BLOCKED = "BLOCKED"
 REPLAY_STILL_VULNERABLE = "STILL_VULNERABLE"
 REPLAY_INCONCLUSIVE = "INCONCLUSIVE"
@@ -94,29 +164,47 @@ def extract_harness(file_content: str, line_no: int) -> Tuple[Optional[str], str
     for node in tree.body:
         if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant):
             continue  # module docstring
+        if _is_main_guard(node):
+            continue  # inert by construction: __name__ != "__main__"
         if not isinstance(node, _SAFE_TOP_LEVEL):
             return (
                 None,
                 f"top-level {type(node).__name__} is outside the replay scope "
-                "(imports, defs and constant assignments only)",
+                "(imports, defs, constant assignments and an inert main guard)",
             )
-    func: Optional[ast.FunctionDef] = None
-    for node in tree.body:
-        if not isinstance(node, ast.FunctionDef):
-            continue
-        start = node.lineno
-        end = getattr(node, "end_lineno", start)
-        if start <= line_no <= end:
-            if func is None or start > func.lineno:
-                func = node  # innermost enclosing function
-    if func is None:
-        return None, f"line {line_no} is not inside a module-level function"
-    if not func.args.args and not func.args.vararg:
-        return None, f"function {func.name!r} takes no arguments to attack"
+    found = _find_enclosing(tree, line_no)
+    if found is None:
+        return None, f"line {line_no} is not inside a function or method"
+    func, cls = found
+    if cls == "nested":
+        return None, "nested classes are outside the replay scope"
+    if isinstance(func, ast.AsyncFunctionDef):
+        return None, f"{func.name!r} is async; replay harness calls it synchronously"
+    decorators = {_decorator_name(d) for d in func.decorator_list}
+    if decorators & {"property", "cached_property", "setter", "deleter"}:
+        return None, f"{func.name!r} is a property-style accessor"
+    args = func.args
+    if not args.args and not args.posonlyargs and not args.vararg:
+        return None, f"{func.name!r} takes no arguments to attack"
+    bind: Optional[str] = None
+    if cls is not None and "staticmethod" in decorators:
+        bind = f"{cls.name}.{func.name}"
+    elif cls is not None and "classmethod" in decorators:
+        bind = f"{cls.name}.{func.name}"
+    elif cls is not None:
+        if not _constructor_is_trivial(cls):
+            return (
+                None,
+                f"class {cls.name!r} has a non-trivial constructor; "
+                "instantiating it in a harness could have side effects",
+            )
+        bind = f"{cls.name}().{func.name}"
+    else:
+        bind = func.name
     harness = file_content
     if not harness.endswith("\n"):
         harness += "\n"
-    harness += f"\ntarget = {func.name}\n"
+    harness += f"\ntarget = {bind}\n"
     return harness, ""
 
 
@@ -152,7 +240,7 @@ _BENIGN_PROBE = """\
 HARNESS = __HARNESS__
 
 def main():
-    ns = {}
+    ns = {"__name__": "blastradius_harness"}
     try:
         exec(compile(HARNESS, "<harness>", "exec"), ns)
         target = ns["target"]
@@ -184,7 +272,7 @@ PAYLOADS = __PAYLOADS__
 HIT_ON_EXCEPTION = __HIT_ON_EXCEPTION__
 
 def main():
-    ns = {}
+    ns = {"__name__": "blastradius_harness"}
     try:
         exec(compile(HARNESS, "<harness>", "exec"), ns)
         target = ns["target"]

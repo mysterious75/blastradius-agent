@@ -39,7 +39,7 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))  # allow running without pip install
 
 from blastradius.cli.display import RichDisplay  # noqa: E402
-from blastradius.cve_hunt import kev_enrichment, load_kev_file  # noqa: E402
+from blastradius.cve_hunt import kev_category_note, kev_enrichment, load_kev_file  # noqa: E402
 from blastradius.export.exporter import FindingsExporter  # noqa: E402
 from blastradius.hunter.scanner import CVEHunter, Finding, reconstruct_target_code  # noqa: E402
 from blastradius.tools.sandbox_tool import run_exploit_sandbox  # noqa: E402
@@ -384,15 +384,20 @@ def _render_comment(
         if ann:
             kev_lines.append((f, ann))
     if kev_lines:
-        lines += ["### ⚠️ Known-exploited CVE", ""]
+        lines += ["### ⚠️ KEV category signal", ""]
         for f, ann in kev_lines:
-            for cve in ann.get("kev") or []:
+            cves = [c for c in (ann.get("kev") or []) if c]
+            if not cves:
+                continue
+            epss_note = []
+            for cve in cves[:5]:
                 epss = (ann.get("epss") or {}).get(cve)
-                evidence = f"KEV {cve}" + (f" (EPSS {epss:.2f})" if epss is not None else "")
-                lines.append(
-                    f"- ⚠️ Known-exploited CVE — `{f.file}:{f.line}` ({f.vuln_type}): "
-                    f"evidence: `{evidence}`"
-                )
+                if epss is not None:
+                    epss_note.append(f"{cve} {epss:.2f}")
+            extra = f" | EPSS: {', '.join(epss_note)}" if epss_note else ""
+            lines.append(
+                f"- ⚠️ `{f.file}:{f.line}` ({f.vuln_type}): {kev_category_note(cves)}{extra}"
+            )
         lines.append("")
 
     if confirmed:

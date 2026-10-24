@@ -275,8 +275,9 @@ def test_kev_tag_and_gate(xss_repo, tmp_path, confirm_all):
     assert results["gate"]["exit_code"] == 0
 
     comment = (out / "pr-comment.md").read_text(encoding="utf-8")
-    assert "⚠️ Known-exploited CVE" in comment
-    assert "evidence: `KEV CVE-2021-1111`" in comment
+    assert "KEV category signal" in comment
+    assert "CVE-2021-1111" in comment
+    assert "not this exact code" in comment
 
     # --fail-on-kev: a matched KEV CVE always blocks even below the severity gate.
     out_block = tmp_path / "out_block"
@@ -312,4 +313,4 @@ def test_kev_no_match(xss_repo, tmp_path, confirm_all):
     assert results["gate"]["kev_blocked"] is False
 
     comment = (out / "pr-comment.md").read_text(encoding="utf-8")
-    assert "⚠️ Known-exploited CVE" not in comment
+    assert "KEV category signal" not in comment

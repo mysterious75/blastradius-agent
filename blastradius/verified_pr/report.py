@@ -2,6 +2,7 @@
 
 from typing import Any, Dict, List
 
+from blastradius.cve_hunt import kev_category_note
 from blastradius.verified_pr.models import (
     RETEST_FIXED,
     RETEST_STILL_VULNERABLE,
@@ -107,14 +108,18 @@ def render_comment(
                 f"{f['vuln_type']} | {f.get('cwe', '')} | {proven} | {re_mark} |"
             )
         lines.append("")
+        kev_any = False
         for f in new_findings:
             key = (f["file"], f["line"], f["vuln_type"])
-            for cve in kev_by_file.get(key, []):
-                lines.append(
-                    f"- ⚠️ Known-exploited CVE — `{f['file']}:{f['line']}` "
-                    f"({f['vuln_type']}): evidence: `KEV {cve}`"
-                )
-        if any(kev_by_file.values()):
+            cves = [c for c in kev_by_file.get(key, []) if c]
+            if not cves:
+                continue
+            kev_any = True
+            lines.append(
+                f"- ⚠️ KEV category signal — `{f['file']}:{f['line']}` "
+                f"({f['vuln_type']}): {kev_category_note(cves)}"
+            )
+        if kev_any:
             lines.append("")
 
     if dependency_impact:

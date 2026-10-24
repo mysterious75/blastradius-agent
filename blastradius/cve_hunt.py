@@ -310,6 +310,25 @@ def match_findings_to_kev(findings, kev: Optional[List[dict]] = None) -> List[di
     return matches
 
 
+def kev_category_note(cves: List[str], limit: int = 5) -> str:
+    """Describe a KEV hit honestly: same class, not this exact code.
+
+    The matcher is CWE/keyword based (``_entry_matches``), so a KEV entry
+    sharing ``CWE-89`` with a finding is a *category* signal — it does not
+    mean that entry's product/function is the code under review.
+    """
+    all_cves = [cve for cve in cves if cve]
+    shown = all_cves[:limit]
+    extra = len(all_cves) - len(shown)
+    listing = ", ".join(shown) if shown else "none"
+    if extra > 0:
+        listing += f" (+{extra} more)"
+    return (
+        f"{len(all_cves)} known-exploited CVE(s) share this vulnerability "
+        f"class (CWE/keyword match, not this exact code): {listing}"
+    )
+
+
 def kev_enrichment(findings, kev, epss_online: bool = False, epss_timeout: int = 30) -> List[dict]:
     """Annotate findings that match a given KEV snapshot (e.g. from ``--kev-file``).
 
