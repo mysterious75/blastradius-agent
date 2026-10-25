@@ -94,11 +94,20 @@ def test_sink_arg_tainted_constants():
 
 
 def test_sink_arg_tainted_identifiers():
-    # name-based fallback applies for direct callers / top-level code
-    assert _sink_arg_tainted("os.system(host)", False) is True
-    assert _sink_arg_tainted("requests.get(url)", False) is True
-    assert _sink_arg_tainted("pickle.loads(data)", False) is True
-    assert _sink_arg_tainted('open(file_path + name, "r")', False) is True
+    # Only strong input names taint by name; generic helper names (host, url,
+    # data, path, filename) are not evidence of user control and must be
+    # proven by an assignment-chain source instead.
+    assert _sink_arg_tainted("os.system(user_input)", False) is True
+    assert _sink_arg_tainted("requests.get(payload)", False) is True
+    assert _sink_arg_tainted("pickle.loads(payload)", False) is True
+    assert _sink_arg_tainted("open(user_input)", False) is True
+
+
+def test_generic_helper_names_are_not_taint_by_name():
+    assert _sink_arg_tainted("os.system(host)", False) is False
+    assert _sink_arg_tainted("requests.get(url)", False) is False
+    assert _sink_arg_tainted("pickle.loads(data)", False) is False
+    assert _sink_arg_tainted('open(file_path + name, "r")', False) is False
 
 
 def test_sink_arg_tainted_file_source_does_not_touch_literals():

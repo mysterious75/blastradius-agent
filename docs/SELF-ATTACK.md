@@ -51,6 +51,10 @@ as the primary output.
   5. a killed run leaves no artifact that a later run mistakes for proof.
 - Fast mode uses `--no-retest` to test the gate path; full mode includes
   re-testing. Record which mode was used.
+- **Scanner changes**: also run two repos with disjoint filenames through
+  `CVEHunter.scan_repo` from >= 8 threads and assert each result equals its
+  serial baseline with no foreign paths (`tests/test_scan_concurrency.py`).
+  This catches thread-local/cache bleed that gate-level tests miss.
 
 ## 4. Evidence format (paste into the PR body)
 

@@ -69,6 +69,27 @@ python -m pytest tests/ -q                              # 1175 tests, offline (n
   (`python -m blastradius.verified_pr`; workflows `verified-pr.yml`,
   `bitbucket-pipelines.yml`)
 
+## Mandatory per-task workflow (no exceptions)
+
+1. **Read** `PROJECT_RULES.md` and copy `CHECKLIST.md` into the task/PR body.
+2. **Write tests first** where practical: unit for logic, integration for
+   boundaries, e2e for the user-facing command. Security-sensitive code also
+   gets an adversarial test.
+3. **Shared state / concurrency changes** ship a many-users test: >= 8
+   concurrent invocations, disjoint inputs, deterministic results, no
+   cross-tenant files/findings.
+4. **Algorithmic changes** ship a bounded-time regression test (e.g. an
+   8k-line input must scan in seconds, not minutes).
+5. **Run the full suite**, not a subset: `python -m pytest tests/ -q`, then
+   `ruff check` / `ruff format --check`, then
+   `python scripts/quality_gate.py --base <base>`.
+6. **Attack your own work** before claiming done:
+   `python scripts/self_attack.py --quick --json`; for scanner changes also
+   `tests/test_scan_concurrency.py` and the performance test. Add any failure
+   as a regression test before fixing it.
+7. **Report evidence, not adjectives.** Anything not executed stays
+   `UNVERIFIED`. A green test run is not a security review.
+
 ## Guardrails (do not bypass)
 
 - **Authorized use only** — scan targets the user owns or has written
