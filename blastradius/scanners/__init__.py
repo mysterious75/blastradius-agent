@@ -43,6 +43,8 @@ def scan_file(path, code: Optional[str] = None):
             return []
     findings = []
     for scanner in get_scanners().values():
+        if scanner.name == "solidity" and Path(path).suffix.lower() != ".sol":
+            continue
         try:
             findings.extend(scanner.detect(code, path=str(path)))
         except Exception:
