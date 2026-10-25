@@ -47,7 +47,9 @@ def _repo_with(tmp_path, name, files, messages):
     _git(repo, "config", "user.name", "Test")
     for content, msg in zip(files, messages):
         for fname, text in content.items():
-            (repo / fname).write_text(text, encoding="utf-8")
+            path = repo / fname
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text, encoding="utf-8")
         _git(repo, "add", ".")
         _git(repo, "commit", "-q", "-m", msg)
     return repo
@@ -343,3 +345,21 @@ def test_kev_no_match(xss_repo, tmp_path, confirm_all):
 
     comment = (out / "pr-comment.md").read_text(encoding="utf-8")
     assert "KEV category signal" not in comment
+
+
+def test_same_basename_outside_diff_is_not_scanned(tmp_path):
+    """A finding in ``sub/app.py`` must not ride in on a changed ``app.py``."""
+    repo = _repo_with(
+        tmp_path,
+        "basename",
+        [
+            {"app.py": "def ok():\n    return 1\n", "sub/app.py": SQLI_LINE},
+            {"app.py": "def ok2():\n    return 2\n"},
+        ],
+        ["base", "touch app.py"],
+    )
+    out = tmp_path / "out-basename"
+    rc = main(["--repo", str(repo), "--base", "HEAD~1", "--out", str(out)])
+    assert rc == 0
+    summary = json.loads((out / "pr-results.json").read_text(encoding="utf-8"))
+    assert summary["candidates"] == 0

@@ -24,6 +24,13 @@ All notable changes to BlastRadius Agent are documented here.
   docstrings are skipped, Solidity rules only run on `.sol`, and traversal
   requires source-tainted paths (local temp dirs are ignored). Covered by
   `tests/test_scanner_self_scan_fp.py`.
+- The CVE hunter (`blastradius.hunter`) scored its own SQL/graphql PoC
+  template string at `reconstruct_target_code`, blocking the self-scan gate.
+  SQL concatenation is now matched on the executable portion of the line
+  (keyword remains matched in literals), so real sink lines still score.
+- PR scan diff filtering fell back to basename matching, so an unchanged
+  `benchmarks/corpus/.../ci.yml` was reported when `.github/workflows/ci.yml`
+  changed. Findings are now matched by normalized repo-relative path only.
 - Docker CI image left vulnerable `jaraco.context`/`wheel` copies vendored
   inside setuptools; the image now upgrades `setuptools>=84.2.1`, whose
   vendored copies are fixed.

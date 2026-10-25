@@ -730,10 +730,43 @@ def _is_skippable_line(line: str, lang: str, state: dict) -> bool:
     return False
 
 
+def _code_only(line: str) -> str:
+    """Executable portion of a line: string-literal contents masked out.
+
+    The SQL/graphql scorers look for a SQL keyword in the literal but the
+    concatenation must happen in code. Masking only the literal contents keeps
+    real ``"SELECT ... " + name`` findings while ignoring a vulnerable snippet
+    that is itself stored as a string (PoC templates, test fixtures).
+    """
+    out = []
+    quote = None
+    i = 0
+    while i < len(line):
+        ch = line[i]
+        if quote is not None:
+            if ch == "\\":
+                out.append("  ")
+                i += 2
+                continue
+            if ch == quote:
+                quote = None
+                out.append(ch)
+            else:
+                out.append(" ")
+        elif ch in "'\"`":
+            quote = ch
+            out.append(ch)
+        else:
+            out.append(ch)
+        i += 1
+    return "".join(out)
+
+
 def _score_sqli(line: str, has_source: bool) -> float:
     if not re.search(_SQL_KEYWORDS, line, re.I):
         return 0.0
-    if any(re.search(p, line) for p in _SQL_CONCAT):
+    executable = _code_only(line)
+    if any(re.search(p, executable) for p in _SQL_CONCAT):
         return 1.0 if has_source else 0.9
     return 0.0
 
@@ -844,7 +877,8 @@ def _score_jwt(line: str, has_source: bool) -> float:
 def _score_graphql(line: str, has_source: bool, has_graphql: bool) -> float:
     if not has_graphql:
         return 0.0
-    if re.search(_SQL_KEYWORDS, line, re.I) and any(re.search(p, line) for p in _SQL_CONCAT):
+    executable = _code_only(line)
+    if re.search(_SQL_KEYWORDS, line, re.I) and any(re.search(p, executable) for p in _SQL_CONCAT):
         return 0.8 if has_source else 0.7
     return 0.0
 

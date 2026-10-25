@@ -222,12 +222,7 @@ def main(argv=None) -> int:
     changed = _changed_files(args.repo, args.base)
     if changed:
         changed = {c.replace("\\", "/") for c in changed}
-        findings = [
-            f
-            for f in findings
-            if f.file.replace("\\", "/") in changed
-            or Path(f.file).name in {Path(c).name for c in changed}
-        ]
+        findings = [f for f in findings if _normalise_file(f, args.repo) in changed]
 
     # Baseline-aware dedup: drop findings that already exist at --baseline-ref.
     baseline_active = bool(args.baseline_ref)
