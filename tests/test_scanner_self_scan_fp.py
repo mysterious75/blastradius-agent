@@ -7,8 +7,11 @@ regression suite was added after the project's own PR scan flagged its scanner
 source and tests.
 """
 
+from pathlib import Path
+
 import pytest
 
+from blastradius.hunter import scanner as hunter_scanner
 from blastradius.scanners import scan_file
 from blastradius.scanners._util import (
     assigned_from_source,
@@ -111,3 +114,19 @@ def test_traversal_still_detects_source_assigned_path(tmp_path):
     )
     findings = _scan(tmp_path, "app.py", code)
     assert any(f.vuln_type == "traversal" for f in findings)
+
+
+def test_hunter_ignores_its_own_quoted_sql_poc_template():
+    """The PoC template is a string; the hunter must not flag its own source."""
+    src = Path(hunter_scanner.__file__).read_text(encoding="utf-8")
+    line = next(
+        ln
+        for ln in src.splitlines()
+        if "SELECT * FROM users WHERE name" in ln and "user_input +" in ln
+    )
+    assert hunter_scanner._score_sqli(line, False) == 0.0
+
+
+def test_hunter_still_scores_real_sql_concatenation():
+    line = 'q = "SELECT * FROM users WHERE name = \'" + name + "\'"'
+    assert hunter_scanner._score_sqli(line, True) == 1.0
