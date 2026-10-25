@@ -95,8 +95,8 @@ _LANG_OF = {
 
 # Untrusted input sources (request data, query params, form fields...)
 SOURCES = [
-    r"request\.(?:args|form|values|get_json|query_params|cookies|headers|json|body)\b",
-    r"req\.(?:query|body|params|headers)\b",
+    r"(?<![A-Za-z0-9_])request\.(?:args|form|values|get_json|query_params|cookies|headers|json|body)\b",
+    r"(?<![A-Za-z0-9_])req\.(?:query|body|params|headers)\b",
     r"\$_GET|\$_POST|\$_REQUEST",
     r"getParameter\(",
     r"\binput\(",
@@ -127,10 +127,8 @@ _XSS_SINKS = [
     r"\bdocument\.writeln\(",
     r"\bdangerouslySetInnerHTML\b",
     r"\bv-html\b",
-    r"\brender_template_string\(",
     r"\binsertAdjacentHTML\(",
     r"\.html\(",
-    r"\beval\(",
 ]
 # echo/print reach the HTTP response only in PHP — elsewhere they are stdout
 # (Go/Ruby/shell echo lines were a huge false-positive class on real repos)
@@ -146,6 +144,8 @@ _XSS_SAFE = [
     r"markupsafe",
     r"escape_html",
     r"html_escape",
+    r"\.innerHTML\s*=\s*h\(",  # Wagtail's escape helper
+    r"\.html\s*\(\s*\w+\s*\+\s*['\"]%['\"]\s*\)",  # numeric progress preview
     r"escapeHtml",
     r"htmlEscape",
     r"HTMLEscape",
@@ -509,19 +509,70 @@ def _line_references_variable(line: str) -> bool:
         re.search(r"\(\s*[A-Za-z_$][\w$]*", stripped)  # sink(<var>
         or re.search(r"=\s*[A-Za-z_$][\w$]*", stripped)  # sink = <var>
         or re.search(r"\becho\b[^;]*[A-Za-z_$][\w$]*", stripped, re.I)
-        # . $var concat (PHP) — but NOT a method call like .html("literal")
+        # . $var concat (PHP) - but NOT a method call like .html("literal")
         or re.search(r"\.[ \t]*\$?[A-Za-z_]\w*(?![\w(])", stripped)
     )
 
 
-# Identifiers that can carry user-controlled data. `(?<![.\w])` at the start
-# (instead of bare `\b`) excludes attribute access (os.name, cfg.url) and
-# identifiers glued into longer names (hs6_url, api_url, next_url) — those are
-# constants, not taint.
-_SOURCE_LIKE_ARG_NAMES = re.compile(
-    r"(?<![.\w])(?:request|req|ctx|context|params|body|data|input|user|token|"
-    r"query|args|form|header|getParameter|FormValue|payload|host|url|path|file|"
-    r"name|filename|id)\b"
+_DEFINITION_LINE = re.compile(
+    r"^\s*(?:async\s+)?def\s+"
+    r"|^\s*(?:export\s+)?(?:async\s+)?function\s+"
+    r"|^\s*(?:public|private|protected|internal|static|final|abstract|"
+    r"synchronized|override|virtual)\b[^;=]*\w+\s*\("
+)
+
+
+def _is_definition_line(line: str) -> bool:
+    """A function/method signature is not a sink (real-repo FP class)."""
+    return bool(_DEFINITION_LINE.search(line))
+
+
+def _sink_call_arg(line: str, pattern: str) -> Optional[str]:
+    """Return the text inside the first paren group after ``pattern``."""
+    m = re.search(pattern, line, re.I)
+    if not m:
+        return None
+    start = line.find("(", m.start())
+    if start == -1:
+        return None
+    depth = 0
+    for i in range(start, len(line)):
+        if line[i] == "(":
+            depth += 1
+        elif line[i] == ")":
+            depth -= 1
+            if depth == 0:
+                return line[start + 1 : i]
+    return line[start + 1 :]
+
+
+def _expression_has_data(expr: str) -> bool:
+    """Whether a sink argument/value can carry non-constant data.
+
+    Interpolated template literals count; plain quoted/backtick literals and
+    booleans/null do not. This is the literal-vs-data gate that removed the
+    ``innerHTML = ''`` / ``innerHTML = "&#8210;"`` false-positive class.
+    """
+    if not expr:
+        return False
+    if "${" in expr or "#{" in expr:
+        return True
+    stripped = re.sub(r"(['\"])(?:\\.|(?!\1).)*?\1", " ", expr)
+    stripped = re.sub(r"`(?:\\.|[^`])*`", " ", stripped)
+    stripped = re.sub(r"\b(?:true|false|null|undefined|None|True|False)\b", " ", stripped)
+    return bool(re.search(r"[A-Za-z_$][\w$]*", stripped))
+
+
+def _write_value(line: str) -> Optional[str]:
+    """RHS of a real assignment (``=`` not ``==``/``!=``/``<=``/``>=``)."""
+    m = re.search(r"(?<![=!<>+\-*/%&|^])=(?!=)\s*(.+)$", line)
+    return m.group(1) if m else None
+
+
+# Parameter fallback needs a STRONG name: `filename`/`path`/`url` are normal
+# helper/CLI parameters and produced ~60 FPs across mature repos.
+_STRONG_SOURCE_ARG_NAMES = re.compile(
+    r"(?<![.\w])(?:payload|user_input|userInput|untrusted|tainted|attacker)\b"
 )
 
 # Taint-type scorers whose sink ARGUMENT must reference user-controlled data.
@@ -553,34 +604,6 @@ def _arg_is_pure_literal(line: str) -> bool:
     arg_text = line[start + 1 : end]
     stripped = re.sub(r"(['\"])(?:\\.|(?!\1)[^\\])*?\1", " ", arg_text)
     return not bool(re.search(r"[A-Za-z_$][\w$]*", stripped))
-
-
-def _arg_names_tainted(line: str) -> bool:
-    """Name-based fallback: any source-like identifier (host, url, data, ...)
-    inside the sink's paren group after string literals are stripped.
-
-    Kept for direct unit-test callers and top-level script code where
-    intraprocedural taint tracing cannot run.
-    """
-    start = line.find("(")
-    if start == -1:
-        return False
-    depth = 0
-    end = -1
-    for i in range(start, len(line)):
-        ch = line[i]
-        if ch == "(":
-            depth += 1
-        elif ch == ")":
-            depth -= 1
-            if depth == 0:
-                end = i
-                break
-    if end == -1:
-        return False
-    arg_text = line[start + 1 : end]
-    stripped = re.sub(r"(['\"])(?:\\.|(?!\1)[^\\])*?\1", " ", arg_text)
-    return bool(_SOURCE_LIKE_ARG_NAMES.search(stripped))
 
 
 def _candidate_vars(line: str) -> list:
@@ -647,15 +670,25 @@ def _sink_arg_tainted(line: str, has_source: bool, lines=None, idx=None) -> bool
         return False
     if lines is not None and idx is not None:
         if not has_enclosing_function(lines, idx - 1):
-            return _arg_names_tainted(line)
+            # Top-level installer/CLI/script code: generic `path`/`file`/`name`
+            # arguments are config, while transport names (req/url/body/...)
+            # keep the historical name-based signal.
+            stripped = re.sub(r"['\"][^'\"]*['\"]", " ", line)
+            return bool(
+                re.search(
+                    r"(?<![.\w])(?:req|request|ctx|params|body|data|input|user|"
+                    r"token|query|args|form|payload|url|host)\b",
+                    stripped,
+                )
+            )
         for var in _candidate_vars(line):
             if is_var_tainted(lines, idx - 1, var):
                 return True
         for var in _candidate_vars(line):
             if is_function_parameter(lines, idx - 1, var):
-                return has_source
+                return bool(_STRONG_SOURCE_ARG_NAMES.search(line))
         return False
-    return _arg_names_tainted(line)
+    return bool(_STRONG_SOURCE_ARG_NAMES.search(line))
 
 
 def _is_skippable_line(line: str, lang: str, state: dict) -> bool:
@@ -711,12 +744,38 @@ def _score_xss(line: str, has_source: bool, lang: str = "") -> float:
     sinks = _XSS_SINKS + (_PHP_XSS_SINKS if lang == "php" else [])
     if not any(re.search(p, line, re.I) for p in sinks):
         return 0.0
+
+    # A DOM property write needs a data-bearing value: reads, comparisons and
+    # literal/empty assignments are not XSS (dominant real-repo FP class).
+    if re.search(r"\b(?:innerHTML|outerHTML)\b", line, re.I):
+        value = _write_value(line)
+        if value is None or not _expression_has_data(value):
+            return 0.0
+        if re.search(r"\b(?:innerHTML|outerHTML)\b", value, re.I):
+            return 0.0  # assignment FROM an element property (read)
+    elif re.search(r"\.html\s*\(", line):
+        arg = _sink_call_arg(line, r"\.html\s*\(")
+        if arg is None or not _expression_has_data(arg):
+            return 0.0
+    elif re.search(r"(?:document\.writ(?:e|eln)|insertAdjacentHTML)\s*\(", line):
+        arg = _sink_call_arg(line, r"(?:document\.writ(?:e|eln)|insertAdjacentHTML)\s*\(")
+        if arg is None or not _expression_has_data(arg):
+            return 0.0
+
     if not _line_references_variable(line):
         return 0.0
     return 0.95 if has_source else 0.75
 
 
-def _score_ssrf(line: str, has_source: bool) -> float:
+def _score_ssrf(line: str, has_source: bool, lang: str = "") -> float:
+    # Distinguish server-side fetches from browser bundle calls: a client
+    # fetch (credentials/same-origin, no request object anywhere in the file)
+    # is not SSRF. Server proxy code (req.query -> fetch/axios) still is.
+    if lang in ("js", "ts", "tsx", "jsx"):
+        if re.search(r"credentials\s*:\s*['\"]same-origin", line, re.I):
+            return 0.0
+        if not has_source:
+            return 0.0
     if not any(re.search(p, line) for p in _SSRF_SINKS):
         return 0.0
     if any(re.search(p, line, re.I) for p in _SSRF_SAFE):
@@ -726,9 +785,24 @@ def _score_ssrf(line: str, has_source: bool) -> float:
     return 0.9 if has_source else 0.7
 
 
+_SSTI_SAFE = [
+    r"\.substitute\s*\(",  # string.Template interpolation, not evaluation
+    r"string\.Template",
+    # internal loaders (file/uri/lookup/loader) and developer-owned sources
+    r"\bTemplate\s*\(.*(?:lookup|filename|uri|file|loader)\s*=",
+    r"\bTemplate\s*\(.*\bsource\s*=\s*self\.",
+    r"\bTemplate\s*\(\s*self\.",  # developer-owned table/block attribute
+]
+
+
 def _score_ssti(line: str, has_source: bool, lang: str = "") -> float:
-    if re.search(r"render_template_string\s*\(", line):
-        if _line_references_variable(line):
+    if any(re.search(p, line, re.I) for p in _SSTI_SAFE):
+        return 0.0
+    # Ignore `Template (` inside string literals (error messages, docs).
+    code = re.sub(r"(['\"])(?:\\.|(?!\1)[^\\])*?\1", " ", line)
+    if re.search(r"render_template_string\s*\(", code):
+        arg = _sink_call_arg(line, r"render_template_string\s*\(")
+        if arg is not None and _expression_has_data(arg):
             return 0.9 if has_source else 0.8
         return 0.0
     # bare Template( is only an SSTI signal in Python — `new Template(...)` in
@@ -737,8 +811,9 @@ def _score_ssti(line: str, has_source: bool, lang: str = "") -> float:
     if lang == "py":
         template_sinks += r"|\bTemplate\s*\("
     template_sinks += r")"
-    if re.search(template_sinks, line):
-        if _line_references_variable(line):
+    if re.search(template_sinks, code):
+        arg = _sink_call_arg(line, r"\bTemplate\s*\(")
+        if arg is not None and _expression_has_data(arg):
             return 0.8 if has_source else 0.7
     return 0.0
 
@@ -871,7 +946,7 @@ _CMD_INJECTION_SINKS = [
     r"\bos\.spawn\s*\(",
     r"subprocess\.(?:run|call|Popen|check_call|check_output)\s*\([^)]*shell\s*=\s*True",
     r"(?<![.\w])exec\s*\(",
-    r"\beval\s*\(",
+    r"(?<![.\w])eval\s*\(",
     r"\bexecfile\s*\(",
     r"\bexecSync\s*\(",
     r"child_process\.(?:exec|execSync|spawn)\s*\(",
@@ -965,10 +1040,15 @@ _PROTO_POLLUTION_SINKS = [
     r"merge\s*=\s*\(.*\)\s*=>",
 ]
 _PROTO_POLLUTION_SAFE = [
-    r"hasOwnProperty\s*\(\s*['\"]__proto__",
-    r"hasOwnProperty\s*\.\s*call\s*\([^)]*['\"]__proto__",
+    # hasOwnProperty / Object.hasOwn are the canonical DEFENSES, not pollution
+    r"Object\.prototype\.hasOwnProperty",
+    r"\.hasOwnProperty\s*\(",
+    r"hasOwnProperty\s*\.\s*call",
+    r"Object\.hasOwn\s*\(",
+    r"Object\.create\s*\(\s*null\s*\)",
     r"Object\.freeze",
     r"structuredClone",
+    r"=\s*Object\.prototype\s*[;,)]?\s*$",  # reading the prototype, not writing it
 ]
 _JS_LANGS = ("js", "ts", "tsx", "jsx")
 
@@ -1009,13 +1089,13 @@ def _score_ci_yaml(text: str) -> float:
 
 # Path traversal / arbitrary file operations with user-controlled paths.
 _TRAVERSAL_SINKS = [
-    r"\bopen\s*\(\s*[A-Za-z_$][\w$]*",
-    r"\bopen\s*\([^)]*\b(?:file|path|filename|name)\b\s*,",
+    r"(?<![.\w])open\s*\(\s*[A-Za-z_$][\w$]*",
+    r"(?<![.\w])open\s*\([^)]*\b(?:file|path|filename|name)\b\s*,",
     r"\bfile_get_contents\s*\(",
     r"\bfread\s*\([^)]*,?\s*[A-Za-z_$]",
     r"\bfs\.(?:readFile|readFileSync|createReadStream)\s*\(",
     r"\breadFileSync\s*\(",
-    r"\b(?:send_file|FileResponse|static_file|sendfile)\s*\(",
+    r"\b(?:send_file|FileResponse|static_file)\s*\(",
     r"\bnew\s+File\s*\(",
     r"\bgetResourceAsStream\s*\(",
     r"\bPath\.join\s*\([^)]*[A-Za-z_$]",
@@ -1053,7 +1133,10 @@ _CRLF_SINKS = [
     r"\bheaders?\s*\[[^]]*\]\s*=[^=]",
     r"\.headers?\s*\.\s*set\s*\(",
 ]
-_CRLF_SAFE = [r"quote|escape|sanitize|strip|validate|encode"]
+_CRLF_SAFE = [
+    r"quote|escape|sanitize|strip|validate|encode",
+    r"(?:str|int|float)\s*\(\s*len\s*\(",  # numeric length, no CR/LF possible
+]
 
 _CRLF_ESCAPE = re.compile(r"\\[rn]", re.I)
 
@@ -1090,6 +1173,15 @@ def _builds_crlf(line: str) -> bool:
     return bool(re.search(r"[A-Za-z_$][\w$]*", stripped))
 
 
+def _crlf_value_text(line: str) -> str:
+    """The header VALUE side of a CRLF sink (RHS of ``=`` or call args)."""
+    value = _write_value(line)
+    if value is not None:
+        return value
+    start = line.find("(")
+    return line[start + 1 :] if start != -1 else line
+
+
 def _score_crlf(line: str, has_source: bool, lines=None, idx=None) -> float:
     if any(re.search(p, line, re.I) for p in _CRLF_SAFE):
         return 0.0
@@ -1097,18 +1189,20 @@ def _score_crlf(line: str, has_source: bool, lines=None, idx=None) -> float:
         return 0.0
     if not _line_references_variable(line):
         return 0.0
-    # Only flag when the header value is user-derived (assignment-chain taint
-    # check) OR the line literally builds CR/LF from input. A line like
-    # headers['Authorization'] = f'Bearer {token}' with token from config is
-    # NOT flagged.
+    # File-level has_source is too coarse here: every header write in a web app
+    # would inherit it from an unrelated `request.args` elsewhere in the file.
+    # Only a source token on the VALUE side (or taint traced into the value)
+    # can make a header CRLF-injectable.
+    value_text = _crlf_value_text(line)
+    value_source = any(re.search(p, value_text, re.I) for p in SOURCES)
     if lines is not None and idx is not None:
-        tainted = _crlf_value_tainted(line, has_source, lines, idx)
+        tainted = _crlf_value_tainted(line, value_source, lines, idx)
     else:
-        tainted = _sink_arg_tainted(line, has_source)
+        tainted = _sink_arg_tainted(line, value_source)
     if tainted:
-        return 0.8 if has_source else 0.7
+        return 0.8 if value_source else 0.7
     if _builds_crlf(line):
-        return 0.8 if has_source else 0.7
+        return 0.8 if value_source else 0.7
     return 0.0
 
 
@@ -1170,8 +1264,11 @@ _IDOR_ID_SOURCES = [
     rf"r\.URL\.Query\(\)\.Get\(['\"]{_IDOR_NAMES}['\"]\)",
     rf"chi\.URLParam\([^)]*['\"]{_IDOR_NAMES}['\"]\)|mux\.Vars\([^)]*\)\[['\"]{_IDOR_NAMES}['\"]\]",
     r"['\"][^'\"]*<int:[^'\"]*>['\"]",
-    r"request\.view_args",
-    rf"\b{_IDOR_NAMES}\s*=\s*(?:request\.|req\.|context\.|r\.FormValue)",
+    rf"request\.view_args\s*\[\s*['\"]{_IDOR_NAMES}['\"]",
+    rf"request\.(?:GET|POST)\s*\[\s*['\"]{_IDOR_NAMES}['\"]",
+    rf"\b{_IDOR_NAMES}\s*=\s*(?:request\.(?:args|form|GET|POST|body|json|data|"
+    rf"query_params|values|get_json|view_args|params)\b|req\.(?:params|query|body)\b|"
+    rf"context\.(?:request|args)\b|r\.FormValue)",
 ]
 # Authorization markers: auth decorators + object-level ownership checks.
 _IDOR_AUTH = [
@@ -1183,7 +1280,25 @@ _IDOR_AUTH = [
     r"is_owner|ownership|check_owner|assert_owner|verify_owner|belongs_to|"
     r"filter\([^)]*(?:user|owner|account|org|team)[^)]*\)|\.where\([^)]*(?:user_id|owner_id)",
     r"user_id\s*==|owner_id\s*==|==\s*current_user|current_user\.(?:id|uuid|uid)\s*==",
+    r"permission_policy|user_has_permission|has_perm\b|has_module_perms|"
+    r"permissions?_for_user|can_publish|can_edit|can_delete|user_can|"
+    r"staff_member_required|user_passes_test|for_user\s*\(|"
+    r"check_object_permissions|filter_queryset|get_queryset\s*\(",
 ]
+# An ID read is only an IDOR candidate when the function also touches an
+# object store (ORM/query/file) - a routing helper or event emitter is not.
+_IDOR_OBJECT_ACCESS = re.compile(
+    # the lookup must consume an object identifier, not any dict.get()
+    r"\.(?:get|get_or_404|filter|filter_by|find|find_one|findOne|first|last|"
+    r"load|query|select|fetch|objects)\s*\([^)]*(?:\bid\b|\bpk\b|\buuid\b|_id\b)"
+    r"|\.objects\."
+    r"|\b(?:SELECT|UPDATE|DELETE)\b[^;]{0,120}\b(?:id|pk|uuid)\b"
+    r"|\.where\s*\([^)]*(?:\bid\b|_id\b)"
+    r"|\bget_object_or_404\s*\([^)]*(?:\bid\b|\bpk\b|_id\b)"
+    r"|\b(?:get|find|fetch|load|retrieve|lookup)_[A-Za-z0-9_]*\s*"
+    r"\([^)]*(?:\bid\b|_id\b|\bpk\b|\buuid\b)",
+    re.I,
+)
 _FUNC_START = {
     "py": re.compile(r"^\s*def\s+"),
     "rb": re.compile(r"^\s*def\s+"),
@@ -1747,9 +1862,13 @@ class CVEHunter:
         for idx, line in enumerate(lines, start=1):
             if _is_skippable_line(line, lang, state):
                 continue
+            if _is_definition_line(line):
+                continue
             for vuln_type, scorer in _SCORERS:
                 if vuln_type == "xss":
                     score = _score_xss(line, has_source, lang)
+                elif vuln_type == "ssrf":
+                    score = _score_ssrf(line, has_source, lang)
                 elif vuln_type == "ssti":
                     score = _score_ssti(line, has_source, lang)
                 elif vuln_type == "traversal":
@@ -1762,6 +1881,8 @@ class CVEHunter:
                     score = _score_crlf(line, has_source, lines, idx)
                 else:
                     score = scorer(line, has_source)
+                if score <= 0.0:
+                    continue
                 # Constant-sink taint refinement: a sink whose argument does
                 # NOT reference user-controlled data is capped below the
                 # default min_confidence (0.7), so hardened codebases with
@@ -1858,10 +1979,13 @@ class CVEHunter:
                 k += 1
 
             func_text = "\n".join(decorators + [lines[i]] + lines[i + 1 : k])
-            has_id = any(re.search(p, func_text, re.I) for p in _IDOR_ID_SOURCES)
-            has_auth = any(re.search(p, func_text, re.I) for p in _IDOR_AUTH)
-            if has_id and not has_auth:
-                confidence = 0.8 if _IDOR_HIGH_CONF.search(func_text) else 0.75
+            # Docstrings often mention "id"/"get(...)"; only executable code counts.
+            code_text = re.sub(r'""".*?"""|\'\'\'.*?\'\'\'', " ", func_text, flags=re.S)
+            has_id = any(re.search(p, code_text, re.I) for p in _IDOR_ID_SOURCES)
+            has_auth = any(re.search(p, code_text, re.I) for p in _IDOR_AUTH)
+            has_object_access = bool(_IDOR_OBJECT_ACCESS.search(code_text))
+            if has_id and has_object_access and not has_auth:
+                confidence = 0.8 if _IDOR_HIGH_CONF.search(code_text) else 0.75
                 findings.append(self._make_finding(path, i + 1, lines, "idor", confidence))
             i = k
         return findings

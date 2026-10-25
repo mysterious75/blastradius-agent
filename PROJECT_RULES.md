@@ -38,6 +38,13 @@ Additional rules:
   `scripts/self_attack.py`) also ships at least one **adversarial** test
   (`@pytest.mark.adversarial`): hostile input, malformed repo, traversal,
   injection, race, or resource exhaustion.
+- **Shared-state / concurrency code** ships a many-users test: at least 8
+  concurrent invocations over disjoint inputs, asserting per-input results,
+  no cross-contamination, deterministic output, and bounded runtime (see
+  `tests/test_scan_concurrency.py`).
+- **Algorithmic changes** ship a bounded-time regression test when the
+  complexity could regress (e.g. an 8k-line input must finish in seconds,
+  not minutes; see `tests/test_scan_performance.py`).
 - Tests must be **offline by default**. Network, Docker, or real GitHub
   calls are opt-in and skipped when unavailable — never silently passed.
 - A bug fix ships the **regression test that fails before the fix**.
@@ -55,6 +62,9 @@ Copy this into the task/PR body and tick every box with evidence:
 - [ ] Integration test added/updated for every boundary touched.
 - [ ] E2E test added/updated for every user-facing path touched.
 - [ ] Adversarial test added for security-sensitive paths.
+- [ ] Many-users test added for shared state / concurrency (>= 8 parallel,
+      isolated inputs, deterministic).
+- [ ] Bounded-time regression test added for algorithmic changes.
 - [ ] `python -m pytest tests/ -q` green (full suite, not a subset).
 - [ ] `python benchmarks/run.py --verify` shows no F1 regression
       (scanner/rule changes only).
@@ -62,6 +72,8 @@ Copy this into the task/PR body and tick every box with evidence:
 - [ ] `python scripts/quality_gate.py --base <base>` green.
 - [ ] Self-attack run recorded (hostile + concurrent) with no leak,
       no crash, and the expected verdicts.
+- [ ] I tried to break my own change as a hostile user before accepting it;
+      every failure found is now a regression test.
 - [ ] Docs/CHANGELOG updated; known limits labelled `UNVERIFIED`.
 - [ ] No secrets/PII in the diff; redaction verified if outputs changed.
 - [ ] Commit message says **what is proven**, not just what changed.
