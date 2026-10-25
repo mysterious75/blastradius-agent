@@ -22,6 +22,7 @@ or an ``execute(..., (var,))`` tuple) is present in the function.
 """
 
 import re
+import threading
 
 # Real user-input APIs (assignment RHS matching means the value originates from
 # user input). Taint is assignment-chain based, not name based: a bare
@@ -31,8 +32,8 @@ import re
 # ``self.request`` never match; `(?<![.\w])` guards keep `params[`/`ctx.query`/
 # `context.request` from substring-matching inside other identifiers.
 _SOURCE_RE = re.compile(
-    r"request\.(?:args|form|values|get_json|query_params|cookies|headers|json|body)\b"
-    r"|req\.(?:query|body|params|headers)\b"
+    r"(?<![A-Za-z0-9_])request\.(?:args|form|values|get_json|query_params|cookies|headers|json|body)\b"
+    r"|(?<![A-Za-z0-9_])req\.(?:query|body|params|headers)\b"
     r"|\$_GET|\$_POST|\$_REQUEST"
     r"|getParameter\s*\("
     r"|r\.FormValue\s*\("
@@ -198,12 +199,36 @@ def sink_arg_var(line: str) -> str:
     return ""
 
 
+# Per-thread, per-file prefix index of nearest function starts. The old
+# implementation scanned upward for every sink candidate, turning a large
+# top-level data module (pip's idna/uts46data.py, 16k lines) into O(n^2)
+# regex work. The index holds a strong reference to ``lines`` so an id can
+# never be reused by a different list while cached.
+_FUNC_INDEX = threading.local()
+
+
+def _func_starts(lines: list):
+    cached = getattr(_FUNC_INDEX, "value", None)
+    if cached is not None and cached[0] is lines:
+        return cached[1]
+    starts = [None] * len(lines)
+    current = None
+    for i, line in enumerate(lines):
+        if _FUNC_START_RE.search(line):
+            current = i
+        starts[i] = current
+    _FUNC_INDEX.value = (lines, starts)
+    return starts
+
+
 def _find_func_start(lines: list, sink_line_idx: int):
     """Nearest function-start line index above the sink (or None)."""
-    for i in range(sink_line_idx - 1, -1, -1):
-        if _FUNC_START_RE.search(lines[i]):
-            return i
-    return None
+    if sink_line_idx <= 0 or not lines:
+        return None
+    starts = _func_starts(lines)
+    if sink_line_idx >= len(starts):
+        sink_line_idx = len(starts)
+    return starts[sink_line_idx - 1]
 
 
 def _find_assignment(lines: list, var: str, start_idx: int, end_idx: int):

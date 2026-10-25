@@ -1,4 +1,4 @@
-.PHONY: setup test scan blast server docker install publish tag clean lint format
+.PHONY: setup test scan blast server docker install publish tag clean lint format check
 
 # BlastRadius Agent — Make targets
 # Usage: TARGET and REPO can be overridden, e.g. make scan TARGET=https://github.com/org/repo
@@ -13,6 +13,10 @@ install:
 
 test:
 	python -m pytest tests/ -v
+
+check:
+	python -m pytest tests/ -q
+	python scripts/self_attack.py --quick --json
 
 scan:
 	python -m blastradius.hunter --target $(TARGET)

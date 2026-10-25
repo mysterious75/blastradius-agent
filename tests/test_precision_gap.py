@@ -78,8 +78,9 @@ def test_sink_arg_tainted_unit():
 
     plines = PARAM_STYLE.splitlines()
     idx2 = next(i for i, line in enumerate(plines, 1) if "requests.get(url)" in line)
-    # url is a function parameter + file has request.args -> tainted
-    assert _sink_arg_tainted(plines[idx2 - 1], True, plines, idx2) is True
+    # generic helper names (url/host/data/path) are not taint by name alone;
+    # the caller's request.args is cross-function and not intraprocedural proof
+    assert _sink_arg_tainted(plines[idx2 - 1], True, plines, idx2) is False
 
     rlines = REAL_INPUT.splitlines()
     idx3 = next(i for i, line in enumerate(rlines, 1) if "os.system(host)" in line)

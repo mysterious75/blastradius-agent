@@ -92,6 +92,27 @@ jobs:
       - name: Run tests (Windows path/encoding regressions)
         run: pytest tests/ -q
 
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Build image
+        run: docker build -t blastradius:ci .
+      - name: Verify non-root runtime + CLI
+        run: |
+          uid="$(docker run --rm blastradius:ci id -u)"
+          test "$uid" != "0"
+          docker run --rm blastradius:ci python -m blastradius.verified_pr --help > /dev/null
+      - name: Trivy scan (fail on fixable CRITICAL/HIGH)
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: blastradius:ci
+          format: table
+          exit-code: "1"
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH
+          vuln-type: os,library
+
   benchmark:
     runs-on: ubuntu-latest
     steps:
