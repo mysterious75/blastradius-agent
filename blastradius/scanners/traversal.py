@@ -9,7 +9,10 @@ resolve, secure_filename) are skipped.
 import re
 
 from blastradius.scanners._util import (
+    assigned_from_source,
     code_has_source,
+    code_only,
+    first_arg_var,
     has_source,
     make_finding,
     references_variable,
@@ -50,11 +53,18 @@ class TraversalScanner:
             return []
 
         def check(line, idx):
-            if not any(re.search(p, line, re.I) for p in _SINKS):
+            executable = code_only(line)
+            if not any(re.search(p, executable, re.I) for p in _SINKS):
                 return None
-            if not references_variable(line):
+            if not references_variable(executable):
                 return None
-            confidence = 0.85 if (has_source(line) or has_source_flag) else 0.7
+            arg = first_arg_var(executable)
+            # A path built from a local temp dir is not traversal. Require the
+            # sink argument to be tainted (source on the line or an
+            # assignment-chain from a source elsewhere in the file).
+            if not (has_source(executable) or assigned_from_source(code, arg)):
+                return None
+            confidence = 0.85 if (has_source(executable) or has_source_flag) else 0.7
             return make_finding(
                 path,
                 idx,

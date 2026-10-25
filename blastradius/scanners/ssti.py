@@ -6,6 +6,7 @@ Sinks: render_template_string(user), jinja2 Environment().from_string(user).
 import re
 
 from blastradius.scanners._util import (
+    code_only,
     code_has_source,
     has_source,
     make_finding,
@@ -30,13 +31,14 @@ class SSTIScanner:
         has_source_flag = code_has_source(code)
 
         def check(line, idx):
-            if _SAFE.search(line):
+            executable = code_only(line)
+            if _SAFE.search(executable):
                 return None
-            if not any(re.search(p, line, re.I) for p in _SINKS):
+            if not any(re.search(p, executable, re.I) for p in _SINKS):
                 return None
-            if not references_variable(line):
+            if not references_variable(executable):
                 return None
-            confidence = 0.9 if (has_source(line) or has_source_flag) else 0.75
+            confidence = 0.9 if (has_source(executable) or has_source_flag) else 0.75
             return make_finding(
                 path,
                 idx,

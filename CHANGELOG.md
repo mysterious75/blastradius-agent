@@ -17,6 +17,16 @@ All notable changes to BlastRadius Agent are documented here.
   suite plus quick self-attack.
 
 ### Fixed
+- CI-diff scanners (`blastradius.scanners`) flagged quoted code samples,
+  comments, and docstrings, so the project's own PR scan reported its test
+  fixtures and PoC templates as findings. Sink matching now runs on the
+  executable portion of each line (quote-aware literal masking), comments and
+  docstrings are skipped, Solidity rules only run on `.sol`, and traversal
+  requires source-tainted paths (local temp dirs are ignored). Covered by
+  `tests/test_scanner_self_scan_fp.py`.
+- Docker CI image left vulnerable `jaraco.context`/`wheel` copies vendored
+  inside setuptools; the image now upgrades `setuptools>=84.2.1`, whose
+  vendored copies are fixed.
 - Static scan could hang on a large top-level data module: pip's
   `_vendor/idna/uts46data.py` (16.9k lines) took ~920 s because
   `_find_func_start` rescanned upward for every sink on every line (O(nÂ²),

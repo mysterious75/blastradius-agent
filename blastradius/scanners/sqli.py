@@ -8,6 +8,7 @@ import re
 
 from blastradius.scanners._util import (
     code_has_source,
+    code_only,
     has_source,
     make_finding,
     references_variable,
@@ -15,7 +16,7 @@ from blastradius.scanners._util import (
 )
 
 _SQL_KEYWORDS = re.compile(r"\b(?:SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|UNION)\b", re.I)
-_CONCAT = re.compile(r"['\"][^'\"]{0,200}['\"]\s*\+\s*[^\s'\"+=]")
+_CONCAT_CODE = re.compile(r"\+\s*[A-Za-z_$][\w$]*")
 _RAW_SINK = re.compile(
     r"\b(?:execute|executemany|executescript|raw|query|exec)\s*\("
     r"|sqlalchemy\.text\(|psycopg2\.connect\(|\.execute\(",
@@ -38,11 +39,12 @@ class SQLiScanner:
         has_source_flag = code_has_source(code)
 
         def check(line, idx):
+            executable = code_only(line)
             if not _SQL_KEYWORDS.search(line):
                 return None
             if _PARAMETERIZED.search(line):
                 return None  # safe pattern
-            if _CONCAT.search(line) and (has_source(line) or has_source_flag):
+            if _CONCAT_CODE.search(executable) and (has_source(line) or has_source_flag):
                 return make_finding(
                     path,
                     idx,
@@ -54,7 +56,7 @@ class SQLiScanner:
                     "SQL injection: user input is concatenated into a SQL statement.",
                     "Use parameterized queries / prepared statements for all database interactions.",
                 )
-            if _RAW_SINK.search(line) and references_variable(line):
+            if _RAW_SINK.search(executable) and references_variable(executable):
                 return make_finding(
                     path,
                     idx,

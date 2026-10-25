@@ -9,6 +9,7 @@ flagged (excluded after a dot).
 import re
 
 from blastradius.scanners._util import (
+    code_only,
     code_has_source,
     has_source,
     make_finding,
@@ -66,9 +67,12 @@ class CmdInjectionScanner:
         has_source_flag = code_has_source(code)
 
         def check(line, idx):
-            if not any(re.search(p, line, re.I) for p in _SINKS):
+            executable = code_only(line)
+            if not any(re.search(p, executable, re.I) for p in _SINKS):
                 return None
-            if any(re.search(p, line, re.I) for p in _EXEC_SINKS) and _SANDBOXED_EXEC.search(line):
+            if any(re.search(p, executable, re.I) for p in _EXEC_SINKS) and _SANDBOXED_EXEC.search(
+                executable
+            ):
                 # sandboxed exec/eval (restricted builtins / sanitized AST /
                 # allowlisted imports): below the 0.7 candidate threshold —
                 # still discoverable via code_flows / real-repo targets.
@@ -83,11 +87,11 @@ class CmdInjectionScanner:
                     "Command/code injection: user input reaches an OS command or eval sink.",
                     "Use list-form subprocess without shell=True and an allowlist; never eval user input.",
                 )
-            if _SAFE.search(line):
+            if _SAFE.search(executable):
                 return None
-            if not references_variable(line):
+            if not references_variable(executable):
                 return None
-            confidence = 0.9 if (has_source(line) or has_source_flag) else 0.75
+            confidence = 0.9 if (has_source(executable) or has_source_flag) else 0.75
             return make_finding(
                 path,
                 idx,

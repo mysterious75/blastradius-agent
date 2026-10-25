@@ -9,6 +9,7 @@ structuredClone) are skipped. Candidate-only: no PoC template.
 import re
 
 from blastradius.scanners._util import (
+    code_only,
     code_has_source,
     has_source,
     make_finding,
@@ -41,13 +42,16 @@ class ProtoPollutionScanner:
         has_source_flag = code_has_source(code)
 
         def check(line, idx):
+            executable = code_only(line)
+            # Safe guards are identifiers (plus a string-literal key), so they
+            # are checked on the raw line; the sink itself must be executable.
             if _SAFE.search(line):
                 return None
             if not any(re.search(p, line) for p in _SINKS):
                 return None
-            if not references_variable(line):
+            if not references_variable(executable):
                 return None
-            confidence = 0.85 if (has_source(line) or has_source_flag) else 0.75
+            confidence = 0.85 if (has_source(executable) or has_source_flag) else 0.75
             return make_finding(
                 path,
                 idx,
