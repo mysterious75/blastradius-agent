@@ -40,7 +40,7 @@ prover*, not as an autonomous security authority.
 | Test suite | **1206 passed, 1 skipped**; ruff clean; benchmark 16/16 F1 1.000 | âœ… |
 | Dependabot security updates | **disabled** | âŒ P1 |
 | PyPI install | `blastradius-agent` â†’ **404**, name not published | âš ï¸ source install only |
-| Container | non-root + healthcheck added; **Docker daemon unavailable â†’ UNVERIFIED** | âš ï¸ |
+| Container | non-root + healthcheck; image builds, Trivy clean of fixable CRITICAL/HIGH, Docker dry-run verified | partial |
 
 ## P0 â€” must be true before calling it a launch
 
@@ -73,9 +73,9 @@ prover*, not as an autonomous security authority.
 - **Auth by default**: `BLASTRADIUS_API_KEY` unset currently means dev mode;
   require an explicit `--dev` flag, refuse non-loopback bind without a key.
   Add rate limiting + an audit log (ASVS 16.x).
-- **Container**: build the main image in CI, run Trivy/Grype, confirm
-  non-root + read-only where possible; the Dockerfile change is unverified
-  locally.
+- **Container**: verified locally: non-root (uid 999), Trivy finds no
+  fixable CRITICAL/HIGH (OS + Python packages), sandbox PoC benchmark
+  12/16 proven, CI docker job enforces the same build + scan.
 - **Dependencies**: enable Dependabot security updates, add a lock/constraints
   file for reproducible installs, keep `pip-audit` strict.
 - **SAST/fuzzing**: CodeQL (or Semgrep) on `blastradius/`, plus property-based

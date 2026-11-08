@@ -33,7 +33,11 @@ All notable changes to BlastRadius Agent are documented here.
   changed. Findings are now matched by normalized repo-relative path only.
 - Docker CI image left vulnerable `jaraco.context`/`wheel` copies vendored
   inside setuptools; the image now upgrades `setuptools>=84.2.1`, whose
-  vendored copies are fixed.
+  vendored copies are fixed. The base `python:3.11-slim` layer also shipped
+  a HIGH `zlib1g`; the image now installs the current Debian security
+  revision (`1:1.3.dfsg+really1.3.1-1+deb13u1`). Verified locally: image
+  builds, runs as uid 999, Trivy reports no fixable CRITICAL/HIGH, and the
+  sandbox benchmark proves 12/16 PoCs.
 - Static scan could hang on a large top-level data module: pip's
   `_vendor/idna/uts46data.py` (16.9k lines) took ~920 s because
   `_find_func_start` rescanned upward for every sink on every line (O(nÂ²),

@@ -7,6 +7,12 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
+# Base image OS packages: pull the current security revision (zlib1g is
+# flagged HIGH by Trivy in the stock python:3.11-slim layer).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends zlib1g \
+    && rm -rf /var/lib/apt/lists/*
+
 # Non-root runtime: the scanner never needs root, and a compromised
 # dashboard/API process must not be able to modify the image or pip state.
 RUN groupadd --system app \
