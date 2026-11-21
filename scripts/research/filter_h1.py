@@ -1,9 +1,13 @@
 """Filter HackerOne corpus CSV -> report IDs (bounty>0 OR high upvotes) AND repo-typical vuln classes."""
-import csv, re, sys
 
-SRC = r"D:\vora\New folder\mycli\blastradius-agent\learningfromreport\hackerone_reports_14833_corpus.csv"
-OUT = r"D:\vora\New folder\mycli\blastradius-agent\reports5000\h1_ids_all.txt"
-STATS = r"D:\vora\New folder\mycli\blastradius-agent\reports5000\h1_filter_stats.txt"
+import csv
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+SRC = ROOT / "learningfromreport" / "hackerone_reports_14833_corpus.csv"
+OUT = ROOT / "reports5000" / "h1_ids_all.txt"
+STATS = ROOT / "reports5000" / "h1_filter_stats.txt"
 
 # Allowed vuln-type base names (matched case-insensitively on the part before " - ")
 ALLOWED_TYPES = [
@@ -35,7 +39,14 @@ ALLOWED_TYPES = [
     "format string",
 ]
 # Title keyword fallback for classes not represented in vuln_type column
-TITLE_KEYWORDS = ["ssti", "template injection", "prototype pollution", "crlf", "deserialization", "xxe"]
+TITLE_KEYWORDS = [
+    "ssti",
+    "template injection",
+    "prototype pollution",
+    "crlf",
+    "deserialization",
+    "xxe",
+]
 
 ID_RE = re.compile(r"hackerone\.com/reports/(\d+)")
 
@@ -48,17 +59,20 @@ with open(SRC, encoding="utf-8", errors="replace") as f:
             continue
         rows.append(row)
 
+
 def to_float(s):
     try:
         return float(s)
     except (ValueError, TypeError):
         return 0.0
 
+
 def to_int(s):
     try:
         return int(float(s))
     except (ValueError, TypeError):
         return 0
+
 
 def type_ok(vtype, title):
     base = (vtype or "").split(" - ")[0].strip().lower()
@@ -70,6 +84,7 @@ def type_ok(vtype, title):
         if kw in tl:
             return True
     return False
+
 
 UPVOTE_THRESHOLD = 15  # "high upvotes"
 matched = []
@@ -101,6 +116,7 @@ for i in ids:
         seen.add(i)
         uniq.append(i)
 
+OUT.parent.mkdir(parents=True, exist_ok=True)
 with open(OUT, "w", encoding="utf-8") as f:
     f.write("\n".join(uniq) + "\n")
 
@@ -114,5 +130,7 @@ with open(STATS, "w", encoding="utf-8") as f:
     for x in matched[:20]:
         f.write(f"{x[0]} up={x[3]} bounty={x[4]} | {x[1]} | {x[2]} | {x[5]}\n")
 
-print(f"total={stats['total']} bounty>0={stats['bounty_gt0']} upvotes>={UPVOTE_THRESHOLD}={stats['upvotes_ge_threshold']}")
+print(
+    f"total={stats['total']} bounty>0={stats['bounty_gt0']} upvotes>={UPVOTE_THRESHOLD}={stats['upvotes_ge_threshold']}"
+)
 print(f"filtered rows={len(matched)} unique_ids={len(uniq)}")

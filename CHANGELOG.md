@@ -15,6 +15,15 @@ All notable changes to BlastRadius Agent are documented here.
   bounded-time where relevant), run the full suite and quality gate, then
   attack the change with `scripts/self_attack.py`. `make check` runs the
   suite plus quick self-attack.
+- Library/CLI diagnostics moved behind `blastradius.logging_utils`: the
+  verified-PR pipeline and API server no longer call `print()` directly, and
+  CLI entrypoints configure the level via `--log-level` or
+  `BLASTRADIUS_LOG_LEVEL`.
+- Added gradual mypy coverage (`check_untyped_defs` for the package, blocking
+  scanner-package check, advisory full-package check) plus Hypothesis
+  property tests for literal masking and diff path normalisation.
+- Root-level planning notes moved to `docs/internal/`, the CVE submission
+  guide to `docs/`, and one-off corpus scripts to `scripts/research/`.
 
 ### Fixed
 - CI-diff scanners (`blastradius.scanners`) flagged quoted code samples,

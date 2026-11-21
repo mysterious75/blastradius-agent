@@ -1,7 +1,12 @@
-import urllib.request, os, zipfile, time
+import urllib.request
+import os
+import zipfile
+import time
+from pathlib import Path
 
-UA = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0'}
-DST = r"D:\vora\New folder\mycli\blastradius-agent\reports5000"
+UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0"}
+DST = str(Path(__file__).resolve().parents[2] / "reports5000")
+os.makedirs(DST, exist_ok=True)
 ZIP = os.path.join(DST, "advisory-database-main.zip")
 
 url = "https://codeload.github.com/github/advisory-database/zip/refs/heads/main"
@@ -16,7 +21,7 @@ with urllib.request.urlopen(req, timeout=300) as r, open(ZIP, "wb") as f:
             break
         f.write(chunk)
         total += len(chunk)
-print(f"downloaded {total/1e6:.1f} MB in {time.time()-t0:.0f}s -> {ZIP}")
+print(f"downloaded {total / 1e6:.1f} MB in {time.time() - t0:.0f}s -> {ZIP}")
 
 EXTRACT = os.path.join(DST, "ghsa_repo")
 os.makedirs(EXTRACT, exist_ok=True)

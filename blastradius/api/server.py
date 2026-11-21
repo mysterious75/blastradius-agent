@@ -7,7 +7,6 @@ and warns on startup.
 
 import json
 import os
-import sys
 import threading
 from typing import Optional
 
@@ -15,20 +14,20 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from blastradius.dashboard.store import ScanStore, run_scan_job
+from blastradius.logging_utils import get_logger
 from blastradius.web.calculator import router as _contagion_router
 
+log = get_logger(__name__)
+
 app = FastAPI(title="BlastRadius API", version="1.0.0")
-# Free public calculator (P1.2) — deliberately outside the Bearer-auth wall.
+# Free public calculator (P1.2) - deliberately outside the Bearer-auth wall.
 app.include_router(_contagion_router)
 _bearer = HTTPBearer(auto_error=False)
 _store = ScanStore()
 
 _API_KEY = os.getenv("BLASTRADIUS_API_KEY", "")
 if not _API_KEY:
-    print(
-        "WARNING: BLASTRADIUS_API_KEY not set — API running in dev mode without auth.",
-        file=sys.stderr,
-    )
+    log.warning("WARNING: BLASTRADIUS_API_KEY not set - API running in dev mode without auth.")
 
 
 def _require_auth(credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer)):
