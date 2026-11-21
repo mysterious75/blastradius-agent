@@ -30,5 +30,5 @@ on_error: fail-closed
 # Change-set budgets. Exceeding any of them is an analysis error under the
 # default fail-closed policy — an oversized PR is never silently marked safe.
 max_files: 100
-max_total_bytes: 200000
+max_total_bytes: 300000
 max_hunks_per_file: 50
