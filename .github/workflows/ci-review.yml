@@ -56,8 +56,15 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           BLASTRADIUS_AI_MODEL: ${{ vars.BLASTRADIUS_AI_MODEL }}
         run: |
-          POLICY="blastradius-ci.yml"
-          if [ ! -f "$POLICY" ]; then POLICY="blastradius-ci.example.yml"; fi
+          # Resolve from the workspace root: the gate may run with a
+          # different cwd, and a relative -f test can then pick up the
+          # wrong file (or none) and fail closed.
+          POLICY="$GITHUB_WORKSPACE/blastradius-ci.example.yml"
+          if [ -f "$GITHUB_WORKSPACE/blastradius-ci.yml" ]; then
+            POLICY="$GITHUB_WORKSPACE/blastradius-ci.yml"
+          fi
+          test -r "$POLICY"
+          echo "Using policy: $POLICY"
           python -m blastradius.ci gate \
             --repo "$GITHUB_WORKSPACE" \
             --base "origin/${{ github.event.pull_request.base.ref }}" \
