@@ -35,6 +35,8 @@ jobs:
         run: pip install -e ".[dev]"
       - name: Scanner package type check (blocking)
         run: mypy blastradius/scanners --follow-imports=skip --check-untyped-defs
+      - name: Agent package type check (blocking)
+        run: mypy blastradius/agents --follow-imports=skip --check-untyped-defs
       - name: Full package type check (advisory)
         continue-on-error: true
         run: mypy blastradius
@@ -142,8 +144,8 @@ jobs:
       # silently fall back to unsandboxed local execution.
       - name: Build sandbox image
         run: docker build -t blastradius-sandbox sandbox/
-      - name: "Run verified benchmark (CI gate: F1 >= 0.5)"
-        run: python benchmarks/run.py --verify --min-f1 0.5
+      - name: "Run verified benchmark (CI gate: F1 >= 0.5, precision >= 0.5)"
+        run: python benchmarks/run.py --verify --min-f1 0.5 --min-precision 0.5
       - name: "Run dynamic benchmark (CI gate: F1 >= 1.0)"
         run: python benchmarks/run_dynamic.py --min-f1 1.0
       - name: Upload benchmark report

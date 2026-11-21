@@ -15,6 +15,7 @@ Usage:
     python benchmarks/run.py
     python benchmarks/run.py --verify
     python benchmarks/run.py --min-f1 0.5      # CI gate: exit 1 below F1
+    python benchmarks/run.py --min-precision 0.8  # false-positive floor
 """
 
 import argparse
@@ -62,9 +63,12 @@ def run_target(target_dir: Path, min_confidence: float, verify: bool) -> dict:
         from blastradius.hunter.scanner import CVEHunter
 
         # Deterministic runs: ignore any user-learned FP rules on this machine.
+        original_loader = _scanner._load_learned_rules
         _scanner._load_learned_rules = lambda: {}
-
-        findings = CVEHunter(min_confidence=min_confidence).scan_repo(str(tmp))
+        try:
+            findings = CVEHunter(min_confidence=min_confidence).scan_repo(str(tmp))
+        finally:
+            _scanner._load_learned_rules = original_loader
 
         proven = 0
         if verify:
@@ -116,6 +120,7 @@ def _render_markdown(summary: dict) -> str:
         f"Corpus: `{summary['corpus']}`  ",
         f"Verify (sandbox PoC): `{summary['verify']}`  ",
         f"Min confidence: `{summary['min_confidence']}`  ",
+        f"Min precision: `{summary.get('min_precision', 0.0)}`  ",
         f"Elapsed: `{summary['elapsed_seconds']}s`",
         "",
         "| Target | Expected | Reported | Hits | Precision | Recall | F1 | Proven |",
@@ -137,6 +142,21 @@ def _render_markdown(summary: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _gate_failures(
+    f1: float,
+    precision: float,
+    min_f1: float,
+    min_precision: float,
+) -> list:
+    """Human-readable gate failures (empty list = pass)."""
+    failures = []
+    if f1 < min_f1:
+        failures.append(f"overall F1 {f1:.3f} < --min-f1 {min_f1}")
+    if precision < min_precision:
+        failures.append(f"overall precision {precision:.3f} < --min-precision {min_precision}")
+    return failures
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--corpus", default=str(ROOT / "corpus"), help="corpus directory")
@@ -148,6 +168,12 @@ def main(argv=None) -> int:
     )
     ap.add_argument("--min-confidence", type=float, default=0.7)
     ap.add_argument("--min-f1", type=float, default=0.0, help="exit 1 if overall F1 is below this")
+    ap.add_argument(
+        "--min-precision",
+        type=float,
+        default=0.0,
+        help="exit 1 if overall precision is below this (false-positive floor)",
+    )
     args = ap.parse_args(argv)
 
     corpus = Path(args.corpus)
@@ -170,6 +196,7 @@ def main(argv=None) -> int:
         "corpus": str(corpus),
         "verify": args.verify,
         "min_confidence": args.min_confidence,
+        "min_precision": args.min_precision,
         "elapsed_seconds": round(elapsed, 2),
         "totals": {
             **total,
@@ -190,10 +217,10 @@ def main(argv=None) -> int:
     print(_render_markdown(summary))
     print(f"[bench] JSON: {json_path}")
 
-    if f1 < args.min_f1:
-        print(f"[bench] FAIL: overall F1 {f1:.3f} < --min-f1 {args.min_f1}", file=sys.stderr)
-        return 1
-    return 0
+    failures = _gate_failures(f1, precision, args.min_f1, args.min_precision)
+    for failure in failures:
+        print(f"[bench] FAIL: {failure}", file=sys.stderr)
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":

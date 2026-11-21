@@ -24,6 +24,16 @@ All notable changes to BlastRadius Agent are documented here.
   property tests for literal masking and diff path normalisation.
 - Root-level planning notes moved to `docs/internal/`, the CVE submission
   guide to `docs/`, and one-off corpus scripts to `scripts/research/`.
+- Added a two-step threat-model and thin-slice audit agent
+  (`blastradius.agents.threat_slicing`): one-page threat model from repository
+  structure/advisories, then adversarial audits of auth, serialization,
+  JWT/crypto, and file/sandbox slices. Candidates are confirmed only by the
+  existing sandbox verifier.
+- Added an untrusted-repository-content boundary: README/comments/strings are
+  JSON-encoded, control-character-stripped, size-capped, and labelled as data
+  before reaching an LLM; injection markers are reported, never executed.
+- `benchmarks/run.py` now supports `--min-precision` alongside `--min-f1`, and
+  CI gates the verified benchmark on both.
 
 ### Fixed
 - CI-diff scanners (`blastradius.scanners`) flagged quoted code samples,

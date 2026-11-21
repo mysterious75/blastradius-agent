@@ -27,6 +27,9 @@ python benchmarks/run.py --verify
 
 # CI gate: fail if overall F1 drops below 0.5
 python benchmarks/run.py --min-f1 0.5
+
+# False-positive floor: fail if precision drops below 0.8
+python benchmarks/run.py --min-f1 0.5 --min-precision 0.8
 ```
 
 `--verify` needs a Docker daemon (with the `blastradius-sandbox` image) or

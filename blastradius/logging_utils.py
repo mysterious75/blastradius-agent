@@ -45,7 +45,7 @@ def configure_logging(
     ``INFO``.
     """
     logger = logging.getLogger(_ROOT)
-    level_name = (level or os.getenv("BLASTRADIUS_LOG_LEVEL", "INFO")).upper()
+    level_name = (level or os.getenv("BLASTRADIUS_LOG_LEVEL") or "INFO").upper()
     logger.setLevel(getattr(logging, level_name, logging.INFO))
     for existing in list(logger.handlers):
         logger.removeHandler(existing)

@@ -13,6 +13,16 @@ Entry points:
 from blastradius.agents.blackboard import AgentEvent, Blackboard
 from blastradius.agents.orchestrator import AgentGraph, AgentRunResult
 from blastradius.agents.roles import ExploitAgent, PatchAgent, ReconAgent
+from blastradius.agents.threat_slicing import (
+    CodeSlice,
+    SlicedAuditResult,
+    ThreatModel,
+    ThreatSlicingAgent,
+    build_slices,
+    build_threat_model,
+    inspect_repo,
+)
+from blastradius.agents.untrusted_content import UntrustedContent
 
 __all__ = [
     "AgentEvent",
@@ -22,4 +32,12 @@ __all__ = [
     "ReconAgent",
     "ExploitAgent",
     "PatchAgent",
+    "CodeSlice",
+    "SlicedAuditResult",
+    "ThreatModel",
+    "ThreatSlicingAgent",
+    "UntrustedContent",
+    "build_slices",
+    "build_threat_model",
+    "inspect_repo",
 ]
