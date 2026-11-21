@@ -533,6 +533,32 @@ related fixes are reviewed together. The graph is deterministic and
 LLM-independent — the tools prove, nothing is asserted — and each role
 carries a persona prompt ready for an LLM reasoning layer.
 
+### Threat-Model & Thin-Slice Audit
+
+For a sharper audit, `blastradius.agents` also ships a two-step slice agent. It
+first turns repository structure and prior advisories into a one-page threat
+model, then audits four thin slices (`auth`, `serialization`, `jwt_crypto`,
+`file_sandbox`) with red-team framing. Every candidate goes through the same
+sandbox verifier, so nothing is confirmed without an executed proof.
+
+```bash
+blastradius-slice --target ./repo                          # installed console script
+python -m blastradius.agents.sliced_cli --target ./repo     # equivalent module entry
+blastradius-slice --target ./repo --llm --out reports/slice # adversarial LLM audit
+```
+
+The **untrusted-content prompt-injection guard** treats target READMEs, code
+comments and string literals as data, never instructions. Before any text
+reaches an LLM it is size-capped, stripped of control characters, JSON-encoded
+with `</` escaped, labelled `UNTRUSTED_REPOSITORY_DATA`, and scanned for
+injection markers. The model is told that the payload is evidence only; the
+agent never executes repository code. Flagged content is reported in
+`sliced-audit.json` instead of silently trusted.
+
+Reports go to `reports/threat-slicing/` by default (`threat-model.md` and
+`sliced-audit.json`). See `docs/threat-slicing.md` for the threat model and
+slice details.
+
 ## Dynamic Web Testing
 
 Beyond static source scanning, BlastRadius can test a **live target** with
