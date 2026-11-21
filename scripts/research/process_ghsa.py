@@ -1,11 +1,13 @@
 """Download + process the GitHub Advisory Database (GHSA) -> compact corpus."""
+
 import json
 import time
 import urllib.request
 import zipfile
 from pathlib import Path
 
-DST = Path("reports5000")
+DST = Path(__file__).resolve().parents[2] / "reports5000"
+DST.mkdir(parents=True, exist_ok=True)
 ZIP = DST / "ghsa.zip"
 URL = "https://codeload.github.com/github/advisory-database/zip/refs/heads/main"
 
@@ -19,11 +21,12 @@ if not ZIP.exists() or ZIP.stat().st_size < 10_000_000:
             if not chunk:
                 break
             f.write(chunk)
-    print(f"downloaded {ZIP.stat().st_size/1e6:.1f} MB in {time.time()-t0:.0f}s")
+    print(f"downloaded {ZIP.stat().st_size / 1e6:.1f} MB in {time.time() - t0:.0f}s")
 
 with zipfile.ZipFile(ZIP) as z:
     names = [
-        n for n in z.namelist()
+        n
+        for n in z.namelist()
         if n.startswith("advisory-database-main/advisories/github-reviewed/")
         and n.endswith(".json")
     ]
@@ -35,14 +38,16 @@ with zipfile.ZipFile(ZIP) as z:
         except Exception:
             continue
         sev = (d.get("database_specific") or {}).get("severity", "")
-        corpus.append({
-            "id": d.get("id"),
-            "aliases": d.get("aliases", [])[:3],
-            "summary": d.get("summary", "")[:300],
-            "severity": sev,
-            "published": d.get("published", ""),
-            "references": [r.get("url") for r in d.get("references", []) if r.get("url")][:5],
-        })
+        corpus.append(
+            {
+                "id": d.get("id"),
+                "aliases": d.get("aliases", [])[:3],
+                "summary": d.get("summary", "")[:300],
+                "severity": sev,
+                "published": d.get("published", ""),
+                "references": [r.get("url") for r in d.get("references", []) if r.get("url")][:5],
+            }
+        )
 
     (DST / "ghsa_corpus.json").write_text(
         json.dumps({"count": len(corpus), "advisories": corpus}, indent=1),

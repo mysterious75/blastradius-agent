@@ -1,4 +1,5 @@
-import requests, re
+import requests
+import re
 
 H = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0"}
 urls = [

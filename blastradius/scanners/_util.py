@@ -1,7 +1,7 @@
 """Shared helpers for the self-contained scanners."""
 
 import re
-from typing import List
+from typing import Callable, List, Optional
 
 from blastradius.hunter.scanner import Finding
 
@@ -31,8 +31,12 @@ def strip_literals(line: str) -> str:
         ch = line[i]
         if quote is not None:
             if ch == "\\":
-                out.append("  ")
-                i += 2
+                out.append(" ")
+                if i + 1 < len(line):
+                    out.append(" ")
+                    i += 2
+                else:
+                    i += 1
                 continue
             if ch == quote:
                 quote = None
@@ -94,7 +98,15 @@ def assigned_from_source(code: str, var: str) -> bool:
 
 
 def make_finding(
-    path, line, vuln_type, payload, confidence, severity, cwe, description, remediation
+    path: object,
+    line: int,
+    vuln_type: str,
+    payload: str,
+    confidence: float,
+    severity: str,
+    cwe: str,
+    description: str,
+    remediation: str,
 ) -> Finding:
     return Finding(
         file=str(path or ""),
@@ -110,7 +122,11 @@ def make_finding(
     )
 
 
-def scan_lines(code: str, path, predicate) -> List[Finding]:
+def scan_lines(
+    code: str,
+    path: object,
+    predicate: Callable[[str, int], Optional[Finding]],
+) -> List[Finding]:
     """Run a per-line predicate returning Finding-or-None.
 
     Comment-only lines are skipped: documentation and commented-out code are

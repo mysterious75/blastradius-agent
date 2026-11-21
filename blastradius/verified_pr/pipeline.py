@@ -26,6 +26,7 @@ from blastradius.ci.redact import redact_secrets
 from blastradius.cli.display import RichDisplay
 from blastradius.export.exporter import FindingsExporter
 from blastradius.hunter.scanner import CVEHunter, Finding, reconstruct_target_code
+from blastradius.logging_utils import configure_logging, get_logger
 from blastradius.patcher.loop import PatchLoop
 from blastradius.tools.sandbox_tool import run_exploit_sandbox
 from blastradius.verified_pr.impact import dependency_impact
@@ -47,6 +48,7 @@ from blastradius.verified_pr.report import render_comment
 from blastradius.verified_pr.retest import retest_patches
 
 _GATE_CHOICES = ("critical", "high", "medium", "low")
+log = get_logger(__name__)
 
 
 def _ref_exists(repo: str, ref: str) -> bool:
@@ -269,7 +271,7 @@ def run_verified_pr(
         try:
             kev_entries = load_kev_file(kev_file)
         except Exception as exc:
-            print(f"[!] could not load --kev-file {kev_file}: {exc}")
+            log.warning("[!] could not load --kev-file %s: %s", kev_file, exc)
             kev_entries = []
         if kev_entries:
             for enr in kev_enrichment(
@@ -277,9 +279,11 @@ def run_verified_pr(
             ):
                 finding = enr["finding"]
                 kev_keys[_key(repo, finding)] = sorted(enr["kev_cves"])
-            print(
-                f"[kev] {len(kev_keys)}/{len(confirmed)} confirmed finding(s) "
-                f"match known-exploited CVE(s) (epss_online={epss_online})"
+            log.info(
+                "[kev] %s/%s confirmed finding(s) match known-exploited CVE(s) (epss_online=%s)",
+                len(kev_keys),
+                len(confirmed),
+                epss_online,
             )
     # --fail-on-kev blocks on any confirmed KEV-matched finding present in
     # the diff (content-based like the rest of the gate: a scratch-tree fix
@@ -365,14 +369,24 @@ def run_verified_pr(
     if new_findings:
         display.print_findings_table(new_findings)
     else:
-        print("[*] no new candidate findings on the diff")
-    print(f"[*] {len(new_findings)} new candidate(s), {len(confirmed)} confirmed exploitable")
-    print(
-        f"[*] re-test: {sum(1 for o in retest_outcomes if o.status == RETEST_FIXED)}/"
-        f"{len(retest_outcomes)} patch(es) verified fixed on the patched tree"
+        log.info("[*] no new candidate findings on the diff")
+    log.info(
+        "[*] %s new candidate(s), %s confirmed exploitable",
+        len(new_findings),
+        len(confirmed),
     )
-    print(f"[gate] verdict={gate.verdict} blocking={len(gate.blocking)} -> exit {gate.exit_code}")
-    print(f"[*] comment: {out / 'verified-comment.md'}")
+    log.info(
+        "[*] re-test: %s/%s patch(es) verified fixed on the patched tree",
+        sum(1 for o in retest_outcomes if o.status == RETEST_FIXED),
+        len(retest_outcomes),
+    )
+    log.info(
+        "[gate] verdict=%s blocking=%s -> exit %s",
+        gate.verdict,
+        len(gate.blocking),
+        gate.exit_code,
+    )
+    log.info("[*] comment: %s", out / "verified-comment.md")
     return gate.exit_code, summary
 
 
@@ -395,7 +409,7 @@ def _post_github_status(repo: str, verdict: str, sha: str = "") -> None:
         )
         sha = sha_proc.stdout.strip() if sha_proc.returncode == 0 else ""
     if not slug or not sha:
-        print("[status] GITHUB_REPOSITORY or target sha unavailable; skipping status post")
+        log.warning("[status] GITHUB_REPOSITORY or target sha unavailable; skipping status post")
         return
     state = "success" if verdict == VERDICT_MERGE else "failure"
     description = (
@@ -420,9 +434,9 @@ def _post_github_status(repo: str, verdict: str, sha: str = "") -> None:
         timeout=60,
     )
     if proc.returncode != 0:
-        print(f"[status] gh api failed: {proc.stderr.strip()[:200]}")
+        log.warning("[status] gh api failed: %s", proc.stderr.strip()[:200])
     else:
-        print(f"[status] posted {state} for {sha[:12]}")
+        log.info("[status] posted %s for %s", state, sha[:12])
 
 
 def main(argv=None) -> int:
@@ -469,7 +483,14 @@ def main(argv=None) -> int:
         "pass the PR head SHA so protection sees it on the head commit)",
     )
     ap.add_argument("--out", default="verified-pr", help="output dir")
+    ap.add_argument(
+        "--log-level",
+        default=None,
+        choices=("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"),
+        help="log verbosity (default: BLASTRADIUS_LOG_LEVEL or INFO)",
+    )
     args = ap.parse_args(argv)
+    configure_logging(args.log_level)
     if not args.status_sha:
         import os
 
@@ -489,7 +510,7 @@ def main(argv=None) -> int:
             out_dir=args.out,
         )
     except Exception as exc:
-        print(f"[verified-pr] ERROR: {exc}")
+        log.error("[verified-pr] ERROR: %s", exc)
         return 2
 
     if args.notify:
@@ -504,13 +525,13 @@ def main(argv=None) -> int:
                 f"repo={summary['repo']}"
             )
         except Exception as exc:
-            print(f"[notify] failed (non-blocking): {exc}")
+            log.warning("[notify] failed (non-blocking): %s", exc)
 
     if args.post_status:
         try:
             _post_github_status(args.repo, summary["gate"]["verdict"], args.status_sha)
         except Exception as exc:
-            print(f"[status] failed (non-blocking): {exc}")
+            log.warning("[status] failed (non-blocking): %s", exc)
 
     if summary["gate"]["verdict"] == VERDICT_ERROR:
         return 2

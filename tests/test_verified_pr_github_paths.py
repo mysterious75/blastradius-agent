@@ -282,7 +282,7 @@ def test_path8_tooling_error_exit_two(tmp_path):
     assert pipeline.main(["--repo", str(repo), "--out", str(out_file)]) == 2
 
 
-def test_status_post_failure_never_changes_verdict(tmp_path, monkeypatch, capsys):
+def test_status_post_failure_never_changes_verdict(tmp_path, monkeypatch, caplog):
     """Write-denied token: the status post must fail gracefully without
     raising and without touching the gate verdict (fail-closed fork
     behavior depends on this). subprocess is stubbed to simulate the
@@ -305,7 +305,7 @@ def test_status_post_failure_never_changes_verdict(tmp_path, monkeypatch, capsys
     monkeypatch.setenv("GITHUB_REPOSITORY", "org/repo")
     assert _post_github_status(str(tmp_path), "BLOCK", "deadbeef") is None
     assert _post_github_status(str(tmp_path), "MERGE", "deadbeef") is None
-    assert "gh api failed" in capsys.readouterr().out
+    assert any("gh api failed" in record.getMessage() for record in caplog.records)
 
 
 # ---------------------------------------------------------------------------

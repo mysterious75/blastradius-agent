@@ -745,8 +745,12 @@ def _code_only(line: str) -> str:
         ch = line[i]
         if quote is not None:
             if ch == "\\":
-                out.append("  ")
-                i += 2
+                out.append(" ")
+                if i + 1 < len(line):
+                    out.append(" ")
+                    i += 2
+                else:
+                    i += 1
                 continue
             if ch == quote:
                 quote = None
