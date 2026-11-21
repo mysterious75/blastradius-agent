@@ -39,6 +39,12 @@ class ProtoPollutionScanner:
     name = "proto_pollution"
 
     def detect(self, code: str, path=None):
+        if path is not None and not str(path).lower().endswith(
+            (".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs")
+        ):
+            # Prototype pollution is JavaScript-runtime specific; Python/other
+            # files may legitimately contain JS snippets in test fixtures.
+            return []
         has_source_flag = code_has_source(code)
 
         def check(line, idx):
