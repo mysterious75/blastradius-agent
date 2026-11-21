@@ -16,7 +16,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, Union
 
 from blastradius.security.prompt_injection_guard import detect_injection
 
@@ -80,17 +80,18 @@ class UntrustedContent:
 
 
 def read_untrusted_file(
-    path: Path,
+    path: Union[str, Path],
     source: Optional[str] = None,
     max_chars: int = MAX_CONTENT_CHARS,
 ) -> UntrustedContent:
     """Read at most ``max_chars`` worth of bytes from ``path`` as untrusted data."""
+    resolved = Path(path)
     try:
-        with path.open("rb") as handle:
+        with resolved.open("rb") as handle:
             data = handle.read(_READ_BYTES + 1)
         text = data.decode("utf-8", errors="replace")
         if len(data) > _READ_BYTES:
             text += _TRUNCATED_MARKER
     except OSError:
         text = ""
-    return UntrustedContent.from_text(source or path.as_posix(), text, max_chars=max_chars)
+    return UntrustedContent.from_text(source or resolved.as_posix(), text, max_chars=max_chars)

@@ -53,3 +53,11 @@ def test_unreadable_file_is_empty_data(tmp_path):
     content = read_untrusted_file(tmp_path / "missing.py", source="missing.py")
     assert content.text == ""
     assert content.source == "missing.py"
+
+
+def test_read_accepts_string_path(tmp_path):
+    path = tmp_path / "note.txt"
+    path.write_text("plain data", encoding="utf-8")
+    content = read_untrusted_file(str(path))
+    assert content.text == "plain data"
+    assert content.source.endswith("note.txt")
