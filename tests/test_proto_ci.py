@@ -121,7 +121,7 @@ def test_proto_pollution_hunter_not_in_python(tmp_path):
 
 
 def test_proto_pollution_scanner_ignores_python_fixtures():
-    code = 'fixture = "obj[\'__proto__\'] = payload;"\n'
+    code = "fixture = \"obj['__proto__'] = payload;\"\n"
     assert ProtoPollutionScanner().detect(code, "test_fixture.py") == []
 
 
