@@ -198,3 +198,34 @@ def test_server_side_proxy_fetch_is_still_ssrf(tmp_path):
         {"proxy.ts": "const url = req.query.url;\nreturn fetch(url);\n"},
     )
     assert "ssrf" in types
+
+
+def test_top_level_constant_url_fetch_is_not_ssrf(tmp_path):
+    types = _types(
+        tmp_path,
+        {
+            "download.py": (
+                "import urllib.request\n"
+                "UA = {'User-Agent': 'Mozilla/5.0'}\n"
+                "url = 'https://example.com/data.zip'\n"
+                "req = urllib.request.Request(url, headers=UA)\n"
+                "with urllib.request.urlopen(req) as r:\n"
+                "    data = r.read()\n"
+            )
+        },
+    )
+    assert "ssrf" not in types
+
+
+def test_top_level_argv_url_fetch_is_still_ssrf(tmp_path):
+    types = _types(
+        tmp_path,
+        {
+            "download.py": (
+                "import sys, urllib.request\n"
+                "url = sys.argv[1]\n"
+                "return urllib.request.urlopen(url)\n"
+            )
+        },
+    )
+    assert "ssrf" in types

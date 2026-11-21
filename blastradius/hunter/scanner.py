@@ -643,6 +643,73 @@ def _candidate_vars(line: str) -> list:
     return out
 
 
+_ASSIGN_LINE_RE = re.compile(r"^\s*\$?([A-Za-z_$][\w$]*)\s*=\s*(?!=)(.+)$")
+_CONST_SAFE_CALLS = frozenset({"Request", "str", "Path"})
+
+
+def _nearest_assignment(lines: list, before_idx: int, var: str):
+    """Expression of the nearest top-level ``var = ...`` above ``before_idx``."""
+    for i in range(before_idx, -1, -1):
+        match = _ASSIGN_LINE_RE.match(lines[i])
+        if match and match.group(1) == var:
+            return match.group(2).strip()
+    return None
+
+
+def _expr_is_constant(expr: str, lines: list, before_idx: int, seen=None) -> bool:
+    """Whether a top-level expression resolves to a literal/config constant.
+
+    Covers the common installer/script shape ``url = "https://..."`` then
+    ``req = urllib.request.Request(url, headers=UA)``. Calls are only trusted
+    for a small constructor allowlist, so ``url = os.getenv("URL")`` or
+    ``url = build_url(host)`` still keep the name-based signal.
+    """
+    seen = set() if seen is None else seen
+    expr = expr.strip()
+    if not expr:
+        return False
+    if re.search(r"\b(?:sys\.argv|os\.environ|os\.getenv)\b", expr):
+        return False
+    fstring = re.match(r"^[rRbB]{0,2}[fF](\"\"\"|'''|\"|')(.*)\1$", expr)
+    if fstring:
+        for part in re.findall(r"\{([^{}]+)\}", fstring.group(2)):
+            if not _expr_is_constant(part, lines, before_idx, seen):
+                return False
+        return True
+    if re.match(r"^[rRbBuU]{0,2}(?:\"\"\"|'''|\"|')", expr):
+        return True
+    if re.match(r"^(?:[-+]?\d|0[xX][0-9a-fA-F]|True|False|None|true|false|null)", expr):
+        return True
+    if re.match(r"^[\[{(]", expr):
+        return not any(re.search(p, expr, re.I) for p in SOURCES)
+    if re.fullmatch(r"[A-Za-z_$][\w$]*", expr):
+        if expr in _KEYWORDS or expr in seen:
+            return True
+        nested = _nearest_assignment(lines, before_idx, expr)
+        if nested is None:
+            return False
+        seen.add(expr)
+        return _expr_is_constant(nested, lines, before_idx, seen)
+    without_literals = re.sub(r"(['\"])(?:\\.|(?!\1)[^\\])*?\1", " ", expr)
+    outer_call = re.match(r"^(?:[A-Za-z_$][\w$]*\.)*([A-Za-z_$][\w$]*)\s*\(", without_literals)
+    if outer_call and outer_call.group(1) not in _CONST_SAFE_CALLS:
+        return False
+    for match in re.finditer(r"[A-Za-z_$][\w$]*", without_literals):
+        ident = match.group(0)
+        start, end = match.span()
+        before = without_literals[start - 1] if start else ""
+        after = without_literals[end : end + 1]
+        if ident in _KEYWORDS or ident in seen or before == "." or after in (".", "(", "="):
+            continue
+        nested = _nearest_assignment(lines, before_idx, ident)
+        if nested is None:
+            return False
+        seen.add(ident)
+        if not _expr_is_constant(nested, lines, before_idx, seen):
+            return False
+    return True
+
+
 def _sink_arg_tainted(line: str, has_source: bool, lines=None, idx=None) -> bool:
     """Whether a sink's first argument references user-controlled data.
 
@@ -672,15 +739,32 @@ def _sink_arg_tainted(line: str, has_source: bool, lines=None, idx=None) -> bool
         if not has_enclosing_function(lines, idx - 1):
             # Top-level installer/CLI/script code: generic `path`/`file`/`name`
             # arguments are config, while transport names (req/url/body/...)
-            # keep the historical name-based signal.
-            stripped = re.sub(r"['\"][^'\"]*['\"]", " ", line)
-            return bool(
-                re.search(
-                    r"(?<![.\w])(?:req|request|ctx|params|body|data|input|user|"
-                    r"token|query|args|form|payload|url|host)\b",
-                    stripped,
-                )
-            )
+            # keep the historical name-based signal. A variable that resolves
+            # to a literal/config constant is not tainted.
+            for raw_var in _candidate_vars(line):
+                var = raw_var.lstrip("$")
+                nested = _nearest_assignment(lines, idx - 1, var)
+                if nested is not None and _expr_is_constant(nested, lines, idx - 1):
+                    continue
+                if var in {
+                    "req",
+                    "request",
+                    "ctx",
+                    "params",
+                    "body",
+                    "data",
+                    "input",
+                    "user",
+                    "token",
+                    "query",
+                    "args",
+                    "form",
+                    "payload",
+                    "url",
+                    "host",
+                }:
+                    return True
+            return False
         for var in _candidate_vars(line):
             if is_var_tainted(lines, idx - 1, var):
                 return True
